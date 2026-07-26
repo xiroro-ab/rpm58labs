@@ -120,7 +120,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             Klik pada dokumen untuk mengedit langsung
           </span>
         </div>
-        <div className="flex items-center gap-2.5 relative group">
+        <div className="flex items-center gap-1 sm:gap-1.5 relative group flex-wrap">
           <button
             onClick={() => {
               const currentHtml = document.getElementById('rpm-content')?.innerHTML;
@@ -129,44 +129,44 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
                 toast.success('Editan berhasil disimpan!');
               }
             }}
-            className="flex items-center gap-2 px-3 py-2 text-blue-700 bg-white hover:bg-blue-50 text-sm font-semibold rounded-lg transition-all border border-blue-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-blue-700 bg-white hover:bg-blue-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-blue-200 shadow-sm hover:shadow"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span className="hidden sm:inline">Simpan Edit</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span className="hidden sm:inline">Simpan</span>
           </button>
           
           <button
             onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-            className="flex items-center gap-2 px-3 py-2 text-indigo-700 bg-white hover:bg-indigo-50 text-sm font-semibold rounded-lg transition-all border border-indigo-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-indigo-700 bg-white hover:bg-indigo-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-indigo-200 shadow-sm hover:shadow"
           >
-            <Bot className="w-4 h-4" />
-            <span className="hidden sm:inline">Revisi dengan AI</span>
+            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Revisi</span>
           </button>
           
           <button
             onClick={() => setIsAssessmentGeneratorOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 text-emerald-700 bg-white hover:bg-emerald-50 text-sm font-semibold rounded-lg transition-all border border-emerald-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-emerald-700 bg-white hover:bg-emerald-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-emerald-200 shadow-sm hover:shadow"
           >
-            <BookOpen className="w-4 h-4" />
-            <span className="hidden sm:inline">Generate Soal</span>
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Soal</span>
           </button>
           
           <button
             onClick={() => setIsComplianceCheckerOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 text-amber-700 bg-white hover:bg-amber-50 text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-amber-700 bg-white hover:bg-amber-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-sm hover:shadow"
           >
-            <Shield className="w-4 h-4" />
-            <span className="hidden sm:inline">Cek Kepatuhan</span>
+            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Cek</span>
           </button>
           
           <button
             onClick={handlePrintPDF}
             disabled={isDownloading}
-            className={`flex items-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-lg shadow-md transition-all ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800 hover:shadow-lg'}`}
+            className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-md transition-all shrink-0 ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800 hover:shadow-lg'}`}
           >
-            <Download className="w-4 h-4" />
-            <span className="hidden lg:inline">{isDownloading ? 'Menyiapkan PDF...' : 'Download PDF'}</span>
-            <span className="inline lg:hidden">PDF</span>
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{isDownloading ? 'Menyiapkan...' : 'Download PDF'}</span>
+            <span className="sm:hidden">PDF</span>
           </button>
         </div>
       </div>

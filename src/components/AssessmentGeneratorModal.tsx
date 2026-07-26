@@ -18,10 +18,8 @@ export function AssessmentGeneratorModal({ isOpen, onClose, formData, currentHtm
   const [generatedHtml, setGeneratedHtml] = useState('');
 
   const meetingCount = useMemo(() => {
-    if (!currentHtml) return 1;
-    const matches = currentHtml.match(/PERTEMUAN \d+/gi);
-    return Math.max(1, matches?.length || 1);
-  }, [currentHtml]);
+    return Math.max(1, parseInt(formData?.meetingCount || '1'));
+  }, [formData]);
 
   const meetingOptions = useMemo(() => {
     const options = [{ value: 'semua', label: `Semua Pertemuan (${meetingCount})` }];
@@ -73,17 +71,17 @@ INSTRUKSI:
 5. JANGAN gunakan markdown code block
 
 ${assessmentType === 'diagnostik' ? `PENTING UNTUK ASESMEN DIAGNOSTIK:
-- Ambil pertanyaan pemantik dari bagian "Kegiatan Awal" di setiap pertemuan
-- Kembangkan menjadi 5-10 soal diagnostik
-- Soal harus sinkron dengan pertanyaan pemantik di RPM` : ''}
+- Buat 1 soal pertanyaan pemantik per pertemuan (total ${selectedMeeting === 'semua' ? meetingCount : 1} soal untuk ${selectedMeeting === 'semua' ? meetingCount + ' pertemuan' : selectedMeeting})
+- Setiap soal harus sinkron dengan materi pertemuan tersebut
+- Soal akan otomatis menjadi pertanyaan pemantik di bagian "Kegiatan Awal" RPM` : ''}
 
 ${assessmentType === 'formatif' ? `PENTING UNTUK ASESMEN FORMATIF:
-- Buat soal yang mengukur proses pembelajaran di bagian "Kegiatan Inti"
-- 5-10 soal per pertemuan
-- Fokus pada pemahaman konsep dan keterampilan` : ''}
+- 5 soal per pertemuan (total ${selectedMeeting === 'semua' ? meetingCount * 5 : 5} soal)
+- Fokus pada proses pembelajaran di kegiatan inti` : ''}
 
 ${assessmentType === 'sumatif' ? `PENTING UNTUK ASESMEN SUMATIF:
-- 10 soal per pertemuan (total ${meetingCount * 10} soal untuk ${meetingCount} pertemuan)
+- 10 soal per pertemuan (total ${selectedMeeting === 'semua' ? meetingCount * 10 : 10} soal${selectedMeeting !== 'semua' ? ', pertemuan ' + selectedMeeting.replace('pertemuan-', '') : ' untuk ' + meetingCount + ' pertemuan'})
+- 1 tema per pertemuan sesuai materi di RPM
 - Soal pilihan ganda dengan opsi A, B, C, D vertikal
 - Sertakan KUNCI JAWABAN di akhir dalam tabel
 - Gunakan tag <ol> untuk penomoran soal` : ''}
