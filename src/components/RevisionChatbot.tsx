@@ -92,6 +92,58 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
     }
   }, [isOpen, isLoading]);
 
+  const sectionKeywords: Record<string, RegExp[]> = {
+    identifikasi: [/identit(as|i)/i, /peserta didik/i, /sekolah/i, /guru/i, /mapel/i],
+    desain: [/desain/i, /pembelajaran/i, /capaian/i, /tujuan/i, /cp/i, /tp/i, /model/i, /metode/i],
+    pengalaman: [/pengalaman/i, /kegiatan (awal|inti|penutup)/i, /pertemuan/i, /sintaks/i, /fase/i],
+    asesmen: [/soal/i, /asesmen/i, /diagnostik/i, /formatif/i, /sumatif/i, /kunci jawaban/i, /rubrik/i, /pg/i, /pilihan ganda/i, /jawab/i],
+    refleksi: [/refleksi/i, /umpan balik/i],
+    lampiran: [/lampiran/i, /lkpd/i, /lembar kerja/i, /bacaan/i, /materi/i, /jurnal/i],
+  };
+
+  const sectionHeaders = [
+    { id: 'identifikasi', start: 'I. IDENTIFIKASI', end: 'II. DESAIN' },
+    { id: 'desain', start: 'II. DESAIN PEMBELAJARAN', end: 'III. PENGALAMAN' },
+    { id: 'pengalaman', start: 'III. PENGALAMAN BELAJAR', end: 'IV. ASESMEN' },
+    { id: 'asesmen', start: 'IV. ASESMEN PEMBELAJARAN', end: 'V. REFLEKSI' },
+    { id: 'refleksi', start: 'V. REFLEKSI', end: 'Lampiran' },
+    { id: 'lampiran', start: 'Lampiran', end: '</div>' },
+  ];
+
+  const detectSection = (instruction: string): string => {
+    const matched = Object.entries(sectionKeywords).find(([, keywords]) =>
+      keywords.some(k => k.test(instruction))
+    );
+    return matched?.[0] || 'full';
+  };
+
+  const extractSection = (html: string, sectionId: string): string => {
+    if (sectionId === 'full') return html;
+    const header = sectionHeaders.find(h => h.id === sectionId);
+    if (!header) return html;
+    const startIdx = html.indexOf(header.start);
+    if (startIdx === -1) return html;
+    const contextStart = Math.max(0, startIdx - 200);
+    const endIdx = html.indexOf(header.end, startIdx + header.start.length);
+    const sectionEnd = endIdx !== -1 ? endIdx + header.end.length + 200 : html.length;
+    return html.slice(contextStart, sectionEnd);
+  };
+
+  const applyPatch = (originalHtml: string, patchHtml: string, sectionId: string): string => {
+    if (sectionId === 'full') return patchHtml;
+    const header = sectionHeaders.find(h => h.id === sectionId);
+    if (!header) return patchHtml;
+    const startIdx = originalHtml.indexOf(header.start);
+    if (startIdx === -1) return patchHtml;
+    const endIdx = originalHtml.indexOf(header.end, startIdx + header.start.length);
+    if (endIdx === -1) return patchHtml;
+
+    const sectionEnd = endIdx + header.end.length;
+    const before = originalHtml.slice(0, startIdx);
+    const after = originalHtml.slice(sectionEnd);
+    return before + patchHtml + after;
+  };
+
   const sendMessage = useCallback(async (instruction?: string) => {
     const msg = instruction || prompt;
     if (!msg.trim() || isLoading) return;
@@ -109,8 +161,10 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
     setStreamBuffer('');
 
     try {
-      // Save current HTML to undo stack
       setUndoStack(prev => [...prev.slice(-9), currentHtml]);
+
+      const sectionId = detectSection(msg);
+      const relevantHtml = extractSection(currentHtml, sectionId);
 
       const chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
 
@@ -118,9 +172,10 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          html: currentHtml,
+          html: relevantHtml,
           instruction: msg,
           chatHistory: [...chatHistory, { role: 'user', content: msg }],
+          sectionOnly: sectionId !== 'full',
         }),
       });
 
@@ -137,21 +192,22 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
         if (done) break;
         resultText += decoder.decode(value, { stream: true });
         setStreamBuffer(resultText);
-        // Stream to main preview
         const cleanPreview = resultText.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
-        onStreamUpdate?.(cleanPreview, false);
+        // Patch the full HTML with the updated section
+        const fullPreview = applyPatch(currentHtml, cleanPreview, sectionId);
+        onStreamUpdate?.(fullPreview, false);
       }
 
       const cleanHtml = resultText.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
-      // Final update to preview
-      onStreamUpdate?.(cleanHtml, true);
+      const patchedHtml = applyPatch(currentHtml, cleanHtml, sectionId);
+      onStreamUpdate?.(patchedHtml, true);
 
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: 'ai',
         content: '✅ Revisi selesai! Perubahan sudah terlihat di layar pratinjau. Klik "Terapkan" untuk menyimpan.',
         timestamp: Date.now(),
-        revisedHtml: cleanHtml,
+        revisedHtml: patchedHtml,
         applied: false,
       };
 

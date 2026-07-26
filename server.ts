@@ -495,7 +495,7 @@ ${html}
 
   app.post("/api/revise-chat", async (req, res) => {
     try {
-      const { html, instruction, chatHistory } = req.body;
+      const { html, instruction, chatHistory, sectionOnly } = req.body;
       if (!html || !instruction) {
         return res.status(400).json({ error: 'HTML and instruction are required' });
       }
@@ -522,7 +522,7 @@ KEMAMPUAN:
 - Perbaiki tata bahasa
 
 ATURAN:
-1. Output HANYA kode HTML lengkap yang sudah direvisi
+1. ${sectionOnly ? 'Output HANYA HTML bagian yang direvisi (fragment), BUKAN seluruh dokumen. Output langsung HTML fragment, tanpa tag pembungkus.' : 'Output HANYA kode HTML lengkap yang sudah direvisi'}
 2. JANGAN gunakan markdown code block
 3. Jangan ubah struktur di luar yang diminta
 4. Pertahankan inline style dan class yang ada

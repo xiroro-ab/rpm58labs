@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const { html, instruction, chatHistory } = body;
+    const { html, instruction, chatHistory, sectionOnly } = body;
     if (!html || !instruction) {
       return res.status(400).json({ error: 'HTML and instruction are required' });
     }
@@ -38,7 +38,7 @@ KEMAMPUAN ANDA:
 - Jawab dalam bahasa Indonesia dengan gaya membantu dan santai
 
 ATURAN:
-1. Output HANYA kode HTML lengkap yang sudah direvisi
+1. ${body.sectionOnly ? 'Output HANYA HTML bagian yang direvisi (fragment), BUKAN seluruh dokumen. Output langsung HTML fragment, tanpa tag pembungkus.' : 'Output HANYA kode HTML lengkap yang sudah direvisi'}
 2. JANGAN gunakan markdown code block
 3. Jangan ubah struktur di luar yang diminta instruksi
 4. Jika instruksi spesifik (contoh: "ubah soal nomor 3"), lakukan tepat pada bagian itu
