@@ -128,6 +128,18 @@
   }
 }
 
+.rpm-content-wrapper {
+  font-family: 'Space Grotesk', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  color: #000;
+}
+
+.rpm-content-wrapper p {
+  text-align: justify;
+  margin: 0 0 6px 0;
+}
+
 .rpm-content-wrapper ol {
   list-style-type: decimal;
   padding-left: 20px;
@@ -138,8 +150,14 @@
   padding-left: 20px;
 }
 
-.rpm-content-wrapper {
-  font-family: 'Space Grotesk', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif !important;
+.rpm-content-wrapper table {
+  font-size: inherit;
+}
+
+.rpm-content-wrapper td, 
+.rpm-content-wrapper th {
+  font-size: 10.5pt;
+  vertical-align: top;
 }
 
 .rpm-content-wrapper ul[style*="list-style-type: none"] {
