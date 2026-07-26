@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Generator RPM</title>
+    <meta name="description" content="Generator Rencana Pembelajaran Mendalam (RPM) untuk Kurikulum Merdeka" />
+    <meta name="theme-color" content="#1e293b" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="RPM Generator" />
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.warn('SW registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+

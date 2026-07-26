@@ -1,0 +1,6 @@
+{
+  "name": "Generator RPM Kurikulum Merdeka",
+  "description": "Aplikasi untuk membuat Rencana Pembelajaran Mendalam (RPM) secara otomatis menggunakan AI",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

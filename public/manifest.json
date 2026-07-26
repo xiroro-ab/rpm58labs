@@ -1,0 +1,27 @@
+{
+  "name": "Generator RPM",
+  "short_name": "RPM Gen",
+  "description": "Generator Rencana Pembelajaran Mendalam (RPM) untuk Kurikulum Merdeka",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e293b",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

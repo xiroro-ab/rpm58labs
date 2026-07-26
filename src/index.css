@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+.kop-surat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid black;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.kop-surat::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid black;
+}
+.kop-surat .logo {
+  width: 90px;
+  height: auto;
+}
+.kop-surat .teks-kop {
+  text-align: center;
+  flex: 1;
+  padding: 0 15px;
+}
+.kop-surat h3 {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 1.1em;
+}
+.kop-surat p {
+  margin: 2px 0 0;
+  line-height: 1.3;
+}
+
+.rpm-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-bottom: 8px !important;
+  font-size: 0.9em !important;
+  table-layout: auto !important;
+}
+.rpm-table th, .rpm-table td {
+  border: 1px solid #000 !important;
+  padding: 4px 6px !important;
+  vertical-align: top !important;
+  margin: 0 !important;
+}
+.rpm-table th {
+  background-color: #1a4185 !important;
+  color: white !important;
+  text-align: left !important;
+  font-weight: bold !important;
+}
+.rpm-table td {
+  background-color: transparent;
+}
+.rpm-table .bg-blue-light {
+  background-color: #f0f7ff;
+}
+
+@media print {
+  @page {
+    margin: 1.5cm 1.5cm 2cm 1.5cm;
+    size: A4 portrait;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: white !important;
+  }
+  
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Prevent page breaks inside important blocks */
+  tr, td, th {
+    page-break-inside: avoid !important;
+  }
+  
+  h1, h2, h3, h4, h5, p, ul, ol, li {
+    page-break-inside: avoid;
+  }
+  
+  .rpm-content-wrapper > div {
+    page-break-inside: avoid;
+  }
+  
+  .kop-surat {
+    border-bottom-color: black !important;
+  }
+  .kop-surat::after {
+    border-bottom-color: black !important;
+  }
+  
+  .rpm-table th {
+    background-color: #1a4185 !important;
+    color: white !important;
+  }
+  .rpm-table th, .rpm-table td {
+    border-color: black !important;
+  }
+}
+
+.rpm-content-wrapper ol {
+  list-style-type: decimal;
+  padding-left: 20px;
+}
+
+.rpm-content-wrapper ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.rpm-content-wrapper ul[style*="list-style-type: none"] {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.label-mindful {
+  background-color: #ef4444 !important;
+  color: white !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  font-weight: bold !important;
+  margin-right: 4px !important;
+  display: inline-block !important;
+  margin-bottom: 4px !important;
+}
+
+.label-meaningful {
+  background-color: #eab308 !important;
+  color: white !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  font-weight: bold !important;
+  margin-right: 4px !important;
+  display: inline-block !important;
+  margin-bottom: 4px !important;
+}
+
+.label-joyful {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  font-weight: bold !important;
+  margin-right: 4px !important;
+  display: inline-block !important;
+  margin-bottom: 4px !important;
+}
+
+/* Optimized Layout Classes */
+.rpm-section-title {
+  background-color: #1a4185 !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  margin-top: 20px !important;
+  margin-bottom: 10px !important;
+}
+
+.pertemuan-box {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  page-break-inside: avoid !important;
+  overflow: hidden !important;
+}
+
+.pertemuan-box:nth-of-type(3n+1) { border-left: 6px solid #10b981 !important; }
+.pertemuan-box:nth-of-type(3n+2) { border-left: 6px solid #8b5cf6 !important; }
+.pertemuan-box:nth-of-type(3n+3) { border-left: 6px solid #3b82f6 !important; }
+
+.pertemuan-header {
+  background-color: #f8fafc !important;
+  padding: 12px 15px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  font-weight: bold !important;
+  color: #1e293b !important;
+  font-size: 1.1em !important;
+  margin: 0 !important;
+}
+
+.w-1-4 { width: 25% !important; }
+.w-30 { width: 30% !important; }
+.bg-green-light { background-color: #f0fdf4 !important; }
+.bg-yellow-light { background-color: #fefce8 !important; }
+.bg-blue-light { background-color: #eff6ff !important; }
+.font-bold { font-weight: bold !important; }
+.text-xs-italic { font-size: 0.85em !important; font-style: italic !important; font-weight: normal !important; }
+.fase-title { font-weight: bold !important; margin-bottom: 5px !important; color: #1a4185 !important; margin-top: 0 !important; }
+.clean-list { margin: 0 !important; padding-left: 20px !important; }
+.clean-list li { margin-bottom: 6px !important; }
