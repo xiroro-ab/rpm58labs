@@ -141,13 +141,13 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
   };
 
   const applyPatch = (originalHtml: string, patchHtml: string, sectionId: string): string => {
-    if (sectionId === 'full') return patchHtml;
+    if (sectionId === 'full' || !patchHtml) return patchHtml || originalHtml;
     const header = sectionHeaders.find(h => h.id === sectionId);
     if (!header) return patchHtml;
     const startIdx = originalHtml.indexOf(header.start);
     if (startIdx === -1) return patchHtml;
     const endIdx = originalHtml.indexOf(header.end, startIdx + header.start.length);
-    if (endIdx === -1) return patchHtml;
+    if (endIdx === -1 || endIdx < startIdx) return patchHtml;
 
     const sectionEnd = endIdx + header.end.length;
     const before = originalHtml.slice(0, startIdx);

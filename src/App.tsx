@@ -16,8 +16,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<RPMFormData | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [aiProvider, setAiProvider] = useState('gemini');
+  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('rpm_customApiKey') || '');
+  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('rpm_aiProvider') || 'gemini');
   const [isGeneratingContinue, setIsGeneratingContinue] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -540,7 +540,12 @@ export default function App() {
             </div>
             <div className="p-4 border-t border-slate-200 flex justify-end">
               <button 
-                onClick={() => { setIsSettingsOpen(false); toast.success('Pengaturan disimpan!'); }}
+                onClick={() => { 
+                  localStorage.setItem('rpm_customApiKey', customApiKey);
+                  localStorage.setItem('rpm_aiProvider', aiProvider);
+                  setIsSettingsOpen(false); 
+                  toast.success('Pengaturan disimpan!'); 
+                }}
                 className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-colors"
               >
                 Simpan & Tutup

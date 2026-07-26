@@ -31,7 +31,7 @@ async function startServer() {
 
       const isDaring = data.learningMode?.includes('Daring');
       const isBlended = data.learningMode?.includes('Blended');
-      const meetingCount = parseInt((data.meetingCount || '1x').charAt(0)) || 1; 
+      const meetingCount = parseInt(data.meetingCount?.replace('x', '')) || 1; 
 
       let pengalamanBelajarHTML = '';
       for(let i = 1; i <= meetingCount; i++) {
@@ -478,7 +478,7 @@ ${html}
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
       });
 
@@ -538,7 +538,7 @@ ${html}`;
       res.setHeader('Cache-Control', 'no-cache, no-transform');
 
       const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
       });
 

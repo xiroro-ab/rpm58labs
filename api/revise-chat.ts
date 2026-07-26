@@ -55,7 +55,7 @@ ${html}`;
     res.setHeader('Cache-Control', 'no-cache, no-transform');
 
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-1.5-flash',
       contents: prompt,
     });
 

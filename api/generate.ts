@@ -395,7 +395,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
       if (provider === 'gemini') {
         const ai = new GoogleGenAI({ apiKey: keyToUse });
         const responseStream = await ai.models.generateContentStream({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           contents: prompt,
         });
         for await (const chunk of responseStream) {
