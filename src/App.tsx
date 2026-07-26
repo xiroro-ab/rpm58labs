@@ -8,6 +8,7 @@ import { LoadingOverlay } from './components/LoadingOverlay';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { PWAPrompt } from './components/PWAPrompt';
+import { useConfirm } from './components/ConfirmDialog';
 import { analyticsManager } from './lib/analytics';
 
 export default function App() {
@@ -31,6 +32,8 @@ export default function App() {
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentTrackingId, setCurrentTrackingId] = useState<string | null>(null);
   const [historySearchQuery, setHistorySearchQuery] = useState('');
+
+  const confirmDialog = useConfirm();
 
   const filteredHistory = history.filter(item =>
     item.title.toLowerCase().includes(historySearchQuery.toLowerCase()) ||
@@ -332,19 +335,20 @@ export default function App() {
     setSelectedHistoryItem(null);
   };
 
-  const deleteHistoryItem = (id: string, e: React.MouseEvent) => {
+  const deleteHistoryItem = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Hapus riwayat ini?')) {
-       setHistory(prev => {
-         const next = prev.filter(item => item.id !== id);
-         localStorage.setItem('rpmHistory', JSON.stringify(next));
-         return next;
-       });
-       if (currentHistoryId === id) {
-         setResult(null);
-    setCurrentHistoryId(null);
-         setCurrentHistoryId(null);
-       }
+    const ok = await confirmDialog.confirm('Hapus Riwayat', 'Hapus riwayat RPM ini?', 'danger', 'Ya, Hapus');
+    if (ok) {
+      setHistory(prev => {
+        const next = prev.filter(item => item.id !== id);
+        localStorage.setItem('rpmHistory', JSON.stringify(next));
+        return next;
+      });
+      if (currentHistoryId === id) {
+        setResult(null);
+        setCurrentHistoryId(null);
+      }
+      toast.success('Riwayat dihapus');
     }
   };
 
@@ -356,6 +360,7 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen print:h-auto w-full bg-slate-50 font-sans overflow-hidden print:overflow-visible">
       <Toaster position="top-center" />
+      {confirmDialog.dialog}
       <LoadingOverlay isVisible={isWaitingForFirstChunk} message="Sedang menyusun RPM..." />
       
       {/* History Modal */}

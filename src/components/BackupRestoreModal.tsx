@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Download, Upload, Trash2, History as HistoryIcon, HardDrive } from 'lucide-react';
 import { HistoryItem } from '../types';
 import toast from 'react-hot-toast';
+import { useConfirm } from './ConfirmDialog';
 
 interface BackupRestoreModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface BackupRestoreModalProps {
 
 export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }: BackupRestoreModalProps) {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const confirmDialog = useConfirm();
 
   const handleExportBackup = () => {
     const backupData = {
@@ -78,33 +80,34 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
     e.target.value = '';
   };
 
-  const handleClearAllData = () => {
+  const handleClearAllData = async () => {
     if (history.length === 0) {
       toast.error('Tidak ada data untuk dihapus');
       return;
     }
 
-    if (confirm('HAPUS SEMUA DATA RPM? Data yang sudah di-backup aman.\n\nTindakan ini TIDAK BISA DIBATALKAN!')) {
-      if (confirm('YAKIN? Semua RPM dan riwayat akan dihapus permanen.')) {
-        localStorage.removeItem('rpmHistory');
-        localStorage.removeItem('rpmFormData');
+    const ok1 = await confirmDialog.confirm('HAPUS SEMUA DATA', 'Semua RPM dan riwayat akan dihapus permanen.\n\nTindakan ini TIDAK BISA DIBATALKAN!', 'danger', 'Saya Yakin');
+    if (!ok1) return;
 
-        // Clear version histories
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key?.startsWith('rpm_versions_')) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+    const ok2 = await confirmDialog.confirm('Konfirmasi Terakhir', 'YAKIN? Semua data akan hilang selamanya.', 'danger', 'Hapus Semua');
+    if (!ok2) return;
 
-        onHistoryUpdate([]);
-        toast.success('Semua data berhasil dihapus', { icon: '🗑️' });
-        onClose();
-        window.location.reload();
+    localStorage.removeItem('rpmHistory');
+    localStorage.removeItem('rpmFormData');
+
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('rpm_versions_')) {
+        keysToRemove.push(key);
       }
     }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    onHistoryUpdate([]);
+    toast.success('Semua data berhasil dihapus', { icon: '🗑️' });
+    onClose();
+    window.location.reload();
   };
 
   if (!isOpen) return null;
@@ -228,6 +231,7 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
             </p>
           </div>
         </div>
+        {confirmDialog.dialog}
       </div>
     </div>
   );
