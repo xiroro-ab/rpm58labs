@@ -493,6 +493,55 @@ ${html}
     }
   });
 
+  // Streaming revise endpoint for assessment generation
+  app.post("/api/revise-stream", async (req, res) => {
+    try {
+      const { html, instruction } = req.body;
+      if (!html || !instruction) {
+        return res.status(400).json({ error: 'HTML and instruction are required' });
+      }
+
+      const { GoogleGenAI } = await import('@google/genai');
+      if (!process.env.GEMINI_API_KEY) {
+         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on server' });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `Anda adalah asisten AI spesialis assessment pendidikan.
+
+Tugas: Buat konten assessment berdasarkan instruksi dan dokumen RPM berikut.
+- Output HANYA konten assessment dalam HTML, JANGAN output seluruh dokumen.
+- JANGAN gunakan markdown code block.
+- Langsung keluarkan HTML.
+
+INSTRUKSI:
+${instruction}
+
+DOKUMEN RPM:
+${html}`;
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+
+      const responseStream = await ai.models.generateContentStream({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+      });
+
+      for await (const chunk of responseStream) {
+        if (chunk.text) {
+          res.write(chunk.text);
+        }
+      }
+
+      res.end();
+    } catch (error) {
+      console.error('Revise Stream Error:', error);
+      res.status(500).json({ error: 'Failed to generate assessment: ' + (error.message || '') });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
