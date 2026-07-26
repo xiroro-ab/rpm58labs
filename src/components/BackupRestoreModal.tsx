@@ -18,7 +18,6 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
       version: '2.0',
       exportedAt: new Date().toISOString(),
       history,
-      templateManager: localStorage.getItem('rpm_templates'),
       formData: localStorage.getItem('rpmFormData'),
       settings: {
         aiProvider: localStorage.getItem('aiProvider'),
@@ -58,11 +57,6 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
           localStorage.setItem('rpmHistory', JSON.stringify(data.history));
         }
 
-        // Restore templates
-        if (data.templateManager) {
-          localStorage.setItem('rpm_templates', data.templateManager);
-        }
-
         // Restore form data
         if (data.formData) {
           localStorage.setItem('rpmFormData', data.formData);
@@ -91,10 +85,9 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
     }
 
     if (confirm('HAPUS SEMUA DATA RPM? Data yang sudah di-backup aman.\n\nTindakan ini TIDAK BISA DIBATALKAN!')) {
-      if (confirm('YAKIN? Semua RPM, template, dan riwayat akan dihapus permanen.')) {
+      if (confirm('YAKIN? Semua RPM dan riwayat akan dihapus permanen.')) {
         localStorage.removeItem('rpmHistory');
         localStorage.removeItem('rpmFormData');
-        localStorage.removeItem('rpm_templates');
 
         // Clear version histories
         const keysToRemove: string[] = [];
@@ -116,7 +109,7 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
 
   if (!isOpen) return null;
 
-  const backupSize = new Blob([JSON.stringify({ history, templates: '' })]).size;
+  const backupSize = new Blob([JSON.stringify({ history })]).size;
   const totalStorage = history.reduce((sum, item) => sum + (item.markdown?.length || 0), 0);
 
   return (
@@ -172,7 +165,6 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
               </p>
               <ul className="text-xs text-slate-500 space-y-1 ml-4 list-disc">
                 <li>Semua riwayat RPM</li>
-                <li>Template custom</li>
                 <li>Data form terakhir</li>
                 <li>Pengaturan AI Provider</li>
               </ul>
@@ -216,7 +208,7 @@ export function BackupRestoreModal({ isOpen, onClose, history, onHistoryUpdate }
             </div>
             <div className="p-4 space-y-3">
               <p className="text-sm text-red-600">
-                Hapus permanen semua data RPM, template, dan riwayat.
+                Hapus permanen semua data RPM dan riwayat.
               </p>
               <button
                 onClick={handleClearAllData}

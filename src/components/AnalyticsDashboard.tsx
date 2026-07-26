@@ -72,17 +72,17 @@ export function AnalyticsDashboard({ isOpen, onClose, history }: AnalyticsDashbo
               <p className="text-xs text-slate-500 mt-0.5">Insight & statistik penggunaan RPM</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               onClick={() => handleExport('csv')}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-md transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-md transition-colors whitespace-nowrap"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
             </button>
             <button
               onClick={() => handleExport('json')}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors whitespace-nowrap"
             >
               <Download className="w-3.5 h-3.5" />
               Export JSON

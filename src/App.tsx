@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, BookTemplate, GitBranch, HardDrive, BarChart3, Smartphone } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, GitBranch, HardDrive, BarChart3, Smartphone } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
-import { TemplateLibrary } from './components/TemplateLibrary';
 import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
@@ -25,9 +24,7 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
-  const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
@@ -66,9 +63,6 @@ export default function App() {
         e.preventDefault();
         handleReset();
         toast.success('Layar di-reset! (Ctrl+N)');
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-        e.preventDefault();
-        setIsTemplateLibraryOpen(true);
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
         e.preventDefault();
         setIsBackupRestoreOpen(true);
@@ -364,14 +358,6 @@ export default function App() {
     setCurrentHistoryId(null);
   };
 
-  const handleTemplateSelect = (templateData: Partial<RPMFormData>) => {
-    setFormData(prev => ({
-      ...prev,
-      ...templateData
-    } as RPMFormData));
-    toast.success('Template berhasil dimuat ke form!');
-  };
-
   const handleRestoreVersion = (content: string) => {
     setResult(content);
     if (currentHistoryId) {
@@ -542,14 +528,6 @@ export default function App() {
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Riwayat</span>
           </button>
-          <button 
-            onClick={() => setIsTemplateLibraryOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-purple-600 bg-white border border-purple-200 hover:border-purple-300 hover:bg-purple-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
-            title="Template Library (Ctrl+T)"
-          >
-            <BookTemplate className="w-4 h-4" />
-            <span className="hidden sm:inline">Template</span>
-          </button>
           {result && (
             <button 
               onClick={() => setIsVersionHistoryOpen(true)}
@@ -560,13 +538,6 @@ export default function App() {
               <span className="hidden sm:inline">Versi</span>
             </button>
           )}
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="p-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
-            title="Pengaturan API"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
             className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
@@ -583,6 +554,13 @@ export default function App() {
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Analytics</span>
           </button>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+            title="Pengaturan API"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
           <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 shadow-md hover:shadow-lg transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span className="hidden sm:inline">Reset</span>
@@ -591,14 +569,6 @@ export default function App() {
       </header>
 
       <main className="flex-1 flex overflow-hidden print:overflow-visible print:block relative">
-        {/* Template Library Modal */}
-        <TemplateLibrary
-          isOpen={isTemplateLibraryOpen}
-          onClose={() => setIsTemplateLibraryOpen(false)}
-          onSelectTemplate={handleTemplateSelect}
-          currentFormData={formData}
-        />
-
         {/* Version History Modal */}
         <VersionHistoryModal
           isOpen={isVersionHistoryOpen}

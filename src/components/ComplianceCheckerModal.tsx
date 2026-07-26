@@ -52,16 +52,7 @@ export function ComplianceCheckerModal({ isOpen, onClose, htmlContent, formPhase
               <p className="text-xs text-slate-500 mt-0.5">Validasi standar Kurikulum Merdeka</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {!report && (
-              <button
-                onClick={handleCheck}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors shadow-md"
-              >
-                <Shield className="w-4 h-4" />
-                Periksa Kepatuhan
-              </button>
-            )}
+          <div className="flex items-center gap-2 shrink-0">
             <button 
               onClick={onClose}
               className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500"
@@ -76,8 +67,15 @@ export function ComplianceCheckerModal({ isOpen, onClose, htmlContent, formPhase
             <div className="flex items-center justify-center h-full text-slate-400">
               <div className="text-center">
                 <Shield className="w-16 h-16 mb-4 opacity-20 mx-auto" />
-                <p className="text-sm">Klik "Periksa Kepatuhan" untuk memvalidasi dokumen</p>
+                <p className="text-sm">Dokumen siap diperiksa</p>
                 <p className="text-xs mt-2">Sistem akan memeriksa semua komponen yang diperlukan</p>
+                <button
+                  onClick={handleCheck}
+                  className="mt-6 flex items-center gap-2 px-5 py-3 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors shadow-md mx-auto"
+                >
+                  <Shield className="w-4 h-4" />
+                  Periksa Kepatuhan
+                </button>
               </div>
             </div>
           ) : (

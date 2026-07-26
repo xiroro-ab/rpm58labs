@@ -37,14 +37,3 @@ export interface VersionHistory {
   content: string;
   label?: string;
 }
-
-export interface Template {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  formData: Partial<RPMFormData>;
-  preview?: string;
-  isCustom?: boolean;
-  createdAt: string;
-}
