@@ -380,9 +380,9 @@ export default function App() {
               </button>
             </div>
             
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
               {/* Left: List */}
-              <div className="w-72 sm:w-80 border-r border-slate-200 flex flex-col overflow-hidden bg-slate-50/30">
+              <div className={`${selectedHistoryItem ? 'hidden sm:flex' : 'flex'} w-full sm:w-72 lg:w-80 border-b sm:border-b-0 sm:border-r border-slate-200 flex-col overflow-hidden bg-slate-50/30`}>
                 <div className="p-3 border-b border-slate-200 bg-white">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -444,45 +444,39 @@ export default function App() {
               </div>
 
               {/* Right: Preview */}
-              <div className="flex-1 flex flex-col overflow-hidden bg-white">
+              <div className={`${!selectedHistoryItem ? 'hidden' : 'flex'} sm:flex flex-1 flex-col overflow-hidden bg-white`}>
                 {selectedHistoryItem ? (
                   <>
                     <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
-                      <div>
-                        <h3 className="font-semibold text-slate-800 text-sm">{selectedHistoryItem.title}</h3>
-                        <p className="text-xs text-slate-500">
+                      <button onClick={() => setSelectedHistoryItem(null)} className="sm:hidden p-1 mr-2 text-slate-500 hover:bg-slate-100 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-slate-800 text-sm truncate">{selectedHistoryItem.title}</h3>
+                        <p className="text-xs text-slate-500 truncate">
                           {new Date(selectedHistoryItem.date).toLocaleString('id-ID', {
                             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                           })}
                         </p>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            loadHistoryItem(selectedHistoryItem);
-                          }}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                          Buka RPM
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => {
+                          loadHistoryItem(selectedHistoryItem);
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0 ml-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span className="hidden sm:inline">Buka RPM</span>
+                      </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 custom-scrollbar">
                       <div 
-                        className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm text-sm prose prose-sm max-w-none"
+                        className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-sm text-sm prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: selectedHistoryItem.markdown }}
                       />
                     </div>
                   </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-slate-400">
-                    <div className="text-center">
-                      <History className="w-12 h-12 mb-3 opacity-20 mx-auto" />
-                      <p className="text-sm">Pilih dokumen untuk melihat preview</p>
-                    </div>
-                  </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
