@@ -2,16 +2,15 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, BookTemplate, GitBranch, Cloud, BarChart3, Smartphone } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, BookTemplate, GitBranch, HardDrive, BarChart3, Smartphone } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { TemplateLibrary } from './components/TemplateLibrary';
 import { VersionHistoryModal } from './components/VersionHistoryModal';
-import { CloudSyncModal } from './components/CloudSyncModal';
+import { BackupRestoreModal } from './components/BackupRestoreModal';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { PWAPrompt } from './components/PWAPrompt';
 import { versionControl } from './lib/versionControl';
-import { cloudSyncManager } from './lib/cloudSync';
 import { analyticsManager } from './lib/analytics';
 
 export default function App() {
@@ -30,6 +29,7 @@ export default function App() {
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
+  const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
 
   const [isWaitingForFirstChunk, setIsWaitingForFirstChunk] = useState(false);
@@ -71,7 +71,7 @@ export default function App() {
         setIsTemplateLibraryOpen(true);
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
         e.preventDefault();
-        setIsCloudSyncOpen(true);
+        setIsBackupRestoreOpen(true);
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
         setIsAnalyticsDashboardOpen(true);
@@ -80,12 +80,8 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     
-    // Start cloud sync if enabled
-    cloudSyncManager.startAutoSync();
-    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      cloudSyncManager.stopAutoSync();
       if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
     };
   }, [result, currentHistoryId, autoSaveTimeout]);
@@ -313,7 +309,6 @@ export default function App() {
   const handleSaveEdit = (editedHtml: string) => {
     setResult(editedHtml);
     if (currentHistoryId) {
-      // Save as new version
       versionControl.saveVersion(currentHistoryId, editedHtml);
       
       setHistory(prev => {
@@ -322,12 +317,6 @@ export default function App() {
         if (idx !== -1) {
           next[idx].markdown = editedHtml;
           localStorage.setItem('rpmHistory', JSON.stringify(next));
-          
-          // Auto sync to cloud if enabled
-          const config = cloudSyncManager.getConfig();
-          if (config.autoSync && config.provider !== 'local') {
-            cloudSyncManager.syncToCloud(next);
-          }
         }
         return next;
       });
@@ -579,12 +568,12 @@ export default function App() {
             <Settings className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setIsCloudSyncOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sky-600 bg-white border border-sky-200 hover:border-sky-300 hover:bg-sky-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
-            title="Cloud Sync & Backup (Ctrl+B)"
+            onClick={() => setIsBackupRestoreOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            title="Backup & Restore (Ctrl+B)"
           >
-            <Cloud className="w-4 h-4" />
-            <span className="hidden sm:inline">Cloud</span>
+            <HardDrive className="w-4 h-4" />
+            <span className="hidden sm:inline">Backup</span>
           </button>
           <button 
             onClick={() => setIsAnalyticsDashboardOpen(true)}
@@ -619,9 +608,9 @@ export default function App() {
         />
 
         {/* Cloud Sync Modal */}
-        <CloudSyncModal
-          isOpen={isCloudSyncOpen}
-          onClose={() => setIsCloudSyncOpen(false)}
+        <BackupRestoreModal
+          isOpen={isBackupRestoreOpen}
+          onClose={() => setIsBackupRestoreOpen(false)}
           history={history}
           onHistoryUpdate={(newHistory) => {
             setHistory(newHistory);
