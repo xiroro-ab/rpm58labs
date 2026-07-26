@@ -19,11 +19,26 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [isDownloading, setIsDownloading] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState(markdown);
+  const [streamHtml, setStreamHtml] = useState('');
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   useEffect(() => {
-    setCurrentHtml(markdown);
-  }, [markdown]);
+    if (!isStreaming) {
+      setCurrentHtml(markdown);
+    }
+  }, [markdown, isStreaming]);
+
+  const handleStreamUpdate = (html: string, isDone: boolean) => {
+    if (isDone) {
+      setCurrentHtml(html);
+      setStreamHtml('');
+      setIsStreaming(false);
+    } else {
+      setStreamHtml(html);
+      setIsStreaming(true);
+    }
+  };
 
   const handlePrintPDF = async () => {
     setIsDownloading(true);
@@ -192,13 +207,20 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
         </div>
         
         <div className="w-full max-w-[1056px] bg-white shadow-xl rounded-b-xl border border-slate-200 print:border-none print:shadow-none p-4 sm:p-8 md:p-12 print:p-0 min-h-[1056px] relative print:min-h-0 print:block">
-          <div id="rpm-content" className="w-full text-black print:text-black rpm-content-wrapper outline-none hover:ring-2 hover:ring-blue-300 hover:ring-offset-4 rounded-sm transition-shadow p-2 -m-2" contentEditable={!isGeneratingContinue && !isDownloading} suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: processMarkdown(currentHtml) }}
+          <div id="rpm-content" className="w-full text-black print:text-black rpm-content-wrapper outline-none hover:ring-2 hover:ring-blue-300 hover:ring-offset-4 rounded-sm transition-shadow p-2 -m-2" contentEditable={!isGeneratingContinue && !isDownloading && !isStreaming} suppressContentEditableWarning={true}
+            dangerouslySetInnerHTML={{ __html: processMarkdown(isStreaming ? streamHtml : currentHtml) }}
             onBlur={(e) => {
-               if (onSaveEdit) onSaveEdit(e.currentTarget.innerHTML);
+               if (onSaveEdit && !isStreaming) onSaveEdit(e.currentTarget.innerHTML);
                setCurrentHtml(e.currentTarget.innerHTML);
             }}
           />
+          
+          {isStreaming && (
+            <div className="flex items-center gap-2 mt-2 text-indigo-600 text-xs">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+              AI sedang merevisi dokumen...
+            </div>
+          )}
           
           {/* Print Footer */}
           <div className="hidden print:flex fixed bottom-0 left-0 right-0 w-full justify-between items-end text-[9px] text-gray-500 bg-white pt-2 border-t border-gray-200 z-50">
@@ -214,6 +236,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
              setCurrentHtml(newHtml);
              if (onSaveEdit) onSaveEdit(newHtml);
           }}
+          onStreamUpdate={handleStreamUpdate}
         />
 
         <ComplianceCheckerModal

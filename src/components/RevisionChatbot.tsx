@@ -17,6 +17,7 @@ interface ChatMessage {
 interface RevisionChatbotProps {
   currentHtml: string;
   onApplyRevision: (newHtml: string) => void;
+  onStreamUpdate?: (html: string, isDone: boolean) => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
@@ -37,7 +38,7 @@ const smartSuggestions = [
   { icon: '📋', text: 'Buat kegiatan inti lebih detail' },
 ];
 
-export function RevisionChatbot({ currentHtml, onApplyRevision, isOpen, setIsOpen }: RevisionChatbotProps) {
+export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, isOpen, setIsOpen }: RevisionChatbotProps) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -136,14 +137,19 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, isOpen, setIsOpe
         if (done) break;
         resultText += decoder.decode(value, { stream: true });
         setStreamBuffer(resultText);
+        // Stream to main preview
+        const cleanPreview = resultText.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
+        onStreamUpdate?.(cleanPreview, false);
       }
 
       const cleanHtml = resultText.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
+      // Final update to preview
+      onStreamUpdate?.(cleanHtml, true);
 
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: 'ai',
-        content: 'Revisi selesai! Klik "Terapkan" untuk menyimpan.',
+        content: '✅ Revisi selesai! Perubahan sudah terlihat di layar pratinjau. Klik "Terapkan" untuk menyimpan.',
         timestamp: Date.now(),
         revisedHtml: cleanHtml,
         applied: false,
@@ -391,24 +397,11 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, isOpen, setIsOpe
             </div>
           ))}
 
-          {/* Streaming buffer */}
-          {streamBuffer && (
+          {/* Loading dots (stream shows in main preview) */}
+          {isLoading && (
             <div className="flex gap-2.5">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm">
                 <Bot className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div className="bg-white border border-indigo-100 rounded-2xl rounded-tl-sm shadow-sm p-4 max-w-[88%]">
-                <div className="text-sm text-slate-700 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: streamBuffer }} />
-                <span className="inline-block w-2 h-4 bg-indigo-500 animate-pulse ml-0.5" />
-              </div>
-            </div>
-          )}
-
-          {/* Loading dots */}
-          {isLoading && !streamBuffer && (
-            <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm">
-                <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
               </div>
               <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-sm shadow-sm p-4 flex items-center gap-3">
                 <div className="flex gap-1">
@@ -416,7 +409,7 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, isOpen, setIsOpe
                   <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
                   <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                 </div>
-                <span className="text-sm text-slate-500">Memproses...</span>
+                <span className="text-sm text-slate-500">Merevisi dokumen...</span>
               </div>
             </div>
           )}
