@@ -537,14 +537,14 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
           >
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Riwayat</span>
           </button>
           <button 
             onClick={() => setIsTemplateLibraryOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-purple-600 bg-white border border-purple-200 hover:border-purple-300 hover:bg-purple-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-purple-600 bg-white border border-purple-200 hover:border-purple-300 hover:bg-purple-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
             title="Template Library (Ctrl+T)"
           >
             <BookTemplate className="w-4 h-4" />
@@ -553,7 +553,7 @@ export default function App() {
           {result && (
             <button 
               onClick={() => setIsVersionHistoryOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-white border border-blue-200 hover:border-blue-300 hover:bg-blue-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+              className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-white border border-blue-200 hover:border-blue-300 hover:bg-blue-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
               title="Version History"
             >
               <GitBranch className="w-4 h-4" />
@@ -569,7 +569,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
             title="Backup & Restore (Ctrl+B)"
           >
             <HardDrive className="w-4 h-4" />
@@ -577,14 +577,15 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsAnalyticsDashboardOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
             title="Analytics Dashboard (Ctrl+D)"
           >
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Analytics</span>
           </button>
-          <button onClick={handleReset} className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-slate-900/20">
-            Reset Layar
+          <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 shadow-md hover:shadow-lg transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span className="hidden sm:inline">Reset</span>
           </button>
         </div>
       </header>
