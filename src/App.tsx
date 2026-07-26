@@ -20,6 +20,7 @@ export default function App() {
   const [isGeneratingContinue, setIsGeneratingContinue] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
@@ -29,6 +30,12 @@ export default function App() {
   const [isWaitingForFirstChunk, setIsWaitingForFirstChunk] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentTrackingId, setCurrentTrackingId] = useState<string | null>(null);
+  const [historySearchQuery, setHistorySearchQuery] = useState('');
+
+  const filteredHistory = history.filter(item =>
+    item.title.toLowerCase().includes(historySearchQuery.toLowerCase()) ||
+    item.formData.subject.toLowerCase().includes(historySearchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('rpmHistory');
@@ -322,6 +329,7 @@ export default function App() {
     setFormData(item.formData);
     setCurrentHistoryId(item.id);
     setIsHistoryOpen(false);
+    setSelectedHistoryItem(null);
   };
 
   const deleteHistoryItem = (id: string, e: React.MouseEvent) => {
@@ -353,55 +361,129 @@ export default function App() {
       {/* History Modal */}
       {isHistoryOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm print:hidden">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center gap-2">
-                <History className="w-5 h-5 text-slate-700" />
-                <h2 className="text-lg font-bold text-slate-800">Riwayat RPM</h2>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <History className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">Riwayat RPM</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">{history.length} dokumen tersimpan</p>
+                </div>
               </div>
               <button 
-                onClick={() => setIsHistoryOpen(false)}
-                className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-500"
+                onClick={() => { setIsHistoryOpen(false); setSelectedHistoryItem(null); }}
+                className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              {history.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 flex flex-col items-center">
-                  <Search className="w-12 h-12 mb-3 opacity-20" />
-                  <p>Belum ada riwayat RPM.</p>
-                  <p className="text-sm mt-1">Generate RPM pertama Anda untuk menyimpannya.</p>
+            <div className="flex-1 flex overflow-hidden">
+              {/* Left: List */}
+              <div className="w-72 sm:w-80 border-r border-slate-200 flex flex-col overflow-hidden bg-slate-50/30">
+                <div className="p-3 border-b border-slate-200 bg-white">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari..."
+                      value={historySearchQuery}
+                      onChange={(e) => setHistorySearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {history.map((item) => (
-                    <div 
-                      key={item.id} 
-                      onClick={() => loadHistoryItem(item)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md flex justify-between items-start ${currentHistoryId === item.id ? 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-400' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
-                    >
-                      <div>
-                        <h3 className="font-semibold text-slate-800 text-sm mb-1">{item.title}</h3>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <Clock className="w-3 h-3" />
-                          {new Date(item.date).toLocaleString('id-ID', {
-                             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                          })}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
+                  {filteredHistory.length === 0 ? (
+                    <div className="text-center py-10 text-slate-400">
+                      <Search className="w-10 h-10 mb-2 opacity-20 mx-auto" />
+                      <p className="text-sm">Belum ada riwayat</p>
+                    </div>
+                  ) : (
+                    filteredHistory.map((item) => (
+                      <div 
+                        key={item.id} 
+                        onClick={() => setSelectedHistoryItem(item)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
+                          selectedHistoryItem?.id === item.id 
+                            ? 'border-blue-400 bg-blue-50 ring-1 ring-blue-400' 
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-slate-800 text-sm truncate">{item.title}</h3>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              {new Date(item.date).toLocaleDateString('id-ID', {
+                                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                              })}
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+                                {item.formData.subject}
+                              </span>
+                              <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded">
+                                {item.formData.phase}
+                              </span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={(e) => deleteHistoryItem(item.id, e)}
+                            className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-                      <button 
-                        onClick={(e) => deleteHistoryItem(item.id, e)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                        title="Hapus riwayat"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Right: Preview */}
+              <div className="flex-1 flex flex-col overflow-hidden bg-white">
+                {selectedHistoryItem ? (
+                  <>
+                    <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
+                      <div>
+                        <h3 className="font-semibold text-slate-800 text-sm">{selectedHistoryItem.title}</h3>
+                        <p className="text-xs text-slate-500">
+                          {new Date(selectedHistoryItem.date).toLocaleString('id-ID', {
+                            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            loadHistoryItem(selectedHistoryItem);
+                          }}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Buka RPM
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
+                      <div 
+                        className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm text-sm prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: selectedHistoryItem.markdown }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-slate-400">
+                    <div className="text-center">
+                      <History className="w-12 h-12 mb-3 opacity-20 mx-auto" />
+                      <p className="text-sm">Pilih dokumen untuk melihat preview</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
