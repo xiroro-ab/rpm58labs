@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, GitBranch, HardDrive, BarChart3, Smartphone } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
-import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { PWAPrompt } from './components/PWAPrompt';
-import { versionControl } from './lib/versionControl';
 import { analyticsManager } from './lib/analytics';
 
 export default function App() {
@@ -24,7 +22,6 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
@@ -171,9 +168,6 @@ export default function App() {
         markdown: finalResultText
       };
       
-      // Save initial version
-      versionControl.saveVersion(newItem.id, finalResultText, 'Initial version');
-      
       setHistory(prev => {
         const next = [newItem, ...prev].slice(0, 50); // Keep max 50 items
         localStorage.setItem('rpmHistory', JSON.stringify(next));
@@ -303,8 +297,6 @@ export default function App() {
   const handleSaveEdit = (editedHtml: string) => {
     setResult(editedHtml);
     if (currentHistoryId) {
-      versionControl.saveVersion(currentHistoryId, editedHtml);
-      
       setHistory(prev => {
         const next = [...prev];
         const idx = next.findIndex(item => item.id === currentHistoryId);
@@ -319,14 +311,9 @@ export default function App() {
 
   const handleAutoSave = (content: string) => {
     if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-    
     const timeout = setTimeout(() => {
-      if (currentHistoryId) {
-        versionControl.saveVersion(currentHistoryId, content);
-        console.log('Auto-saved at', new Date().toLocaleTimeString());
-      }
-    }, 3000); // Auto-save after 3 seconds of inactivity
-    
+      console.log('Auto-saved at', new Date().toLocaleTimeString());
+    }, 3000);
     setAutoSaveTimeout(timeout);
   };
 
@@ -356,18 +343,6 @@ export default function App() {
   const handleReset = () => {
     setResult(null);
     setCurrentHistoryId(null);
-  };
-
-  const handleRestoreVersion = (content: string) => {
-    setResult(content);
-    if (currentHistoryId) {
-      // Save current as new version before restoring
-      if (result) {
-        versionControl.saveVersion(currentHistoryId, result, 'Before restore');
-      }
-      versionControl.saveVersion(currentHistoryId, content, 'Restored version');
-      handleSaveEdit(content);
-    }
   };
 
   return (
@@ -528,16 +503,6 @@ export default function App() {
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Riwayat</span>
           </button>
-          {result && (
-            <button 
-              onClick={() => setIsVersionHistoryOpen(true)}
-              className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-white border border-blue-200 hover:border-blue-300 hover:bg-blue-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
-              title="Version History"
-            >
-              <GitBranch className="w-4 h-4" />
-              <span className="hidden sm:inline">Versi</span>
-            </button>
-          )}
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
             className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
@@ -569,15 +534,6 @@ export default function App() {
       </header>
 
       <main className="flex-1 flex overflow-hidden print:overflow-visible print:block relative">
-        {/* Version History Modal */}
-        <VersionHistoryModal
-          isOpen={isVersionHistoryOpen}
-          onClose={() => setIsVersionHistoryOpen(false)}
-          historyId={currentHistoryId}
-          currentContent={result || ''}
-          onRestore={handleRestoreVersion}
-        />
-
         {/* Cloud Sync Modal */}
         <BackupRestoreModal
           isOpen={isBackupRestoreOpen}

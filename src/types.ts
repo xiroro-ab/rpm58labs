@@ -28,12 +28,4 @@ export interface HistoryItem {
   date: string;
   formData: RPMFormData;
   markdown: string;
-  versions?: VersionHistory[];
-}
-
-export interface VersionHistory {
-  id: string;
-  timestamp: string;
-  content: string;
-  label?: string;
 }

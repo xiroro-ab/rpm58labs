@@ -101,7 +101,7 @@ export class ComplianceChecker {
     const desainItems: ComplianceItem[] = [
       { name: 'Capaian Pembelajaran (CP)', present: content.includes('capaian pembelajaran'), weight: 15, suggestion: 'Rumuskan Capaian Pembelajaran yang sesuai fase' },
       { name: 'Tujuan Pembelajaran (TP)', present: content.includes('tujuan pembelajaran'), weight: 15, suggestion: 'Tuliskan Tujuan Pembelajaran yang spesifik' },
-      { name: 'Profil Pelajar Pancasila', present: content.includes('profil pelajar') || content.includes('pancasila'), weight: 10, suggestion: 'Sebutkan dimensi Profil Pelajar Pancasila yang relevan' },
+      { name: 'Profil Pelajar Pancasila', present: content.includes('profil pelajar') || content.includes('pancasila') || content.includes('profil lulusan') || content.includes('gotong royong') || content.includes('kreatif') || content.includes('bernalar kritis') || content.includes('mandiri') || content.includes('berkebinekaan') || content.includes('beriman'), weight: 10, suggestion: 'Sebutkan dimensi Profil Pelajar Pancasila yang relevan (beriman, gotong royong, kreatif, bernalar kritis, mandiri, berkebinekaan global)' },
       { name: 'Model Pembelajaran', present: content.includes('model pembelajaran') || content.includes('pbl') || content.includes('model'), weight: 10, suggestion: 'Tentukan model pembelajaran yang digunakan (PBL, PjBL, dll)' },
       { name: 'Strategi & Metode', present: content.includes('strategi') || content.includes('metode'), weight: 5 },
     ];

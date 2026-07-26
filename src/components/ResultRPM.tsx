@@ -230,13 +230,28 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           isOpen={isAssessmentGeneratorOpen}
           onClose={() => setIsAssessmentGeneratorOpen(false)}
           formData={formData}
+          currentHtml={currentHtml}
           onInsertToDocument={(html) => {
             const contentDiv = document.getElementById('rpm-content');
             if (contentDiv) {
-              // Insert at the end of Lampiran 2 section or at the end of document
-              const newContent = currentHtml + '\n\n' + html;
-              setCurrentHtml(newContent);
-              if (onSaveEdit) onSaveEdit(newContent);
+              // Detect assessment section and replace it
+              let newHtml = currentHtml;
+              const assessmentSectionRegex = /<div[^>]*class="[^"]*assessment-section[^"]*"[^>]*>[\s\S]*?<\/div>/i;
+              
+              if (assessmentSectionRegex.test(newHtml)) {
+                newHtml = newHtml.replace(assessmentSectionRegex, html);
+              } else {
+                // Find Lampiran 2 or Asesmen section to replace
+                const asesmenRegex = /<div[^>]*style="[^"]*background-color:\s*#1a4185[^"]*"[^>]*>[\s\S]*?IV\.\s*ASESMEN[\s\S]*?(?=<div[^>]*style="[^"]*background-color:\s*#1a4185)/i;
+                if (asesmenRegex.test(newHtml)) {
+                  newHtml = newHtml.replace(asesmenRegex, html);
+                } else {
+                  newHtml = currentHtml + '\n\n' + html;
+                }
+              }
+              
+              setCurrentHtml(newHtml);
+              if (onSaveEdit) onSaveEdit(newHtml);
             }
           }}
         />

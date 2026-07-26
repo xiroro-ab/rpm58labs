@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { X, Sparkles, BookOpen, Download, Upload, Filter, Copy } from 'lucide-react';
-import { assessmentGenerator } from '../lib/assessmentGenerator';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Sparkles, BookOpen, Download, Copy } from 'lucide-react';
 import { RPMFormData } from '../types';
 import toast from 'react-hot-toast';
 
@@ -8,87 +7,114 @@ interface AssessmentGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   formData: RPMFormData | null;
+  currentHtml: string;
   onInsertToDocument: (html: string) => void;
 }
 
-export function AssessmentGeneratorModal({ isOpen, onClose, formData, onInsertToDocument }: AssessmentGeneratorModalProps) {
+export function AssessmentGeneratorModal({ isOpen, onClose, formData, currentHtml, onInsertToDocument }: AssessmentGeneratorModalProps) {
   const [assessmentType, setAssessmentType] = useState<'diagnostik' | 'formatif' | 'sumatif'>('sumatif');
-  const [questionCount, setQuestionCount] = useState(10);
-  const [bloomLevels, setBloomLevels] = useState<string[]>(['C1', 'C2', 'C3', 'C4']);
-  const [customTopic, setCustomTopic] = useState('');
+  const [selectedMeeting, setSelectedMeeting] = useState<string>('semua');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedHtml, setGeneratedHtml] = useState('');
 
-  const bloomOptions = [
-    { value: 'C1', label: 'C1 - Mengingat', color: 'bg-green-100 text-green-700' },
-    { value: 'C2', label: 'C2 - Memahami', color: 'bg-blue-100 text-blue-700' },
-    { value: 'C3', label: 'C3 - Menerapkan', color: 'bg-yellow-100 text-yellow-700' },
-    { value: 'C4', label: 'C4 - Menganalisis', color: 'bg-orange-100 text-orange-700' },
-    { value: 'C5', label: 'C5 - Mengevaluasi', color: 'bg-red-100 text-red-700' },
-    { value: 'C6', label: 'C6 - Mencipta', color: 'bg-purple-100 text-purple-700' },
-  ];
+  const meetingCount = useMemo(() => {
+    if (!currentHtml) return 1;
+    const matches = currentHtml.match(/PERTEMUAN \d+/gi);
+    return Math.max(1, matches?.length || 1);
+  }, [currentHtml]);
 
-  const toggleBloomLevel = (level: string) => {
-    setBloomLevels(prev => 
-      prev.includes(level) 
-        ? prev.filter(l => l !== level)
-        : [...prev, level]
-    );
-  };
+  const meetingOptions = useMemo(() => {
+    const options = [{ value: 'semua', label: `Semua Pertemuan (${meetingCount})` }];
+    for (let i = 1; i <= meetingCount; i++) {
+      options.push({ value: `pertemuan-${i}`, label: `Pertemuan ${i}` });
+    }
+    return options;
+  }, [meetingCount]);
+
+  const existingQuestions = useMemo(() => {
+    if (!currentHtml) return { diagnostik: 0, formatif: 0, sumatif: 0 };
+    const count = (type: string) => {
+      const regex = new RegExp(type, 'gi');
+      return (currentHtml.match(regex) || []).length;
+    };
+    return {
+      diagnostik: count('diagnostik'),
+      formatif: count('formatif'),
+      sumatif: count('sumatif')
+    };
+  }, [currentHtml]);
 
   const handleGenerate = async () => {
-    if (!formData) {
-      toast.error('Data form tidak tersedia');
-      return;
-    }
-
-    if (bloomLevels.length === 0) {
-      toast.error('Pilih minimal 1 level Bloom\'s Taxonomy');
+    if (!formData || !currentHtml) {
+      toast.error('Tidak ada dokumen RPM untuk dijadikan referensi');
       return;
     }
 
     setIsGenerating(true);
-    try {
-      const prompt = assessmentGenerator.generateAssessmentPrompt(
-        formData.subject,
-        customTopic || formData.topic,
-        formData.phase,
-        assessmentType,
-        questionCount,
-        bloomLevels
-      );
+    setGeneratedHtml('');
 
-      const response = await fetch('/api/generate', {
+    try {
+      const meetingTarget = selectedMeeting === 'semua'
+        ? `${meetingCount} pertemuan`
+        : selectedMeeting.replace('pertemuan-', 'Pertemuan ');
+
+      const prompt = `Anda adalah asisten AI spesialis assessment pendidikan.
+
+TUGAS: Buatkan soal ASESMEN ${assessmentType.toUpperCase()} untuk RPM berikut.
+
+KONTEKS DOKUMEN RPM:
+${currentHtml}
+
+INSTRUKSI:
+1. FOKUS pada ${meetingTarget}
+2. Soal harus KONTEKSTUAL dengan materi di RPM di atas
+3. KELUARKAN HANYA bagian assessment dalam format HTML
+4. JANGAN ubah struktur RPM lainnya
+5. JANGAN gunakan markdown code block
+
+${assessmentType === 'diagnostik' ? `PENTING UNTUK ASESMEN DIAGNOSTIK:
+- Ambil pertanyaan pemantik dari bagian "Kegiatan Awal" di setiap pertemuan
+- Kembangkan menjadi 5-10 soal diagnostik
+- Soal harus sinkron dengan pertanyaan pemantik di RPM` : ''}
+
+${assessmentType === 'formatif' ? `PENTING UNTUK ASESMEN FORMATIF:
+- Buat soal yang mengukur proses pembelajaran di bagian "Kegiatan Inti"
+- 5-10 soal per pertemuan
+- Fokus pada pemahaman konsep dan keterampilan` : ''}
+
+${assessmentType === 'sumatif' ? `PENTING UNTUK ASESMEN SUMATIF:
+- 10 soal per pertemuan (total ${meetingCount * 10} soal untuk ${meetingCount} pertemuan)
+- Soal pilihan ganda dengan opsi A, B, C, D vertikal
+- Sertakan KUNCI JAWABAN di akhir dalam tabel
+- Gunakan tag <ol> untuk penomoran soal` : ''}
+
+FORMAT OUTPUT HANYA:
+<div class="assessment-section">
+  [Konten assessment HTML disini]
+</div>`;
+
+      const response = await fetch('/api/revise', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          data: {
-            ...formData,
-            topic: customTopic || formData.topic
-          },
-          customApiKey: localStorage.getItem('customApiKey') || '',
-          aiProvider: localStorage.getItem('aiProvider') || 'gemini',
-          assessmentPrompt: prompt
+          html: currentHtml,
+          instruction: prompt
         })
       });
 
       if (!response.ok) {
-        throw new Error('Gagal generate assessment');
+        const err = await response.json();
+        throw new Error(err.error || 'Gagal generate assessment');
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Response body is null');
-      
-      const decoder = new TextDecoder();
-      let resultText = '';
+      const data = await response.json();
+      const result = data.revisedHtml || '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        resultText += decoder.decode(value, { stream: true });
-        setGeneratedHtml(resultText);
-      }
+      // Extract only the assessment section
+      const assessmentMatch = result.match(/<div class="assessment-section">[\s\S]*?<\/div>/i);
+      const finalHtml = assessmentMatch ? assessmentMatch[0] : result;
 
+      setGeneratedHtml(finalHtml);
       toast.success('Assessment berhasil di-generate!');
     } catch (error: any) {
       toast.error(error.message || 'Gagal generate assessment');
@@ -98,11 +124,10 @@ export function AssessmentGeneratorModal({ isOpen, onClose, formData, onInsertTo
   };
 
   const handleInsert = () => {
-    if (generatedHtml) {
-      onInsertToDocument(generatedHtml);
-      toast.success('Assessment berhasil disisipkan ke dokumen!');
-      onClose();
-    }
+    if (!generatedHtml) return;
+    onInsertToDocument(generatedHtml);
+    toast.success('Assessment berhasil disisipkan ke dokumen!');
+    onClose();
   };
 
   const handleCopy = () => {
@@ -110,168 +135,112 @@ export function AssessmentGeneratorModal({ isOpen, onClose, formData, onInsertTo
     toast.success('HTML berhasil disalin!');
   };
 
-  const handleExport = () => {
-    const blob = new Blob([generatedHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `assessment_${assessmentType}_${Date.now()}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Assessment berhasil diekspor!');
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm print:hidden">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <BookOpen className="w-6 h-6 text-emerald-600" />
+            <div className="p-2 bg-white rounded-lg shadow-sm shrink-0">
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">Assessment Generator</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Generate soal asesmen dengan AI</p>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-xl font-bold text-slate-800 truncate">Generate Soal</h2>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                {meetingCount} pertemuan | {existingQuestions.sumatif} soal sumatif
+              </p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500 shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-hidden flex">
-          {/* Left Panel - Settings */}
-          <div className="w-1/3 border-r border-slate-200 overflow-y-auto custom-scrollbar bg-slate-50/30 p-5 space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Tipe Asesmen</label>
-              <select
-                value={assessmentType}
-                onChange={(e) => setAssessmentType(e.target.value as any)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
-              >
-                <option value="diagnostik">Asesmen Diagnostik</option>
-                <option value="formatif">Asesmen Formatif</option>
-                <option value="sumatif">Asesmen Sumatif</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Jumlah Soal</label>
-              <input
-                type="number"
-                min="5"
-                max="50"
-                value={questionCount}
-                onChange={(e) => setQuestionCount(parseInt(e.target.value) || 10)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Topik Khusus (Opsional)</label>
-              <input
-                type="text"
-                placeholder={formData?.topic || 'Gunakan topik dari form'}
-                value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Bloom's Taxonomy Level
-              </label>
-              <div className="space-y-2">
-                {bloomOptions.map(option => (
-                  <button
-                    key={option.value}
-                    onClick={() => toggleBloomLevel(option.value)}
-                    className={`w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all text-left ${
-                      bloomLevels.includes(option.value)
-                        ? `${option.color} ring-2 ring-offset-1`
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+            {/* Left Panel */}
+            <div className="w-full lg:w-72 space-y-4 shrink-0">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Tipe Asesmen</label>
+                <select
+                  value={assessmentType}
+                  onChange={(e) => { setAssessmentType(e.target.value as any); setGeneratedHtml(''); }}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                >
+                  <option value="diagnostik">Asesmen Diagnostik</option>
+                  <option value="formatif">Asesmen Formatif</option>
+                  <option value="sumatif">Asesmen Sumatif</option>
+                </select>
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Target Pertemuan</label>
+                <select
+                  value={selectedMeeting}
+                  onChange={(e) => { setSelectedMeeting(e.target.value); setGeneratedHtml(''); }}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                >
+                  {meetingOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-600 space-y-1">
+                <p className="font-semibold text-slate-700 mb-1">Info Dokumen:</p>
+                <p>• {meetingCount} pertemuan terdeteksi</p>
+                <p>• Soal diagnostik: {existingQuestions.diagnostik}x ditemukan</p>
+                <p>• Soal formatif: {existingQuestions.formatif}x ditemukan</p>
+                <p>• Soal sumatif: {existingQuestions.sumatif}x ditemukan</p>
+              </div>
+
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? (
+                  <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Generating...</>
+                ) : (
+                  <><Sparkles className="w-5 h-5" /> Generate Soal</>
+                )}
+              </button>
             </div>
 
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || !formData}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  Generate Assessment
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Right Panel - Preview */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between">
-              <h3 className="font-semibold text-slate-800 text-sm">Preview Hasil</h3>
-              {generatedHtml && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-2 px-3 py-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 text-xs font-semibold rounded-md transition-colors"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    Copy HTML
-                  </button>
-                  <button
-                    onClick={handleExport}
-                    className="flex items-center gap-2 px-3 py-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 text-xs font-semibold rounded-md transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Export
-                  </button>
-                  <button
-                    onClick={handleInsert}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-md hover:bg-emerald-700 transition-colors"
-                  >
-                    Insert ke Dokumen
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
-              {!generatedHtml ? (
-                <div className="flex items-center justify-center h-full text-slate-400">
-                  <div className="text-center">
-                    <Sparkles className="w-16 h-16 mb-4 opacity-20 mx-auto" />
-                    <p className="text-sm">Klik tombol Generate untuk membuat soal asesmen</p>
-                    <p className="text-xs mt-2">AI akan membuat soal sesuai dengan kriteria yang dipilih</p>
+            {/* Right Panel */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-800">Preview</h3>
+                {generatedHtml && (
+                  <div className="flex gap-2">
+                    <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 text-xs font-semibold rounded-md transition-colors">
+                      <Copy className="w-3.5 h-3.5" /> Copy
+                    </button>
+                    <button onClick={handleInsert} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-md hover:bg-emerald-700 transition-colors">
+                      <Download className="w-3.5 h-3.5" /> Insert ke Dokumen
+                    </button>
                   </div>
-                </div>
-              ) : (
-                <div 
-                  className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: generatedHtml }}
-                />
-              )}
+                )}
+              </div>
+              <div className="border border-slate-200 rounded-lg bg-white min-h-[300px] sm:min-h-[400px]">
+                {!generatedHtml ? (
+                  <div className="flex items-center justify-center h-[300px] sm:h-[400px] text-slate-400">
+                    <div className="text-center px-4">
+                      <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 mb-3 opacity-20 mx-auto" />
+                      <p className="text-sm">Pilih tipe & target, lalu klik Generate</p>
+                      <p className="text-xs mt-1">Soal akan dibuat berdasarkan RPM Anda</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 sm:p-5 overflow-y-auto max-h-[400px] sm:max-h-[500px]">
+                    <div
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: generatedHtml }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
