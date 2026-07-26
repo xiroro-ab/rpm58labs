@@ -138,6 +138,10 @@
   padding-left: 20px;
 }
 
+.rpm-content-wrapper {
+  font-family: 'Space Grotesk', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif !important;
+}
+
 .rpm-content-wrapper ul[style*="list-style-type: none"] {
   list-style-type: none;
   padding-left: 0;
