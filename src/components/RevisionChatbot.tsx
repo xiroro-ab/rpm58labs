@@ -110,7 +110,18 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
     { id: 'lampiran', start: 'Lampiran', end: '</div>' },
   ];
 
+  // Keywords that affect MULTIPLE sections → must send full document
+  const crossCuttingPatterns = [
+    /model pembelajaran/i, /metode pembelajaran/i, /strategi pembelajaran/i,
+    /ganti (model|metode|strategi)/i, /ubah (model|metode|strategi)/i,
+    /jadikan (pbl|pjbl|discovery|inqury|direct)/i, /terapkan (pbl|pjbl|discovery)/i,
+    /sinkron/i, /sesuaikan/i, /semua bagian/i, /seluruh/i,
+  ];
+
   const detectSection = (instruction: string): string => {
+    // Check for cross-cutting keywords first → must send full document
+    if (crossCuttingPatterns.some(p => p.test(instruction))) return 'full';
+
     const matched = Object.entries(sectionKeywords).find(([, keywords]) =>
       keywords.some(k => k.test(instruction))
     );
