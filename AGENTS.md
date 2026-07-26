@@ -26,4 +26,9 @@ Jika di masa depan terjadi error yang tidak bisa diselesaikan atau pengguna memi
   - Di `src/index.css`, kelas `.rpm-content-wrapper` mengatur agar `<ol>` memakai format desimal dan `<ul>` memakai format disk/bulat. Aturan ini tidak boleh dihapus.
 - **KOP Surat**: Alamat sekolah pada kop surat menggunakan font berukuran `8pt`. Komposisi logo kiri, teks tengah, dan logo kanan menggunakan flexbox dengan `border-bottom: 3px double #000;`.
 
+## ⚠️ ATURAN WAJIB: JANGAN UBAH MODEL AI
+Model AI yang digunakan adalah **`gemini-3.6-flash`**. INI BENAR dan SUDAH RILIS.
+JANGAN sekali-kali mengubah nama model ini kecuali user secara eksplisit memerintahkan.
+Ini berlaku di semua file: `server.ts`, `api/generate.ts`, `api/revise.ts`, `api/revise-chat.ts`.
+
 
