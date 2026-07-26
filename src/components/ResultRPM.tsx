@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, BookOpen, Shield } from 'lucide-react';
+import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
-import { AssessmentGeneratorModal } from './AssessmentGeneratorModal';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
 
 interface ResultRPMProps {
@@ -20,7 +19,6 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [isDownloading, setIsDownloading] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState(markdown);
-  const [isAssessmentGeneratorOpen, setIsAssessmentGeneratorOpen] = useState(false);
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
 
   useEffect(() => {
@@ -144,14 +142,6 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           </button>
           
           <button
-            onClick={() => setIsAssessmentGeneratorOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-2 text-emerald-700 bg-white hover:bg-emerald-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-emerald-200 shadow-sm hover:shadow"
-          >
-            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Soal</span>
-          </button>
-          
-          <button
             onClick={() => setIsComplianceCheckerOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-2 text-amber-700 bg-white hover:bg-amber-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-sm hover:shadow"
           >
@@ -223,36 +213,6 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           onApplyRevision={(newHtml) => {
              setCurrentHtml(newHtml);
              if (onSaveEdit) onSaveEdit(newHtml);
-          }}
-        />
-
-        <AssessmentGeneratorModal
-          isOpen={isAssessmentGeneratorOpen}
-          onClose={() => setIsAssessmentGeneratorOpen(false)}
-          formData={formData}
-          currentHtml={currentHtml}
-          onInsertToDocument={(html) => {
-            const contentDiv = document.getElementById('rpm-content');
-            if (contentDiv) {
-              // Detect assessment section and replace it
-              let newHtml = currentHtml;
-              const assessmentSectionRegex = /<div[^>]*class="[^"]*assessment-section[^"]*"[^>]*>[\s\S]*?<\/div>/i;
-              
-              if (assessmentSectionRegex.test(newHtml)) {
-                newHtml = newHtml.replace(assessmentSectionRegex, html);
-              } else {
-                // Find Lampiran 2 or Asesmen section to replace
-                const asesmenRegex = /<div[^>]*style="[^"]*background-color:\s*#1a4185[^"]*"[^>]*>[\s\S]*?IV\.\s*ASESMEN[\s\S]*?(?=<div[^>]*style="[^"]*background-color:\s*#1a4185)/i;
-                if (asesmenRegex.test(newHtml)) {
-                  newHtml = newHtml.replace(asesmenRegex, html);
-                } else {
-                  newHtml = currentHtml + '\n\n' + html;
-                }
-              }
-              
-              setCurrentHtml(newHtml);
-              if (onSaveEdit) onSaveEdit(newHtml);
-            }
           }}
         />
 
