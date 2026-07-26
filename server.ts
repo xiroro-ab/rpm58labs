@@ -493,6 +493,66 @@ ${html}
     }
   });
 
+  app.post("/api/revise-chat", async (req, res) => {
+    try {
+      const { html, instruction, chatHistory } = req.body;
+      if (!html || !instruction) {
+        return res.status(400).json({ error: 'HTML and instruction are required' });
+      }
+
+      const { GoogleGenAI } = await import('@google/genai');
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+      let historyContext = '';
+      if (chatHistory?.length) {
+        historyContext = 'RIWAYAT PERCAKAPAN:\n' +
+          chatHistory.map((m: any) => `${m.role === 'user' ? 'USER' : 'AI'}: ${m.content}`).join('\n') + '\n\n';
+      }
+
+      const prompt = `Anda asisten AI yang membantu guru merevisi RPM.
+
+KEMAMPUAN:
+- Mengubah teks, soal, atau bagian tertentu
+- Mengganti jawaban, menambah/menghapus soal
+- "ubah soal nomor 3", "ganti jawaban A di soal 5", dll
+- Perbaiki tata bahasa
+
+ATURAN:
+1. Output HANYA kode HTML lengkap yang sudah direvisi
+2. JANGAN gunakan markdown code block
+3. Jangan ubah struktur di luar yang diminta
+4. Pertahankan inline style dan class yang ada
+
+${historyContext}INSTRUKSI PENGGUNA:
+${instruction}
+
+DOKUMEN RPM:
+${html}`;
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+
+      const responseStream = await ai.models.generateContentStream({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+      });
+
+      for await (const chunk of responseStream) {
+        if (chunk.text) res.write(chunk.text);
+      }
+      res.end();
+    } catch (error: any) {
+      console.error('Revise Chat Error:', error);
+      if (!res.headersSent) res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
+      else res.end();
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
