@@ -73,25 +73,14 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
 
       if (!response.ok) {
         let errMsg = 'Gagal';
-        try {
-          const text = await response.text();
-          try { const j = JSON.parse(text); errMsg = j.error || text; } catch { errMsg = text || `HTTP ${response.status}`; }
-        } catch {}
+        try { const text = await response.text(); try { const j = JSON.parse(text); errMsg = j.error || text; } catch { errMsg = text || `HTTP ${response.status}`; } } catch {}
         throw new Error(errMsg);
       }
 
       setIsStreaming(true);
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No reader');
-      const decoder = new TextDecoder();
-      let text = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        setResult(text);
-      }
+      const text = await response.text();
+      setResult(text);
+      setIsStreaming(false);
 
       const newItem: AidsHistoryItem = {
         id: Date.now().toString(),

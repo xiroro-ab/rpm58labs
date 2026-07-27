@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
+const IMAGE_STYLE = 'flat design, colorful, educational, simple, cute, cartoon style, clean white background, vector illustration, suitable for classroom display, no text';
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -7,99 +9,106 @@ export default async function handler(req: any, res: any) {
 
   try {
     let body = req.body;
-    if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch (e) {}
-    }
+    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
     const { html, topic } = body;
-    if (!html) {
-      return res.status(400).json({ error: 'HTML RPM diperlukan' });
-    }
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY belum dikonfigurasi' });
-    }
+    if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY belum dikonfigurasi' });
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const prompt = [
-      'Anda membantu guru membuat DIAGRAM VISUAL untuk kegiatan pembelajaran.',
-      'Buat HANYA untuk Kegiatan Awal dan Inti. LEWATI Penutup, ice breaking, doa, absensi.',
+
+    // Step 1: Generate text analysis (keywords, links, visual script)
+    // Use non-streaming since we need the full text before adding images
+    const textPrompt = [
+      'Anda membantu guru menyiapkan referensi visual untuk KEGIATAN AWAL dan INTI saja. LEWATI Penutup.',
       '',
-      'PILIH JENIS DIAGRAM yang PALING SESUAI:',
-      '1. DIAGRAM ALUR — untuk langkah/proses/urutan (contoh: antrian tiket, cara membuat)',
-      '2. DIAGRAM RELASI / MIND MAP — untuk hubungan konsep (contoh: himpunan dan bahan)',
-      '3. DIAGRAM PERBANDINGAN — untuk membandingkan 2 hal (contoh: luring vs daring)',
-      '4. DIAGRAM KLASIFIKASI — untuk mengelompokkan (contoh: jenis pempek)',
-      '5. GARIS WAKTU — untuk urutan waktu (contoh: sejarah, perkembangan)',
-      '6. ILUSTRASI ADEGAN — untuk situasi nyata (contoh: suasana stasiun, pasar)',
-      '7. DIAGRAM VENN — untuk himpunan/irisan (contoh: persamaan perbedaan)',
-      '8. TABEL — untuk data/informasi terstruktur',
-      '',
-      '=== ATURAN PENTING: EKSTRAK KONTEN SPESIFIK ===',
-      'Baca deskripsi aktivitas di RPM dengan SEKSAMA. Ambil kata benda, tempat, objek, dan langkah SPESIFIK yang disebutkan.',
-      'Masukkan konten SPESIFIK tersebut ke dalam SVG diagram. JANGAN gunakan teks generik seperti "Langkah 1" atau "Konsep A".',
-      '',
-      'CONTOH SPESIFIK (bukan generik):',
-      '- Aktivitas: "guru menampilkan proses pengunjung mengantri ke tiket LRT Palembang"',
-      '  Diagram Alur dengan teks: "Datang ke Stasiun LRT" → "Cari Mesin Tiket Otomatis" → "Pilih Tujuan LRT" → "Bayar di Mesin" → "Ambil Tiket" → "Tap Tiket di Gate" → "Masuk Peron"',
-      '',
-      '- Aktivitas: "guru memperlihatkan gambar aneka pempek Palembang dan bahan utamanya"',
-      '  Diagram Klasifikasi dengan teks: "Pempek Palembang" cabang ke "Kapal Selam (isi telur)", "Lenjer (panjang)", "Adaan (bulat)", "Keriting" dan masing-masing dengan bahan utama: "Ikan Gabus", "Tapioka", "Telur", "Bawang Putih"',
-      '',
-      '- Aktivitas: "hubungan himpunan pempek dengan himpunan bahan utama"',
-      '  Diagram Relasi dengan teks: himpunan A = {Kapal Selam, Lenjer, Adaan} dihubungkan ke himpunan B = {Ikan Gabus, Tapioka, Telur}',
-      '',
-      'TEMPLATE OUTPUT:',
+      'Untuk SETIAP aktivitas, output HTML dengan TEMPLATE berikut:',
       '<div class="aid-item">',
-      '  <div class="aid-header">',
-      '    <span class="aid-label">[Kegiatan Awal / Inti]</span>',
-      '    <span class="aid-meeting">Pertemuan [n]</span>',
-      '  </div>',
-      '  <div class="aid-svg-wrapper">',
-      '    <svg viewBox="0 0 650 350" xmlns="http://www.w3.org/2000/svg">',
-      '      ... SVG dengan konten SPESIFIK dari aktivitas ...',
-      '    </svg>',
-      '  </div>',
+      '  <div class="aid-header"><span class="aid-label">[Kegiatan Awal/Inti]</span><span class="aid-meeting">Pertemuan [n]</span></div>',
+      '  <div class="aid-svg-wrapper"><svg viewBox="0 0 650 300" xmlns="http://www.w3.org/2000/svg">',
+      '    <text x="325" y="25" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a4185">[JUDUL DIAGRAM]</text>',
+      '    ... diagram SVG dengan KONTEN SPESIFIK dari aktivitas (bukan generik!) ...',
+      '  </svg></div>',
       '  <div class="aid-card">',
-      '    <p class="aid-title">[judul aktivitas SPESIFIK]</p>',
-      '    <p class="aid-visual-script">Saran: [cara menggunakan diagram ini]</p>',
-      '    <p class="aid-keywords"><a href="https://www.google.com/search?tbm=isch&q=[keyword]" target="_blank">Cari contoh gambar Google</a></p>',
+      '    <p class="aid-title">[nama aktivitas]</p>',
+      '    <p class="aid-visual-script">Saran: [cara pakai]</p>',
+      '    <p class="aid-keywords"><a href="https://www.google.com/search?tbm=isch&q=[keyword]" target="_blank">Cari gambar Google</a></p>',
       '    <p class="aid-keywords"><a href="https://www.youtube.com/results?search_query=[keyword]" target="_blank">Cari video YouTube</a></p>',
       '  </div>',
       '</div>',
       '',
-      'PANDUAN SVG:',
-      '- viewBox="0 0 650 350", background putih, font-family="Arial"',
-      '- Warna: #1a4185 (judul), #eab308 (aksen), #10b981 (hijau), #ef4444 (merah), #3b82f6 (biru), #f3f4f6 (bg), #1e293b (teks)',
-      '- JUDUL diagram di <text font-size="18" font-weight="bold" fill="#1a4185" x="325" y="30" text-anchor="middle">',
-      '- Gunakan <rect rx="8">, <circle>, <line stroke-dasharray>, <path marker-end> untuk panah',
-      '- TEKS di dalam diagram HARUS spesifik, minimal 3-7 entitas berbeda',
+      'PENTING: EKSTRAK konten SPESIFIK dari RPM. Misal aktivitas "antrian tiket LRT" -> diagram berisi: "Datang Stasiun", "Cari Mesin Tiket", "Pilih Tujuan", "Bayar", "Ambil Tiket", "Tap Gate", "Masuk Peron".',
       '',
-      'PENTING:',
-      '- Output LANGSUNG HTML, tanpa markdown code block, tanpa teks tambahan',
-      '',
+      'Output LANGSUNG HTML tanpa markdown.',
       'TOPIK: ' + topic,
-      '',
-      'RPM:',
-      html,
+      'RPM:', html,
     ].join('\n');
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Transfer-Encoding', 'chunked');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-
-    const responseStream = await ai.models.generateContentStream({
+    const textRes = await ai.models.generateContent({
       model: 'gemini-3.6-flash',
-      contents: prompt,
+      contents: textPrompt,
     });
+    let htmlOutput = textRes.text || '';
 
-    for await (const chunk of responseStream) {
-      if (chunk.text) res.write(chunk.text);
+    // Step 2: Generate images using Gemini REST API directly
+    // Extract activity titles for image prompts
+    const titles: string[] = [];
+    const tRegex = /<p class="aid-title">([^<]+)<\/p>/g;
+    let m;
+    while ((m = tRegex.exec(htmlOutput)) !== null) titles.push(m[1]);
+
+    const imgParts: string[] = [];
+
+    for (let i = 0; i < Math.min(titles.length, 4); i++) {
+      try {
+        const imgPrompt = encodeURIComponent(
+          'Buat ilustrasi edukatif sederhana untuk: "' + titles[i] + '". ' + IMAGE_STYLE
+        );
+
+        const resp = await fetch(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + process.env.GEMINI_API_KEY,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: 'Buat ilustrasi edukatif sederhana untuk kegiatan: "' + titles[i] + '". ' + IMAGE_STYLE }] }],
+              generationConfig: { responseModalities: ['Image', 'Text'] }
+            })
+          }
+        );
+
+        const data = await resp.json() as any;
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        for (const part of parts) {
+          if (part.inlineData?.data) {
+            imgParts.push(
+              '<div class="aid-visual-img"><img src="data:' + part.inlineData.mimeType + ';base64,' + part.inlineData.data + '" alt="' + titles[i] + '" loading="lazy" /></div>'
+            );
+            break;
+          }
+        }
+      } catch (e) {
+        console.error('Image gen failed for', titles[i], e);
+      }
     }
+
+    // Insert images after title paragraphs in reverse order to maintain index
+    if (imgParts.length > 0) {
+      const segments = htmlOutput.split(/(<p class="aid-title">[^<]+<\/p>)/);
+      let imgIdx = 0;
+      for (let i = 1; i < segments.length && imgIdx < imgParts.length; i += 2) {
+        segments[i] += imgParts[imgIdx];
+        imgIdx++;
+      }
+      htmlOutput = segments.join('');
+    }
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.write(htmlOutput);
     res.end();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Teaching Aids Error:', error);
-    if (!res.headersSent) res.status(500).json({ error: 'Gagal membuat alat bantu visual' });
+    if (!res.headersSent) res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
     else res.end();
   }
 }
