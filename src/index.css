@@ -378,3 +378,13 @@
   color: #ef4444;
   font-size: 0.9em;
 }
+.teaching-aids-results .aid-visual-script {
+  background: #f0fdf4;
+  border-left: 3px solid #10b981;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9em;
+  color: #1e293b;
+  margin: 6px 0;
+  line-height: 1.6;
+}
