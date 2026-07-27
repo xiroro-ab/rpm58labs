@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Download, History, Clock, Trash2, AlertTriangle } from 'lucide-react';
+import { X, Download, History, Clock, Trash2 } from 'lucide-react';
 
 interface AidsHistoryItem {
   id: string;
@@ -37,12 +37,12 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
   const [showHistory, setShowHistory] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
 
-  const hasResult = !!displayHtml.trim();
-  const contentRef = useRef<HTMLDivElement>(null);
-
   const displayHtml = selectedHistory
     ? history.find(h => h.id === selectedHistory)?.html || ''
     : result;
+
+  const hasResult = !!displayHtml.trim();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
