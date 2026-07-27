@@ -172,7 +172,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             onClick={() => setIsSlidesOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-2 text-violet-700 bg-white hover:bg-violet-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-violet-200 shadow-card hover:shadow-card-hover"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 sm:w-4 sm:h-4"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline-flex items-center justify-center text-[10px] font-bold bg-violet-100 text-violet-700 rounded">▶</span>
             <span className="hidden sm:inline">Slide</span>
           </button>
           
