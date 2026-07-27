@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Download, Search, Youtube, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Download, Search, Youtube, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface TeachingAidsModalProps {
   isOpen: boolean;
@@ -12,7 +12,6 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +30,14 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
         body: JSON.stringify({ html: rpmHtml, topic }),
       });
 
-      if (!response.ok) throw new Error('Gagal');
+      if (!response.ok) {
+        let errMsg = 'Gagal';
+        try {
+          const text = await response.text();
+          try { const j = JSON.parse(text); errMsg = j.error || text; } catch { errMsg = text || `HTTP ${response.status}`; }
+        } catch {}
+        throw new Error(errMsg);
+      }
 
       setIsStreaming(true);
       const reader = response.body?.getReader();
@@ -45,9 +51,9 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
         text += decoder.decode(value, { stream: true });
         setResult(text);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setResult('<div class="aid-error">Gagal memuat alat bantu visual. Coba lagi.</div>');
+      setResult(`<div class="aid-error">Gagal: ${err.message}</div>`);
     } finally {
       setIsLoading(false);
       setIsStreaming(false);
@@ -58,21 +64,6 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
     return html.replace(/on\w+=["'][^"']*["']/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   };
 
-  const toggleCollapse = (idx: number) => {
-    setCollapsed(prev => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
-      return next;
-    });
-  };
-
-  const extractSvgWrappers = (html: string) => {
-    const divs = html.match(/<div class="aid-item">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/g) || [];
-    if (divs.length === 0) return [html];
-    return divs;
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -81,7 +72,7 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
         <div className="flex items-center justify-between p-5 border-b border-warm-border bg-gradient-to-r from-primary/5 to-primary/10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white rounded-lg shadow-card">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-primary"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800">Alat Bantu Visual</h2>
@@ -95,7 +86,7 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
                 disabled={isLoading}
                 className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-light shadow-button transition-all disabled:opacity-50"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
                 Generate Ulang
               </button>
             )}

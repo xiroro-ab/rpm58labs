@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield, Sparkles } from 'lucide-react';
+import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
@@ -162,7 +162,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             onClick={() => setIsTeachingAidsOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-2 text-emerald-700 bg-white hover:bg-emerald-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-emerald-200 shadow-card hover:shadow-card-hover"
           >
-            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 sm:w-4 sm:h-4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
             <span className="hidden sm:inline">Visual</span>
           </button>
           
