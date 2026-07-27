@@ -388,3 +388,26 @@
   margin: 6px 0;
   line-height: 1.6;
 }
+.teaching-aids-results .aid-keywords {
+  font-size: 0.85em;
+  color: #334155;
+  margin: 2px 0;
+  padding-left: 12px;
+}
+.teaching-aids-results .aid-detail {
+  font-size: 0.85em;
+  color: #64748b;
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+.teaching-aids-results .aid-bing-prompt {
+  background: #f0f4ff;
+  border-left: 3px solid #6366f1;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85em;
+  color: #1e293b;
+  margin: 8px 0 0;
+  line-height: 1.5;
+  word-break: break-word;
+}
