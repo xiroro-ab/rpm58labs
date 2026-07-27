@@ -553,9 +553,7 @@ ${html}`;
     }
   });
 
-  console.log('Registering /api/teaching-aids...');
   app.post("/api/teaching-aids", async (req, res) => {
-    console.log('POST /api/teaching-aids hit!');
     try {
       const { html, topic } = req.body;
       if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
