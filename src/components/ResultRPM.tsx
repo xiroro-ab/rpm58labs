@@ -5,7 +5,7 @@ import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
-import TeachingAidsModal from './TeachingAidsModal';
+import CanvaCodeViewer from './CanvaCodeViewer';
 
 interface ResultRPMProps {
   markdown: string;
@@ -256,7 +256,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           formPhase={formData?.phase || ''}
         />
 
-        <TeachingAidsModal
+        <CanvaCodeViewer
           isOpen={isCanvaOpen}
           onClose={() => setIsCanvaOpen(false)}
           rpmHtml={currentHtml}
