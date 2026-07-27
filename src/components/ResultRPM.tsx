@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield } from 'lucide-react';
+import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
+import TeachingAidsModal from './TeachingAidsModal';
 
 interface ResultRPMProps {
   markdown: string;
@@ -21,6 +22,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [currentHtml, setCurrentHtml] = useState(markdown);
   const [streamHtml, setStreamHtml] = useState('');
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
+  const [isTeachingAidsOpen, setIsTeachingAidsOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
   useEffect(() => {
@@ -157,6 +159,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           </button>
           
           <button
+            onClick={() => setIsTeachingAidsOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-2 text-emerald-700 bg-white hover:bg-emerald-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-emerald-200 shadow-card hover:shadow-card-hover"
+          >
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Visual</span>
+          </button>
+          
+          <button
             onClick={() => setIsComplianceCheckerOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-2 text-amber-700 bg-white hover:bg-amber-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-card hover:shadow-card-hover"
           >
@@ -244,6 +254,13 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           onClose={() => setIsComplianceCheckerOpen(false)}
           htmlContent={currentHtml}
           formPhase={formData?.phase || ''}
+        />
+
+        <TeachingAidsModal
+          isOpen={isTeachingAidsOpen}
+          onClose={() => setIsTeachingAidsOpen(false)}
+          rpmHtml={currentHtml}
+          topic={formData?.topic || ''}
         />
       </div>
     </div>

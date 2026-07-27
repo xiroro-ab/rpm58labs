@@ -260,3 +260,91 @@
 .fase-title { font-weight: bold !important; margin-bottom: 5px !important; color: #1a4185 !important; margin-top: 0 !important; }
 .clean-list { margin: 0 !important; padding-left: 20px !important; }
 .clean-list li { margin-bottom: 6px !important; }
+
+.teaching-aids-results .aid-item {
+  background: white;
+  border: 1px solid #e2ddd6;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+}
+.teaching-aids-results .aid-header {
+  background: linear-gradient(135deg, #f8f7f4, #f0ebe4);
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2ddd6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.teaching-aids-results .aid-label {
+  font-weight: 700;
+  color: #0f3b5e;
+  font-size: 0.85em;
+}
+.teaching-aids-results .aid-meeting {
+  font-size: 0.75em;
+  color: #64748b;
+  background: white;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid #e2ddd6;
+}
+.teaching-aids-results .aid-svg-wrapper {
+  padding: 20px;
+  background: #faf8f5;
+  border-bottom: 1px solid #e2ddd6;
+  display: flex;
+  justify-content: center;
+}
+.teaching-aids-results .aid-svg-wrapper svg {
+  max-width: 100%;
+  height: auto;
+}
+.teaching-aids-results .aid-card {
+  padding: 16px;
+}
+.teaching-aids-results .aid-desc {
+  margin: 0;
+  font-size: 0.9em;
+  color: #1e293b;
+  line-height: 1.5;
+}
+.teaching-aids-results .aid-links {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f8f7f4;
+  border-top: 1px solid #e2ddd6;
+}
+.teaching-aids-results .aid-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.teaching-aids-results .aid-google {
+  background: #dc2626;
+  color: white;
+}
+.teaching-aids-results .aid-google:hover {
+  background: #b91c1c;
+}
+.teaching-aids-results .aid-youtube {
+  background: #1f2937;
+  color: white;
+}
+.teaching-aids-results .aid-youtube:hover {
+  background: #111827;
+}
+.teaching-aids-results .aid-error {
+  padding: 40px;
+  text-align: center;
+  color: #ef4444;
+  font-size: 0.9em;
+}
