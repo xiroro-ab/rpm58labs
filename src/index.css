@@ -2,6 +2,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #0f3b5e;
   --color-primary-light: #1a4d6b;
@@ -15,6 +17,10 @@
   --shadow-page: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
   --shadow-button: 0 2px 8px rgba(15, 59, 94, 0.25);
   --shadow-button-hover: 0 4px 14px rgba(15, 59, 94, 0.35);
+}
+
+html {
+  transition: background-color 0.2s ease;
 }
 
 @layer utilities {

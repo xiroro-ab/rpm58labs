@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone, Moon, Sun } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
@@ -27,6 +27,12 @@ export default function App() {
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('rpm_darkMode') === 'true');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('rpm_darkMode', String(isDarkMode));
+  }, [isDarkMode]);
 
   const [isWaitingForFirstChunk, setIsWaitingForFirstChunk] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -358,7 +364,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen print:h-auto w-full bg-warm font-sans overflow-hidden print:overflow-visible">
+    <div className={`flex flex-col h-screen print:h-auto w-full font-sans overflow-hidden print:overflow-visible ${isDarkMode ? 'dark' : ''} bg-warm dark:bg-gray-950 transition-colors duration-300`}>
       <Toaster position="top-center" />
       {confirmDialog.dialog}
       <LoadingOverlay isVisible={isWaitingForFirstChunk} message="Sedang menyusun RPM..." />
@@ -556,7 +562,7 @@ export default function App() {
       )}
 
       {/* Header */}
-      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-4 lg:px-8 py-4 bg-white/80 backdrop-blur-md border-b border-warm-border/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] flex-wrap gap-4 z-50">
+      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-4 lg:px-8 py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-warm-border/60 dark:border-gray-800 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] flex-wrap gap-4 z-50">
         <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
           <div className="flex shrink-0 items-center justify-center w-10 h-10 md:w-11 md:h-11 overflow-hidden bg-white rounded-xl border border-slate-200/60 shadow-sm">
             <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png" alt="Logo SMP 58" className="object-contain w-full h-full p-1.5 hover:scale-105 transition-transform duration-300" />
@@ -647,11 +653,11 @@ export default function App() {
         )}
 
         {/* Left Sidebar: Input Form */}
-        <section className={`print:hidden bg-white flex flex-col shrink-0 transition-all duration-300 z-50 overflow-hidden
+        <section className={`print:hidden bg-white dark:bg-gray-900 flex flex-col shrink-0 transition-all duration-300 z-50 overflow-hidden
           ${isSidebarOpen 
-            ? 'translate-x-0 w-[85vw] max-w-[400px] md:w-[400px] border-r border-warm-border' 
+            ? 'translate-x-0 w-[85vw] max-w-[400px] md:w-[400px] border-r border-warm-border dark:border-gray-700' 
             : '-translate-x-full w-[85vw] max-w-[400px] md:translate-x-0 md:w-0 border-none'}
-          fixed inset-y-0 left-0 md:static md:h-full shadow-2xl md:shadow-[2px_0_12px_rgba(0,0,0,0.04)]
+          fixed inset-y-0 left-0 md:static md:h-full shadow-2xl md:shadow-[2px_0_12px_rgba(0,0,0,0.04)] dark:md:shadow-[2px_0_12px_rgba(0,0,0,0.3)]
         `}>
           <div className="flex items-center justify-between p-4 border-b border-warm-border bg-gradient-to-r from-warm-light to-white">
             <h2 className="font-bold text-primary-dark">Form RPM</h2>
