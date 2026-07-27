@@ -45,7 +45,14 @@ export default async function handler(req: any, res: any) {
       model: 'gemini-3.6-flash',
       contents: prompt,
     });
-    res.write(response.text || '');
+
+    const output = response.text || '';
+
+    if (!output.trim()) {
+      res.write('<div class="aid-error">Maaf, AI tidak dapat menghasilkan visual untuk RPM ini. Coba generate ulang atau periksa konten RPM.</div>');
+    } else {
+      res.write(output);
+    }
     res.end();
   } catch (error: any) {
     console.error('Teaching Aids Error:', error);
