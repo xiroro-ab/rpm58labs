@@ -21,43 +21,46 @@ export default async function handler(req: any, res: any) {
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const prompt = 'Anda adalah asisten pembuat alat bantu visual PROFESIONAL untuk guru. Analisis RPM berikut dan buat alat bantu visual untuk SETIAP aktivitas pembelajaran.\n\n'
-      + 'Untuk SETIAP aktivitas, buat dalam format HTML berikut:\n\n'
-      + '<div class="aid-item">\n'
-      + '  <div class="aid-header">\n'
-      + '    <span class="aid-label">[Jenis Aktivitas: Kegiatan Awal/Inti/Penutup]</span>\n'
-      + '    <span class="aid-meeting">Pertemuan [N]</span>\n'
-      + '  </div>\n'
-      + '  <div class="aid-svg-wrapper">\n'
-      + '    <!-- SVG WAJIB: Diagram/ilustrasi yang INFORMATIF dan ESTETIK. viewBox="0 0 800 450".\n'
-      + '         Gunakan: background putih/abu soft, teks hitam/biru tua (#1a4185),\n'
-      + '         aksen warna: emas (#eab308), hijau (#10b981), merah (#ef4444), biru (#3b82f6).\n'
-      + '         Tambahkan: judul, label, panah, ikon sederhana, dan elemen visual pendukung.\n'
-      + '         Pastikan SVG proporsional, rapi, dan terbaca. -->\n'
-      + '    <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">\n'
-      + '      ... SVG KUSTOM UNTUK AKTIVITAS INI ...\n'
-      + '    </svg>\n'
-      + '  </div>\n'
-      + '  <div class="aid-card">\n'
-      + '    <p class="aid-title">[Judul Aktivitas]</p>\n'
-      + '    <p class="aid-desc">[Penjelasan aktivitas dan bagaimana visual di atas membantu proses belajar]</p>\n'
-      + '    <p class="aid-prompt"><strong>Prompt AI:</strong> [Prompt detail untuk generate gambar di DALL-E/Midjourney/Stable Diffusion - dalam Bahasa Inggris, deskriptif]</p>\n'
-      + '  </div>\n'
-      + '  <div class="aid-links">\n'
-      + '    <a class="aid-link aid-google" href="https://www.google.com/search?tbm=isch&q=[kata+kunci+gambar]" target="_blank">🖼 Cari Gambar</a>\n'
-      + '    <a class="aid-link aid-youtube" href="https://www.youtube.com/results?search_query=[kata+kunci+video]" target="_blank">▶ Cari Video</a>\n'
-      + '    <a class="aid-link aid-unsplash" href="https://unsplash.com/s/photos/[kata+kunci]" target="_blank">📸 Unsplash</a>\n'
-      + '    <a class="aid-link aid-prompt-copy" href="#" onclick="navigator.clipboard.writeText(\'[Prompt AI untuk generate gambar]\');alert(\'Prompt disalin!\')">📋 Salin Prompt AI</a>\n'
-      + '  </div>\n'
-      + '</div>\n\n'
-      + 'PENTING:\n'
-      + '- Gunakan SVG MURNI (bukan gambar eksternal)\n'
-      + '- SVG harus proporsional, rapi, dengan teks yang terbaca\n'
-+ '- Jangan gunakan markdown code block\n'
-+ '- OUTPUT LANGSUNG HTML, tanpa teks tambahan\n'
-      + - Buat SVG yang benar-benar KREATIF dan SESUAI dengan konteks aktivitas\n\n'
-      + 'TOPIK PEMBELAJARAN: ' + topic + '\n\n'
-      + 'RPM:\n' + html;
+const prompt = [
+      'Anda adalah asisten pembuat alat bantu visual PROFESIONAL untuk guru. Analisis RPM berikut dan buat alat bantu visual untuk SETIAP aktivitas pembelajaran.',
+      '',
+      'Untuk SETIAP aktivitas, buat dalam format HTML berikut:',
+      '',
+      '<div class="aid-item">',
+      '  <div class="aid-header">',
+      '    <span class="aid-label">[Jenis Aktivitas: Kegiatan Awal/Inti/Penutup]</span>',
+      '    <span class="aid-meeting">Pertemuan [N]</span>',
+      '  </div>',
+      '  <div class="aid-svg-wrapper">',
+      '    <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">',
+      '      ... SVG KUSTOM UNTUK AKTIVITAS INI ...',
+      '    </svg>',
+      '  </div>',
+      '  <div class="aid-card">',
+      '    <p class="aid-title">[Judul Aktivitas]</p>',
+      '    <p class="aid-desc">[Penjelasan aktivitas dan bagaimana visual di atas membantu]</p>',
+      '    <p class="aid-prompt"><strong>Prompt AI:</strong> [Prompt DALL-E/Midjourney dlm Bahasa Inggris, deskriptif]</p>',
+      '  </div>',
+      '  <div class="aid-links">',
+      '    <a class="aid-link aid-google" href="https://www.google.com/search?tbm=isch&q=[kata+kunci]" target="_blank">Cari Gambar</a>',
+      '    <a class="aid-link aid-youtube" href="https://www.youtube.com/results?search_query=[kata+kunci]" target="_blank">Cari Video</a>',
+      '    <a class="aid-link aid-unsplash" href="https://unsplash.com/s/photos/[kata+kunci]" target="_blank">Unsplash</a>',
+      '  </div>',
+      '</div>',
+      '',
+      'PENTING:',
+      '- Gunakan SVG MURNI dengan viewBox="0 0 800 450"',
+      '- SVG: background putih/abu, teks hitam/biru tua (#1a4185), aksen emas (#eab308), hijau (#10b981), merah (#ef4444)',
+      '- SVG harus proporsional, rapi, dengan teks terbaca, judul, label, panah, ikon',
+      '- Jangan gunakan markdown code block',
+      '- OUTPUT LANGSUNG HTML, tanpa teks tambahan',
+      '- Buat SVG KREATIF dan SESUAI konteks aktivitas',
+      '',
+      'TOPIK PEMBELAJARAN: ' + topic,
+      '',
+      'RPM:',
+      html,
+    ].join('\n');
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
