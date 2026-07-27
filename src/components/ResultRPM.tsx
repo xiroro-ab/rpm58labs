@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield } from 'lucide-react';
+import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield, Presentation } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
 import TeachingAidsModal from './TeachingAidsModal';
+import TeachingSlidesViewer from './TeachingSlidesViewer';
 
 interface ResultRPMProps {
   markdown: string;
@@ -23,6 +24,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [streamHtml, setStreamHtml] = useState('');
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
   const [isTeachingAidsOpen, setIsTeachingAidsOpen] = useState(false);
+  const [isSlidesOpen, setIsSlidesOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
   useEffect(() => {
@@ -165,6 +167,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 sm:w-4 sm:h-4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
             <span className="hidden sm:inline">Visual</span>
           </button>
+
+          <button
+            onClick={() => setIsSlidesOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-2 text-violet-700 bg-white hover:bg-violet-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-violet-200 shadow-card hover:shadow-card-hover"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 sm:w-4 sm:h-4"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span className="hidden sm:inline">Slide</span>
+          </button>
           
           <button
             onClick={() => setIsComplianceCheckerOpen(true)}
@@ -259,6 +269,13 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
         <TeachingAidsModal
           isOpen={isTeachingAidsOpen}
           onClose={() => setIsTeachingAidsOpen(false)}
+          rpmHtml={currentHtml}
+          topic={formData?.topic || ''}
+        />
+
+        <TeachingSlidesViewer
+          isOpen={isSlidesOpen}
+          onClose={() => setIsSlidesOpen(false)}
           rpmHtml={currentHtml}
           topic={formData?.topic || ''}
         />
