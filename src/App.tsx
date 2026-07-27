@@ -358,7 +358,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen print:h-auto w-full bg-slate-50 font-sans overflow-hidden print:overflow-visible">
+    <div className="flex flex-col h-screen print:h-auto w-full bg-warm font-sans overflow-hidden print:overflow-visible">
       <Toaster position="top-center" />
       {confirmDialog.dialog}
       <LoadingOverlay isVisible={isWaitingForFirstChunk} message="Sedang menyusun RPM..." />
@@ -367,10 +367,10 @@ export default function App() {
       {isHistoryOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm print:hidden">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-center justify-between p-5 border-b border-warm-border bg-gradient-to-r from-primary/5 to-primary/10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                  <History className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-white rounded-lg shadow-card">
+                  <History className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-800">Riwayat RPM</h2>
@@ -387,8 +387,8 @@ export default function App() {
             
             <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
               {/* Left: List */}
-              <div className={`${selectedHistoryItem ? 'hidden sm:flex' : 'flex'} w-full sm:w-72 lg:w-80 border-b sm:border-b-0 sm:border-r border-slate-200 flex-col overflow-hidden bg-slate-50/30`}>
-                <div className="p-3 border-b border-slate-200 bg-white">
+              <div className={`${selectedHistoryItem ? 'hidden sm:flex' : 'flex'} w-full sm:w-72 lg:w-80 border-b sm:border-b-0 sm:border-r border-warm-border flex-col overflow-hidden bg-warm-light/50`}>
+<div className="p-3 border-b border-warm-border bg-white">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -396,7 +396,7 @@ export default function App() {
                       placeholder="Cari..."
                       value={historySearchQuery}
                       onChange={(e) => setHistorySearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-warm-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input"
                     />
                   </div>
                 </div>
@@ -411,10 +411,10 @@ export default function App() {
                       <div 
                         key={item.id} 
                         onClick={() => setSelectedHistoryItem(item)}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
+                        className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-card-hover ${
                           selectedHistoryItem?.id === item.id 
-                            ? 'border-blue-400 bg-blue-50 ring-1 ring-blue-400' 
-                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                            : 'border-warm-border hover:border-primary/30 bg-white'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -427,7 +427,7 @@ export default function App() {
                               })}
                             </div>
                             <div className="flex flex-wrap gap-1 mt-1.5">
-                              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+                              <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] font-semibold rounded">
                                 {item.formData.subject}
                               </span>
                               <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded">
@@ -468,15 +468,15 @@ export default function App() {
                         onClick={() => {
                           loadHistoryItem(selectedHistoryItem);
                         }}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shrink-0 ml-2"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-light transition-colors shadow-button shrink-0 ml-2"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         <span className="hidden sm:inline">Buka RPM</span>
                       </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-warm custom-scrollbar">
                       <div 
-                        className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-sm text-sm prose prose-sm max-w-none"
+                        className="bg-white rounded-lg border border-warm-border p-4 sm:p-6 shadow-page text-sm prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: selectedHistoryItem.markdown }}
                       />
                     </div>
@@ -509,7 +509,7 @@ export default function App() {
                 <select
                   value={aiProvider}
                   onChange={(e) => setAiProvider(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
                 >
                   <option value="gemini">Google Gemini (Default)</option>
                   <option value="openai">OpenAI (ChatGPT)</option>
@@ -531,7 +531,7 @@ export default function App() {
                   value={customApiKey}
                   onChange={(e) => setCustomApiKey(e.target.value)}
                   placeholder="Biarkan kosong untuk menggunakan default"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
                 />
                 <p className="mt-1 text-xs text-slate-500">
                   Jika limit API default habis, Anda dapat menggunakan API key milik Anda sendiri. API key tidak akan disimpan di server.
@@ -546,7 +546,7 @@ export default function App() {
                   setIsSettingsOpen(false); 
                   toast.success('Pengaturan disimpan!'); 
                 }}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md hover:bg-primary-light shadow-button transition-all"
               >
                 Simpan & Tutup
               </button>
@@ -556,7 +556,7 @@ export default function App() {
       )}
 
       {/* Header */}
-      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-4 lg:px-8 py-4 bg-white border-b border-slate-200/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex-wrap gap-4 z-50">
+      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-4 lg:px-8 py-4 bg-white/80 backdrop-blur-md border-b border-warm-border/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] flex-wrap gap-4 z-50">
         <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
           <div className="flex shrink-0 items-center justify-center w-10 h-10 md:w-11 md:h-11 overflow-hidden bg-white rounded-xl border border-slate-200/60 shadow-sm">
             <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png" alt="Logo SMP 58" className="object-contain w-full h-full p-1.5 hover:scale-105 transition-transform duration-300" />
@@ -570,28 +570,28 @@ export default function App() {
         <div className="flex items-center gap-2 lg:gap-3 shrink-0">
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="flex items-center justify-center p-2 text-slate-500 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all shadow-sm md:hidden"
+            className="flex items-center justify-center p-2 text-slate-500 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all shadow-card md:hidden"
             title={isSidebarOpen ? "Tutup panel form" : "Buka panel form"}
           >
             {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </button>
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="hidden md:flex items-center justify-center p-2 text-slate-500 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all shadow-sm"
+            className="hidden md:flex items-center justify-center p-2 text-slate-500 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all shadow-card"
             title={isSidebarOpen ? "Tutup panel form" : "Buka panel form"}
           >
             {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </button>
           <button 
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
           >
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Riwayat</span>
           </button>
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Backup & Restore (Ctrl+B)"
           >
             <HardDrive className="w-4 h-4" />
@@ -599,7 +599,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsAnalyticsDashboardOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-sm"
+            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Analytics Dashboard (Ctrl+D)"
           >
             <BarChart3 className="w-4 h-4" />
@@ -607,12 +607,12 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+            className="p-2.5 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
             title="Pengaturan API"
           >
             <Settings className="w-5 h-5" />
           </button>
-          <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 shadow-md hover:shadow-lg transition-all">
+          <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark shadow-button hover:shadow-button-hover transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span className="hidden sm:inline">Reset</span>
           </button>
@@ -649,13 +649,13 @@ export default function App() {
         {/* Left Sidebar: Input Form */}
         <section className={`print:hidden bg-white flex flex-col shrink-0 transition-all duration-300 z-50 overflow-hidden
           ${isSidebarOpen 
-            ? 'translate-x-0 w-[85vw] max-w-[400px] md:w-[400px] border-r border-slate-200' 
+            ? 'translate-x-0 w-[85vw] max-w-[400px] md:w-[400px] border-r border-warm-border' 
             : '-translate-x-full w-[85vw] max-w-[400px] md:translate-x-0 md:w-0 border-none'}
-          fixed inset-y-0 left-0 md:static md:h-full shadow-2xl md:shadow-[1px_0_10px_rgba(0,0,0,0.02)]
+          fixed inset-y-0 left-0 md:static md:h-full shadow-2xl md:shadow-[2px_0_12px_rgba(0,0,0,0.04)]
         `}>
-          <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
-            <h2 className="font-bold text-slate-800">Form RPM</h2>
-            <button onClick={() => setIsSidebarOpen(false)} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 shadow-sm">
+          <div className="flex items-center justify-between p-4 border-b border-warm-border bg-gradient-to-r from-warm-light to-white">
+            <h2 className="font-bold text-primary-dark">Form RPM</h2>
+            <button onClick={() => setIsSidebarOpen(false)} className="p-2 bg-white border border-warm-border rounded-lg text-slate-600 hover:bg-warm shadow-card transition-all">
                <X className="w-5 h-5" />
             </button>
           </div>
@@ -665,7 +665,7 @@ export default function App() {
         </section>
 
         {/* Right: Result Preview */}
-        <section className="flex-1 bg-slate-100 overflow-hidden print:overflow-visible flex flex-col relative print:block min-w-0">
+        <section className="flex-1 bg-warm overflow-hidden print:overflow-visible flex flex-col relative print:block min-w-0">
           {!result ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500 overflow-y-auto">
               <div className="w-32 h-32 flex items-center justify-center mb-6 drop-shadow-md">
@@ -693,7 +693,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="print:hidden bg-white border-t border-slate-200 py-2 px-8 flex justify-between items-center text-[11px] text-slate-400">
+      <footer className="print:hidden bg-white/80 backdrop-blur-sm border-t border-warm-border py-2 px-8 flex justify-between items-center text-[11px] text-slate-400">
         <p>© {new Date().getFullYear()} AI Education Labs • Build for Merdeka Belajar</p>
         <p className="font-mono">Coded by Aris Bermansyah | Powered by {aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)} AI</p>
       </footer>

@@ -96,7 +96,7 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
               localStorage.removeItem('rpmFormData');
               toast.success('Formulir berhasil dibersihkan', { icon: '🧹' });
             }}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-md hover:bg-primary-dark transition-colors"
           >
             Hapus
           </button>
@@ -124,45 +124,45 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
               value={formData.school}
               onChange={handleChange}
               placeholder="Nama Sekolah (mis: SMPN 58 Palembang)"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+              className="w-full px-4 py-3 border border-warm-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input transition-all shadow-card"
             />
             
-            <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm transition-all hover:border-slate-300">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kepala Sekolah</span>
+            <div className="bg-white border-l-4 border-primary/20 p-4 rounded-xl shadow-card transition-all hover:border-primary/40">
+              <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider mb-2 block">Kepala Sekolah</span>
               <div className="grid grid-cols-1 gap-3">
                 <input required type="text"
                   name="headmaster"
                   value={formData.headmaster}
                   onChange={handleChange}
                   placeholder="Nama Kepala Sekolah"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 transition-colors"
+                  className="w-full px-3 py-2 border border-warm-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input transition-colors"
                 />
                 <input required type="text"
                   name="headmasterNip"
                   value={formData.headmasterNip}
                   onChange={handleChange}
                   placeholder="NIP Kepala Sekolah"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 transition-colors"
+                  className="w-full px-3 py-2 border border-warm-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input transition-colors"
                 />
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm transition-all hover:border-slate-300">
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Guru Mata Pelajaran</span>
+            <div className="bg-white border-l-4 border-primary/20 p-4 rounded-xl shadow-card transition-all hover:border-primary/40">
+               <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider mb-2 block">Guru Mata Pelajaran</span>
                <div className="grid grid-cols-1 gap-3">
                  <input required type="text"
                   name="teacher"
                   value={formData.teacher}
                   onChange={handleChange}
                   placeholder="Nama Guru"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 transition-colors"
+                  className="w-full px-3 py-2 border border-warm-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input transition-colors"
                 />
                 <input required type="text"
                   name="teacherNip"
                   value={formData.teacherNip}
                   onChange={handleChange}
                   placeholder="NIP Guru"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 transition-colors"
+                  className="w-full px-3 py-2 border border-warm-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-input transition-colors"
                 />
                </div>
             </div>
@@ -281,11 +281,11 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
         </div>
       </div>
 
-            <div className="p-6 border-t border-slate-200 bg-white mt-auto flex flex-col gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] relative z-20">
+            <div className="p-6 border-t border-warm-border bg-white mt-auto flex flex-col gap-3 shadow-[0_-4px_12px_-1px_rgba(0,0,0,0.06)] relative z-20">
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-primary to-primary-light text-white font-bold rounded-lg shadow-button hover:shadow-button-hover transition-all disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
         >
           {isLoading ? (
             <>

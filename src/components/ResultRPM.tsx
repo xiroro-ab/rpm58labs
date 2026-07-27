@@ -122,13 +122,13 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
     <>
       <LoadingOverlay isVisible={isDownloading} message="Menyiapkan PDF..." />
       <div className="flex flex-col h-full w-full overflow-hidden print:overflow-visible print:block print:h-auto">
-      <div className="print:hidden flex-shrink-0 flex items-center justify-between p-4 sm:p-6 pb-4 border-b border-slate-200/50 bg-slate-100/50">
+      <div className="print:hidden flex-shrink-0 flex items-center justify-between p-4 sm:p-6 pb-4 border-b border-warm-border/50 bg-gradient-to-r from-warm to-warm-light">
         <div className="flex items-center gap-4">
-          <span className="px-3 py-1.5 bg-blue-100/80 text-blue-700 text-xs font-extrabold rounded-md uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+          <span className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-extrabold rounded-md uppercase tracking-wider shadow-card flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Preview
           </span>
-          <span className="text-[11px] font-medium text-slate-500 hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-md shadow-sm border border-slate-200">
+          <span className="text-[11px] font-medium text-slate-500 hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-md shadow-card border border-warm-border">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
             Klik pada dokumen untuk mengedit langsung
           </span>
@@ -142,7 +142,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
                 toast.success('Editan berhasil disimpan!');
               }
             }}
-            className="flex items-center gap-1.5 px-2.5 py-2 text-blue-700 bg-white hover:bg-blue-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-blue-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-primary bg-white hover:bg-primary/5 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-primary/20 shadow-card hover:shadow-card-hover"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             <span className="hidden sm:inline">Simpan</span>
@@ -150,7 +150,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           
           <button
             onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-2 text-indigo-700 bg-white hover:bg-indigo-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-indigo-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-indigo-700 bg-white hover:bg-indigo-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-indigo-200 shadow-card hover:shadow-card-hover"
           >
             <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Revisi</span>
@@ -158,7 +158,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           
           <button
             onClick={() => setIsComplianceCheckerOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-2 text-amber-700 bg-white hover:bg-amber-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-sm hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-2 text-amber-700 bg-white hover:bg-amber-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-amber-200 shadow-card hover:shadow-card-hover"
           >
             <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Cek</span>
@@ -167,7 +167,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           <button
             onClick={handlePrintPDF}
             disabled={isDownloading}
-            className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-md transition-all shrink-0 ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800 hover:shadow-lg'}`}
+            className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-button hover:shadow-button-hover transition-all shrink-0 ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark'}`}
           >
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">{isDownloading ? 'Menyiapkan...' : 'Download PDF'}</span>
@@ -177,37 +177,37 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
       </div>
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 pt-4 custom-scrollbar print:p-0 print:overflow-visible relative print:block print:h-auto flex flex-col relative items-center">
         {/* Format Toolbar */}
-        <div className="print:hidden sticky top-0 z-40 bg-white border border-slate-200 shadow-sm rounded-t-xl w-full max-w-[1056px] flex flex-wrap items-center gap-1 p-2 mb-[-1px]">
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('bold', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Bold (Ctrl+B)">
+        <div className="print:hidden sticky top-0 z-40 bg-white/70 backdrop-blur-md border border-warm-border shadow-card rounded-t-xl w-full max-w-[1056px] flex flex-wrap items-center gap-1 p-2 mb-[-1px]">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('bold', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Bold (Ctrl+B)">
             <Bold className="w-4 h-4" />
           </button>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('italic', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Italic (Ctrl+I)">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('italic', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Italic (Ctrl+I)">
             <Italic className="w-4 h-4" />
           </button>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('underline', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Underline (Ctrl+U)">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('underline', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Underline (Ctrl+U)">
             <Underline className="w-4 h-4" />
           </button>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyLeft', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Align Left">
+          <div className="w-px h-6 bg-warm-border mx-1"></div>
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyLeft', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Align Left">
             <AlignLeft className="w-4 h-4" />
           </button>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyCenter', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Align Center">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyCenter', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Align Center">
             <AlignCenter className="w-4 h-4" />
           </button>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyRight', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Align Right">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('justifyRight', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Align Right">
             <AlignRight className="w-4 h-4" />
           </button>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('undo', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Undo (Ctrl+Z)">
+          <div className="w-px h-6 bg-warm-border mx-1"></div>
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('undo', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Undo (Ctrl+Z)">
             <Undo className="w-4 h-4" />
           </button>
-          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('redo', false, '')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors" title="Redo (Ctrl+Y)">
+          <button onMouseDown={(e) => e.preventDefault()} onClick={() => document.execCommand('redo', false, '')} className="p-1.5 text-slate-600 hover:bg-warm rounded-md transition-colors" title="Redo (Ctrl+Y)">
             <Redo className="w-4 h-4" />
           </button>
         </div>
         
-        <div className="w-full max-w-[1056px] bg-white shadow-xl rounded-b-xl border border-slate-200 print:border-none print:shadow-none p-4 sm:p-8 md:p-12 print:p-0 min-h-[1056px] relative print:min-h-0 print:block">
-          <div id="rpm-content" className="w-full text-black print:text-black rpm-content-wrapper outline-none hover:ring-2 hover:ring-blue-300 hover:ring-offset-4 rounded-sm transition-shadow p-2 -m-2" contentEditable={!isGeneratingContinue && !isDownloading && !isStreaming} suppressContentEditableWarning={true}
+        <div className="w-full max-w-[1056px] bg-white shadow-page rounded-b-xl border border-warm-border print:border-none print:shadow-none p-4 sm:p-8 md:p-12 print:p-0 min-h-[1056px] relative print:min-h-0 print:block">
+          <div id="rpm-content" className="w-full text-black print:text-black rpm-content-wrapper outline-none hover:ring-2 hover:ring-primary/30 hover:ring-offset-4 rounded-sm transition-shadow p-2 -m-2" contentEditable={!isGeneratingContinue && !isDownloading && !isStreaming} suppressContentEditableWarning={true}
             dangerouslySetInnerHTML={{ __html: processMarkdown(isStreaming ? streamHtml : currentHtml) }}
             onBlur={(e) => {
                if (onSaveEdit && !isStreaming) onSaveEdit(e.currentTarget.innerHTML);
