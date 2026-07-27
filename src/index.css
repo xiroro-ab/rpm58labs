@@ -411,6 +411,23 @@
   line-height: 1.5;
   word-break: break-word;
 }
+.teaching-aids-results .aid-prompt {
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.85em;
+  color: #1e293b;
+  margin: 8px 0;
+  line-height: 1.6;
+  word-break: break-word;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.teaching-aids-results .aid-prompt:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+}
 .teaching-aids-results .aid-visual-img {
   background: #f8f7f4;
   padding: 12px;

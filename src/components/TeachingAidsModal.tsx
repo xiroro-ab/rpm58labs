@@ -115,6 +115,17 @@ export default function TeachingAidsModal({ isOpen, onClose, rpmHtml, topic }: T
     return html.replace(/on\w+=["'][^"']*["']/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   };
 
+  const handleResultClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('aid-prompt')) {
+      navigator.clipboard.writeText(target.textContent || '').then(() => {
+        const orig = target.textContent;
+        target.textContent = '✅ Prompt disalin!';
+        setTimeout(() => { if (target) target.textContent = orig; }, 2000);
+      });
+    }
+  };
+
   const downloadHtml = () => {
     const blob = new Blob([displayHtml], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
