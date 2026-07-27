@@ -342,6 +342,36 @@
 .teaching-aids-results .aid-youtube:hover {
   background: #111827;
 }
+.teaching-aids-results .aid-unsplash {
+  background: #1f2937;
+  color: white;
+}
+.teaching-aids-results .aid-unsplash:hover {
+  background: #111827;
+}
+.teaching-aids-results .aid-prompt-copy {
+  background: #7c3aed;
+  color: white;
+}
+.teaching-aids-results .aid-prompt-copy:hover {
+  background: #6d28d9;
+}
+.teaching-aids-results .aid-title {
+  font-weight: 700;
+  color: #0f3b5e;
+  font-size: 1em;
+  margin: 0 0 6px;
+}
+.teaching-aids-results .aid-prompt {
+  background: #f0f4ff;
+  border-left: 3px solid #7c3aed;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85em;
+  color: #1e293b;
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
 .teaching-aids-results .aid-error {
   padding: 40px;
   text-align: center;
