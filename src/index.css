@@ -411,3 +411,18 @@
   line-height: 1.5;
   word-break: break-word;
 }
+.teaching-aids-results .aid-visual-img {
+  background: #f8f7f4;
+  padding: 12px;
+  border-bottom: 1px solid #e2ddd6;
+  display: flex;
+  justify-content: center;
+  min-height: 100px;
+}
+.teaching-aids-results .aid-visual-img img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
