@@ -188,6 +188,7 @@ export default function App() {
       toast.success('RPM berhasil dibuat!');
       
       // Auto-enhance images using Gemini
+      const itemId = newItem.id;
       (async () => {
         try {
           const imgRes = await fetch('/api/generate-images', {
@@ -200,7 +201,7 @@ export default function App() {
             setResult(imgData.html);
             setHistory(prev => {
               const next = [...prev];
-              const idx = next.findIndex(item => item.id === currentHistoryId);
+              const idx = next.findIndex(item => item.id === itemId);
               if (idx !== -1) {
                 next[idx].markdown = imgData.html;
                 localStorage.setItem('rpmHistory', JSON.stringify(next));
