@@ -5,6 +5,7 @@ import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
+import WebsiteGenerator from './WebsiteGenerator';
 
 interface ResultRPMProps {
   markdown: string;
@@ -163,7 +164,9 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Cek</span>
           </button>
-          
+
+          <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} />
+
           <button
             onClick={handlePrintPDF}
             disabled={isDownloading}
