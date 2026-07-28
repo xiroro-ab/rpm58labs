@@ -139,7 +139,7 @@ PERHATIAN KETAT:
 4. MODA PEMBELAJARAN: Karena guru memilih Moda "${data.learningMode}", kamu WAJIB menyesuaikan setting kelas, alat digital, dan interaksinya. ${isDaring ? "Wajib tekankan penggunaan Zoom/Gmeet, Breakout room, atau platform e-learning, materi harus digital interaktif." : ""} ${isBlended ? "Gabungkan pertemuan maya/digital dan mandiri/luring." : ""}
 5. JUMLAH PERTEMUAN: Karena guru memilih ${data.meetingCount}, saya SUDAH MENYEDIAKAN kerangka kotak HTML khusus untuk setiap pertemuan. JANGAN DISINGKAT! JABARKAN aktivitas setiap pertemuan secara komprehensif.
 6. EMBED VISUAL — TAMBAHKAN di bagian paling bawah setelah semua konten utama RPM (setelah Refleksi):
-   <div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
+   <div class="rpm-section-title">LAMPIRAN 4: REFERENSI VISUAL</div>
    <p>Berikut referensi visual untuk mendukung pembelajaran:</p>
 
    Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
@@ -397,7 +397,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
 </div>
 
 <div style="background-color: #1a4185; color: white; padding: 4px 8px; font-weight: bold; margin-top: 10px; margin-bottom: 6px; border-radius: 4px 4px 0 0; font-family: 'IBM Plex Sans', sans-serif;">
-  Lampiran 4: Jurnal Refleksi Diri
+  Lampiran 5: Jurnal Refleksi Diri
 </div>
 <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
   <tr>
