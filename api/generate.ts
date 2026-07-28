@@ -175,7 +175,7 @@ Gunakan persis kerangka HTML ini, dan JANGAN tambahkan markdown code block (\`\`
         <h3 style="margin: 0; font-size: 1.2em; font-family: 'IBM Plex Sans', sans-serif;">PEMERINTAH KOTA PALEMBANG</h3>
         <h3 style="margin: 0; font-size: 1.2em; font-family: 'IBM Plex Sans', sans-serif;">DINAS PENDIDIKAN</h3>
         <h3 style="margin: 0; font-size: 1.4em; font-weight: bold; font-family: 'IBM Plex Sans', sans-serif;">SMP NEGERI 58 PALEMBANG</h3>
-        <p style="margin: 5px 0 0 0; font-size: 8pt;"><i>Alamat: Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</i></p>
+        <div style="display: flex; justify-content: center; width: 100%;"><p style="margin: 5px 0 0 0; font-size: 8pt;"><i>Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</i></p></div>
     </div>
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/logo58.png" alt="Logo Kanan" style="height: 90px; width: auto; object-fit: contain;">
 </div>

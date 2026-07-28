@@ -95,33 +95,13 @@ ATURAN PENTING:
 - PERTAHANKAN struktur HTML, class, dan style attribute PERSIS seperti template di bawah. HANYA ganti konten di dalam kurung siku [...] beserta isinya.
 - Jangan ubah atau hapus atribut style pada eleman manapun.
 
-ATURAN EMBED VISUAL:
-Setelah seluruh konten RPM (setelah bagian Refleksi yang sudah ada di template), TAMBAHKAN bagian tambahan ini:
-<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
-<p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
-
-Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi" (kecuali aktivitas rutin seperti salam/doa/absensi), buat satu baris:
-<div class="rpm-embed-visual">
-  <p><strong>📌 [Nama Aktivitas]</strong></p>
-  <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar referensi di Google Images</a></p>
-  <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat ilustrasi dengan Bing Image Creator</a></p>
-  <p><em>Prompt: "PROMPT"</em></p>
-</div>
-GANTI KEYWORD dengan kata kunci Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi Bahasa Inggris untuk Bing akhiri dengan "educational illustration, flat design, colorful".
-
-Untuk SETIAP aktivitas yang mengandung "guru menayangkan video" (kecuali rutin), buat satu baris:
-<div class="rpm-embed-visual">
-  <p><strong>▶️ [Nama Aktivitas]</strong></p>
-  <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video referensi di YouTube</a></p>
-</div>
-
 <div class="kop-surat">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" class="logo">
     <div class="teks-kop">
         <h3>PEMERINTAH KOTA PALEMBANG</h3>
         <h3>DINAS PENDIDIKAN</h3>
         <h3 style="font-size: 1.2em; font-weight: bold;">SMP NEGERI 58 PALEMBANG</h3>
-        <p style="font-size: 0.8em; font-style: italic; text-align: center !important;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
+        <div style="display: flex; justify-content: center; width: 100%;"><p style="font-size: 0.8em; font-style: italic; margin: 0;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p></div>
     </div>
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/logo58.png" alt="Logo Kanan" class="logo">
 </div>
@@ -244,7 +224,29 @@ ${pengalamanBelajarHTML}
   <li>[Refleksi Siswa 1]</li>
   <li>[Refleksi Siswa 2]</li>
 </ol>
+
+<!-- LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL -->
+<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
+<p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
+
+Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat:
+<div class="rpm-embed-visual">
+  <p><strong>📌 [Nama Aktivitas]</strong></p>
+  <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar referensi di Google Images</a></p>
+  <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat ilustrasi dengan Bing Image Creator</a></p>
+  <p><em>Prompt: "PROMPT"</em></p>
+</div>
+
+Untuk SETIAP aktivitas "guru menayangkan video", buat:
+<div class="rpm-embed-visual">
+  <p><strong>▶️ [Nama Aktivitas]</strong></p>
+  <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video referensi di YouTube</a></p>
+</div>
+
+GANTI KEYWORD dengan kata kunci SPESIFIK. GANTI PROMPT dengan deskripsi Inggris + "educational illustration, flat design, colorful".
+LEWATI aktivitas rutin (salam, doa, absensi).
 `;
+
 
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
