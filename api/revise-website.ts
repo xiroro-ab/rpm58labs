@@ -29,7 +29,11 @@ export default async function handler(req: any, res: any) {
       contents: prompt,
     });
 
-    const revisedHtml = response.text || '';
+    let revisedHtml = response.text || '';
+    revisedHtml = revisedHtml.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    const htmlMatch = revisedHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+    if (htmlMatch) revisedHtml = htmlMatch[1];
+
     res.json({ html: revisedHtml });
   } catch (error: any) {
     console.error('Revise Website Error:', error);

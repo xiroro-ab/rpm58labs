@@ -72,7 +72,20 @@ export default async function handler(req: any, res: any) {
       contents: prompt,
     });
 
-    const websiteHtml = response.text || '';
+    let websiteHtml = response.text || '';
+
+    // Bersihkan markdown code block jika ada
+    websiteHtml = websiteHtml.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    // Pastikan output dimulai dengan <!DOCTYPE html> atau <html>
+    if (!websiteHtml.startsWith('<!DOCTYPE') && !websiteHtml.startsWith('<html') && !websiteHtml.startsWith('<HTML')) {
+      // Coba ekstrak HTML dari response jika ada markdown atau teks lain
+      const htmlMatch = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+      if (htmlMatch) {
+        websiteHtml = htmlMatch[1];
+      }
+    }
+
     res.json({ html: websiteHtml });
   } catch (error: any) {
     console.error('Generate Website Error:', error);
