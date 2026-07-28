@@ -144,7 +144,7 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
    <div class="rpm-embed-visual">
-     <p><strong>📌 [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] � [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Google Images</a></p>
      <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Bing Image Creator</a></p>
      <p><em>Prompt: "PROMPT"</em></p>
@@ -152,7 +152,7 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menayangkan video":
    <div class="rpm-embed-visual">
-     <p><strong>▶️ [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] � [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">YouTube</a></p>
    </div>
 
