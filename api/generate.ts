@@ -139,7 +139,7 @@ PERHATIAN KETAT:
 4. MODA PEMBELAJARAN: Karena guru memilih Moda "${data.learningMode}", kamu WAJIB menyesuaikan setting kelas, alat digital, dan interaksinya. ${isDaring ? "Wajib tekankan penggunaan Zoom/Gmeet, Breakout room, atau platform e-learning, materi harus digital interaktif." : ""} ${isBlended ? "Gabungkan pertemuan maya/digital dan mandiri/luring." : ""}
 5. JUMLAH PERTEMUAN: Karena guru memilih ${data.meetingCount}, saya SUDAH MENYEDIAKAN kerangka kotak HTML khusus untuk setiap pertemuan. JANGAN DISINGKAT! JABARKAN aktivitas setiap pertemuan secara komprehensif.
 6. EMBED VISUAL — TAMBAHKAN di bagian paling bawah setelah semua konten utama RPM (setelah Refleksi):
-   <div class="rpm-section-title">LAMPIRAN 4: REFERENSI VISUAL</div>
+   <div class="rpm-section-title">Lampiran 4: Referensi Visual</div>
    <p>Berikut referensi visual untuk mendukung pembelajaran:</p>
 
    Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":

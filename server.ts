@@ -226,20 +226,20 @@ ${pengalamanBelajarHTML}
 </ol>
 
 <!-- LAMPIRAN 4: REFERENSI VISUAL -->
-<div class="rpm-section-title">LAMPIRAN 4: REFERENSI VISUAL</div>
-<p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
+<div class="rpm-section-title">Lampiran 4: Referensi Visual</div>
+<p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran setiap pertemuan:</p>
 
-Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat:
+Untuk SETIAP aktivitas pada setiap pertemuan yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat:
 <div class="rpm-embed-visual">
-  <p><strong>📌 [Nama Aktivitas]</strong></p>
+  <p><strong>Pertemuan [N] — [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
   <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar referensi di Google Images</a></p>
   <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat ilustrasi dengan Bing Image Creator</a></p>
   <p><em>Prompt: "PROMPT"</em></p>
 </div>
 
-Untuk SETIAP aktivitas "guru menayangkan video", buat:
+Untuk SETIAP aktivitas "guru menayangkan video" pada setiap pertemuan, buat:
 <div class="rpm-embed-visual">
-  <p><strong>▶️ [Nama Aktivitas]</strong></p>
+  <p><strong>Pertemuan [N] — [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
   <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video referensi di YouTube</a></p>
 </div>
 
