@@ -43,6 +43,10 @@ ATURAN:
 3. Jangan ubah struktur di luar yang diminta instruksi
 4. Jika instruksi spesifik (contoh: "ubah soal nomor 3"), lakukan tepat pada bagian itu
 5. Pertahankan semua inline style dan class yang sudah ada
+6. EMBED VISUAL: Jika instruksi meminta gambar/video, gunakan:
+   - Gambar: <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div>
+   - Video: <div class="rpm-embed-video"><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">🎥 Klik Untuk Melihat Referensi Video Ini di YouTube</a></div>
+   Ganti KEYWORD dengan kata kunci spesifik.
 
 ${historyContext}INSTRUKSI PENGGUNA:
 ${instruction}

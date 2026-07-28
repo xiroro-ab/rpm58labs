@@ -91,6 +91,13 @@ async function startServer() {
 
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
+ATURAN EMBED VISUAL:
+- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto", sematkan <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD kata kunci Bahasa Inggris yang relevan.
+- Jika aktivitas mengandung "guru menayangkan/memperlihatkan video", sematkan <div class="rpm-embed-video"><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">🎥 Klik Untuk Melihat Referensi Video Ini di YouTube</a></div> dengan KEYWORD kata kunci Bahasa Indonesia.
+- Jika aktivitas mengandung "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD relevan.
+- Jangan sematkan gambar/video untuk aktivitas rutin seperti salam, doa, absensi.
+- Pastikan KEYWORD diganti dengan kata kunci SPESIFIK dalam Bahasa Inggris (untuk gambar) atau Indonesia (untuk video).
+
 <div class="kop-surat">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" class="logo">
     <div class="teks-kop">
