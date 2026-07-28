@@ -225,8 +225,8 @@ ${pengalamanBelajarHTML}
   <li>[Refleksi Siswa 2]</li>
 </ol>
 
-<!-- LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL -->
-<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
+<!-- LAMPIRAN 4: REFERENSI VISUAL -->
+<div class="rpm-section-title">LAMPIRAN 4: REFERENSI VISUAL</div>
 <p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
 
 Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat:
@@ -428,8 +428,9 @@ try {
             .clean-list { margin: 0 !important; padding-left: 20px !important; }
             .clean-list li { margin-bottom: 6px !important; }
 
-            .rpm-embed-visual { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1a4185; border-radius: 8px; padding: 12px 16px; margin: 10px 0; }
-            .rpm-embed-visual p { margin: 4px 0 !important; }
+            .rpm-embed-visual { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1a4185; border-radius: 8px; padding: 12px 16px; margin: 10px 0; page-break-inside: avoid; }
+            .rpm-embed-visual p { margin: 4px 0 !important; font-size: 10.5pt; }
+            .rpm-embed-visual a { color: #1a4185 !important; font-weight: 600 !important; }
             .rpm-embed-visual a { color: #1a4185 !important; font-weight: 600 !important; }
             .rpm-embed-visual em { font-size: 0.85em; color: #64748b; }
 
