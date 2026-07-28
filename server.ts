@@ -386,7 +386,7 @@ try {
             .kop-surat .logo { width: 90px; height: auto; }
             .kop-surat .teks-kop { text-align: center; flex: 1; padding: 0 15px; }
             .kop-surat h3 { margin: 0; line-height: 1.2; font-size: 1.1em; }
-            .kop-surat p { margin: 2px 0 0; line-height: 1.3; }
+            .kop-surat p { margin: 2px 0 0; line-height: 1.3; text-align: center !important; }
             
             .rpm-table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 8px !important; font-size: 0.9em !important; table-layout: auto !important; }
             .rpm-table th, .rpm-table td { border: 1px solid #000 !important; padding: 4px 6px !important; vertical-align: top !important; margin: 0 !important; }
@@ -408,6 +408,12 @@ try {
             .fase-title { font-weight: bold !important; margin-bottom: 5px !important; color: #1a4185 !important; margin-top: 0 !important; }
             .clean-list { margin: 0 !important; padding-left: 20px !important; }
             .clean-list li { margin-bottom: 6px !important; }
+
+            .rpm-embed-image { margin: 8px 0; text-align: center; }
+            .rpm-embed-image img { max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+            .rpm-embed-video { margin: 8px 0; text-align: center; }
+            .rpm-embed-video a { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #ff0000; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+            .rpm-embed-video a:hover { background: #cc0000; }
 
           </style>
         </head>
