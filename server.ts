@@ -92,11 +92,10 @@ async function startServer() {
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
 ATURAN EMBED VISUAL:
-- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto", sematkan <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD kata kunci Bahasa Inggris yang relevan.
-- Jika aktivitas mengandung "guru menayangkan/memperlihatkan video", sematkan <div class="rpm-embed-video"><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">🎥 Klik Untuk Melihat Referensi Video Ini di YouTube</a></div> dengan KEYWORD kata kunci Bahasa Indonesia.
-- Jika aktivitas mengandung "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD relevan.
-- Jangan sematkan gambar/video untuk aktivitas rutin seperti salam, doa, absensi.
-- Pastikan KEYWORD diganti dengan kata kunci SPESIFIK dalam Bahasa Inggris (untuk gambar) atau Indonesia (untuk video).
+- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-visual"><p><strong>🖼 Visual Pembelajaran:</strong></p><p>📌 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar di Google Images</a></p><p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat gambar dengan Bing AI (gratis)</a></p><p><em>Prompt Bing: "PROMPT"</em></p></div>
+   GANTI KEYWORD dengan kata kunci Google Images dalam Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi gambar dalam Bahasa Inggris + "educational illustration, flat design, colorful".
+- Jika aktivitas mengandung "guru menayangkan/memperlihatkan video", sematkan <div class="rpm-embed-visual"><p><strong>🎬 Video Pembelajaran:</strong></p><p>▶️ <a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video di YouTube</a></p></div> dengan KEYWORD kata kunci Bahasa Indonesia.
+- Jangan sematkan untuk aktivitas rutin (salam, doa, absensi).
 
 <div class="kop-surat">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" class="logo">
@@ -409,11 +408,10 @@ try {
             .clean-list { margin: 0 !important; padding-left: 20px !important; }
             .clean-list li { margin-bottom: 6px !important; }
 
-            .rpm-embed-image { margin: 8px 0; text-align: center; }
-            .rpm-embed-image img { max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-            .rpm-embed-video { margin: 8px 0; text-align: center; }
-                        .rpm-embed-video a { display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 10px 20px !important; background: #ff0000 !important; color: white !important; border-radius: 8px !important; text-decoration: none !important; font-weight: 600 !important; font-size: 14px !important; }
-            .rpm-embed-video a:hover { background: #cc0000 !important; }
+            .rpm-embed-visual { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1a4185; border-radius: 8px; padding: 12px 16px; margin: 10px 0; }
+            .rpm-embed-visual p { margin: 4px 0 !important; }
+            .rpm-embed-visual a { color: #1a4185 !important; font-weight: 600 !important; }
+            .rpm-embed-visual em { font-size: 0.85em; color: #64748b; }
 
           </style>
         </head>

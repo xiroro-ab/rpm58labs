@@ -186,32 +186,6 @@ export default function App() {
       setCurrentHistoryId(newItem.id);
       
       toast.success('RPM berhasil dibuat!');
-      
-      // Auto-enhance images using Gemini
-      const itemId = newItem.id;
-      (async () => {
-        try {
-          const imgRes = await fetch('/api/generate-images', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html: finalResultText })
-          });
-          const imgData = await imgRes.json();
-          if (imgData.html && imgData.generated > 0) {
-            setResult(imgData.html);
-            setHistory(prev => {
-              const next = [...prev];
-              const idx = next.findIndex(item => item.id === itemId);
-              if (idx !== -1) {
-                next[idx].markdown = imgData.html;
-                localStorage.setItem('rpmHistory', JSON.stringify(next));
-              }
-              return next;
-            });
-          }
-        } catch (e) { console.error('Image enhance failed', e); }
-      })();
-      
     } catch (err: any) {
       setIsWaitingForFirstChunk(false);
       console.error(err);

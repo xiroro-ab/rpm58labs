@@ -139,15 +139,14 @@ PERHATIAN KETAT:
 4. MODA PEMBELAJARAN: Karena guru memilih Moda "${data.learningMode}", kamu WAJIB menyesuaikan setting kelas, alat digital, dan interaksinya. ${isDaring ? "Wajib tekankan penggunaan Zoom/Gmeet, Breakout room, atau platform e-learning, materi harus digital interaktif." : ""} ${isBlended ? "Gabungkan pertemuan maya/digital dan mandiri/luring." : ""}
 5. JUMLAH PERTEMUAN: Karena guru memilih ${data.meetingCount}, saya SUDAH MENYEDIAKAN kerangka kotak HTML khusus untuk setiap pertemuan. JANGAN DISINGKAT! JABARKAN aktivitas setiap pertemuan secara komprehensif.
 6. EMBED VISUAL — WAJIB! JANGAN LEWATKAN:
-   SETIAP KALI ada kata "guru menampilkan gambar/ilustrasi/foto", "pertanyaan pemantik", atau "apersepsi", kamu WAJIB menyisipkan kode HTML ini PERSIS setelah teks deskripsi aktivitas tersebut:
-   <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div>
-   GANTI KEYWORD dengan kata kunci Bahasa Inggris spesifik sesuai konteks aktivitas. Contoh: "palembang fishcake" untuk pempek, "train station queue" untuk antrian.
+   SETIAP KALI ada kata "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", sematkan:
+   <div class="rpm-embed-visual"><p><strong>🖼 Visual Pembelajaran:</strong></p><p>📌 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar di Google Images</a></p><p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat gambar dengan Bing AI (gratis)</a></p><p><em>Prompt Bing: "PROMPT"</em></p></div>
+   GANTI KEYWORD dengan kata kunci Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi Bahasa Inggris + "educational illustration, flat design, colorful".
 
-   SETIAP KALI ada kata "guru menayangkan/menampilkan video", kamu WAJIB menyisipkan:
-   <div class="rpm-embed-video"><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">🎥 Klik Untuk Melihat Referensi Video Ini di YouTube</a></div>
-   GANTI KEYWORD dengan kata kunci Bahasa Indonesia spesifik.
+   SETIAP KALI ada "guru menayangkan video", sematkan:
+   <div class="rpm-embed-visual"><p><strong>🎬 Video Pembelajaran:</strong></p><p>▶️ <a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video di YouTube</a></p></div>
 
-   JANGAN sematkan untuk aktivitas rutin (salam, doa, absensi). INI ATURAN WAJIB, JANGAN DIABAIKAN!
+   JANGAN sematkan untuk aktivitas rutin (salam, doa, absensi). INI ATURAN WAJIB!
 6. STRUKTUR PERTEMUAN & MANAJEMEN WAKTU: Di bagian III. PENGALAMAN BELAJAR, saya sudah menyediakan kerangka kotak-kotak. GANTI teks instruksinya dengan aktivitas nyata yang mendetail! Alokasikan waktu dalam hitungan Menit untuk Kegiatan Awal, Inti, dan Penutup secara logis menyesuaikan dengan total alokasi waktu JP. Tulis angkanya di bagian (... Menit)!
 7. SINKRONISASI MODEL PEMBELAJARAN: Pada Kegiatan Inti di "Pengalaman Belajar", kamu WAJIB menggunakan Fase/Sintaks dari model pembelajaran ${isAutoModel ? 'yang kamu pilih' : data.learningModel}. Gantikan "[Nama Fase Model]" dengan fase yang sebenarnya, dan urutkan sesuai standar model tersebut. Jika fase lebih dari 3, tambahkan ke dalam HTML dengan format yang serupa.
 8. SINKRONISASI ASESMEN & KEGIATAN (SANGAT KRUSIAL!): Asesmen Diagnostik WAJIB SAMA PERSIS (PLEK KETIPLEK) dengan "Pertanyaan Pemantik" yang ada di Kegiatan Awal. Tuliskan ulang pertanyaan pemantik tersebut sebagai soal Asesmen Diagnostik. Asesmen Formatif WAJIB MENGUKUR aktivitas yang sedang dilakukan pada Kegiatan Inti. Asesmen Sumatif (10 Soal per pertemuan, total ${data.meetingCount * 10} soal) WAJIB MENGUJI materi pada Kegiatan Inti. JANGAN ADA YANG BEDA! Masukkan semua soal tersebut ke dalam "Lampiran 2: Instrumen Asesmen dan Rubrik".
