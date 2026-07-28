@@ -138,12 +138,11 @@ PERHATIAN KETAT:
 3. FORMAT MATEMATIKA: DILARANG MENGGUNAKAN FORMAT LATEX ($\\dots$ ATAU $$\\dots$$) SAMA SEKALI DALAM OUTPUT!! Jika ada rumus matematika atau himpunan, tulis menggunakan karakter teks biasa atau tag HTML (seperti <sub>, <sup>). Hal ini sangat penting karena platform tidak merender LaTeX.
 4. MODA PEMBELAJARAN: Karena guru memilih Moda "${data.learningMode}", kamu WAJIB menyesuaikan setting kelas, alat digital, dan interaksinya. ${isDaring ? "Wajib tekankan penggunaan Zoom/Gmeet, Breakout room, atau platform e-learning, materi harus digital interaktif." : ""} ${isBlended ? "Gabungkan pertemuan maya/digital dan mandiri/luring." : ""}
 5. JUMLAH PERTEMUAN: Karena guru memilih ${data.meetingCount}, saya SUDAH MENYEDIAKAN kerangka kotak HTML khusus untuk setiap pertemuan. JANGAN DISINGKAT! JABARKAN aktivitas setiap pertemuan secara komprehensif.
-6. EMBED VISUAL — WAJIB:
-   Di bagian paling bawah RPM (setelah Refleksi), buat bagian khusus:
+6. EMBED VISUAL — TAMBAHKAN di bagian paling bawah setelah semua konten utama RPM (setelah Refleksi):
    <div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
-   <p>Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
+   <p>Berikut referensi visual untuk mendukung pembelajaran:</p>
 
-   Untuk SETIAP aktivitas yang mengandung "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
+   Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
    <div class="rpm-embed-visual">
      <p><strong>📌 [Nama Aktivitas]</strong></p>
      <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Google Images</a></p>
@@ -151,13 +150,14 @@ PERHATIAN KETAT:
      <p><em>Prompt: "PROMPT"</em></p>
    </div>
 
-   Untuk SETIAP aktivitas "guru menayangkan video":
+   Untuk aktivitas "guru menayangkan video":
    <div class="rpm-embed-visual">
      <p><strong>▶️ [Nama Aktivitas]</strong></p>
      <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">YouTube</a></p>
    </div>
 
-   JANGAN buat untuk aktivitas rutin (salam, doa, absensi). INI ATURAN WAJIB!
+   GANTI KEYWORD dengan kata kunci SPESIFIK Bahasa Indonesia. GANTI PROMPT dengan deskripsi Inggris + "educational illustration, flat design, colorful".
+   LEWATI aktivitas rutin (salam, doa, absensi).
 6. STRUKTUR PERTEMUAN & MANAJEMEN WAKTU: Di bagian III. PENGALAMAN BELAJAR, saya sudah menyediakan kerangka kotak-kotak. GANTI teks instruksinya dengan aktivitas nyata yang mendetail! Alokasikan waktu dalam hitungan Menit untuk Kegiatan Awal, Inti, dan Penutup secara logis menyesuaikan dengan total alokasi waktu JP. Tulis angkanya di bagian (... Menit)!
 7. SINKRONISASI MODEL PEMBELAJARAN: Pada Kegiatan Inti di "Pengalaman Belajar", kamu WAJIB menggunakan Fase/Sintaks dari model pembelajaran ${isAutoModel ? 'yang kamu pilih' : data.learningModel}. Gantikan "[Nama Fase Model]" dengan fase yang sebenarnya, dan urutkan sesuai standar model tersebut. Jika fase lebih dari 3, tambahkan ke dalam HTML dengan format yang serupa.
 8. SINKRONISASI ASESMEN & KEGIATAN (SANGAT KRUSIAL!): Asesmen Diagnostik WAJIB SAMA PERSIS (PLEK KETIPLEK) dengan "Pertanyaan Pemantik" yang ada di Kegiatan Awal. Tuliskan ulang pertanyaan pemantik tersebut sebagai soal Asesmen Diagnostik. Asesmen Formatif WAJIB MENGUKUR aktivitas yang sedang dilakukan pada Kegiatan Inti. Asesmen Sumatif (10 Soal per pertemuan, total ${data.meetingCount * 10} soal) WAJIB MENGUJI materi pada Kegiatan Inti. JANGAN ADA YANG BEDA! Masukkan semua soal tersebut ke dalam "Lampiran 2: Instrumen Asesmen dan Rubrik".

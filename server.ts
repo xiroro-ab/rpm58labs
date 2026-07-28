@@ -91,27 +91,29 @@ async function startServer() {
 
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
-ATURAN EMBED VISUAL:
-Di bagian paling bawah RPM (setelah Refleksi), buat satu bagian khusus:
-<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
-<p style="margin-bottom: 8px;">Berikut adalah referensi visual dan bahan bacaan untuk mendukung kegiatan pembelajaran:</p>
+ATURAN PENTING:
+- PERTAHANKAN struktur HTML, class, dan style attribute PERSIS seperti template di bawah. HANYA ganti konten di dalam kurung siku [...] beserta isinya.
+- Jangan ubah atau hapus atribut style pada eleman manapun.
 
-Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat satu baris:
+ATURAN EMBED VISUAL:
+Setelah seluruh konten RPM (setelah bagian Refleksi yang sudah ada di template), TAMBAHKAN bagian tambahan ini:
+<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
+<p style="margin-bottom: 8px;">Berikut referensi visual untuk mendukung kegiatan pembelajaran:</p>
+
+Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi" (kecuali aktivitas rutin seperti salam/doa/absensi), buat satu baris:
 <div class="rpm-embed-visual">
   <p><strong>📌 [Nama Aktivitas]</strong></p>
   <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar referensi di Google Images</a></p>
   <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat ilustrasi dengan Bing Image Creator</a></p>
   <p><em>Prompt: "PROMPT"</em></p>
 </div>
-GANTI KEYWORD dengan kata kunci Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi Bahasa Inggris untuk Bing + "educational illustration, flat design, colorful".
+GANTI KEYWORD dengan kata kunci Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi Bahasa Inggris untuk Bing akhiri dengan "educational illustration, flat design, colorful".
 
-Untuk SETIAP aktivitas yang mengandung "guru menayangkan video", buat satu baris:
+Untuk SETIAP aktivitas yang mengandung "guru menayangkan video" (kecuali rutin), buat satu baris:
 <div class="rpm-embed-visual">
   <p><strong>▶️ [Nama Aktivitas]</strong></p>
   <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video referensi di YouTube</a></p>
 </div>
-
-Jangan buat baris untuk aktivitas rutin (salam, doa, absensi).
 
 <div class="kop-surat">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" class="logo">
