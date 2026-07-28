@@ -31,4 +31,18 @@ Model AI yang digunakan adalah **`gemini-3.6-flash`**. INI BENAR dan SUDAH RILIS
 JANGAN sekali-kali mengubah nama model ini kecuali user secara eksplisit memerintahkan.
 Ini berlaku di semua file: `server.ts`, `api/generate.ts`, `api/revise.ts`, `api/revise-chat.ts`.
 
+## 4. Fitur Website Generator (Endpoint `/api/generate-website.ts`)
+- **Tujuan**: Menghasilkan website pembelajaran interaktif untuk SISWA (bukan guru).
+- **Gaya Desain**: Neo Brutalism — border hitam tebal 4px, shadow offset 6px 6px 0 #000, warna #FFD700 #FF6B6B #4ECDC4 #000 #fff. Sidebar gelap (#1a1a2e). Custom scrollbar.
+- **Struktur WAJIB**: Beranda ➔ Tujuan ➔ Pertemuan (Awal/Inti/Penutup) ➔ Game ➔ Evaluasi per Pertemuan.
+- **Kegiatan Awal**: Soal dari ASESMEN DIAGNOSTIK RPM, dibungkus permainan interaktif (puzzle, teka-teki, drag & drop, tebak gambar).
+- **Kegiatan Inti**: Jika ada "tampilkan video/gambar/ilustrasi" → buat ANIMASI HTML/SVG/CANVAS interaktif (bukan embed). Clue interaktif (bukan jawaban).
+- **Kegiatan Penutup**: Refleksi emoji/sentimen interaktif.
+- **Evaluasi**: Soal PERSIS Asesmen Sumatif RPM (soal, opsi, jumlah), ditampilkan PER PERTEMUAN (jika 4 pertemuan → 4 set terpisah). Jangan tampilkan kunci jawaban.
+- **Game**: Minimal 1 game edukasi (puzzle, drag, tebak) murni JavaScript.
+- **Notifikasi**: Semua notifikasi pake DIV pop-up kustom (bukan alert/confirm browser).
+- **API Key**: Support customApiKey dari pengaturan (sama seperti RPM).
+- **Output**: Satu file HTML utuh, inline CSS/JS, zero dependencies.
+- **Validasi & Retry**: Jika output bukan HTML valid, otomatis retry dengan prompt singkat.
+
 
