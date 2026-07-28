@@ -92,10 +92,26 @@ async function startServer() {
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
 ATURAN EMBED VISUAL:
-- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-visual"><p><strong>🖼 Visual Pembelajaran:</strong></p><p>📌 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar di Google Images</a></p><p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat gambar dengan Bing AI (gratis)</a></p><p><em>Prompt Bing: "PROMPT"</em></p></div>
-   GANTI KEYWORD dengan kata kunci Google Images dalam Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi gambar dalam Bahasa Inggris + "educational illustration, flat design, colorful".
-- Jika aktivitas mengandung "guru menayangkan/memperlihatkan video", sematkan <div class="rpm-embed-visual"><p><strong>🎬 Video Pembelajaran:</strong></p><p>▶️ <a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video di YouTube</a></p></div> dengan KEYWORD kata kunci Bahasa Indonesia.
-- Jangan sematkan untuk aktivitas rutin (salam, doa, absensi).
+Di bagian paling bawah RPM (setelah Refleksi), buat satu bagian khusus:
+<div class="rpm-section-title">LAMPIRAN 3: BAHAN BACAAN & REFERENSI VISUAL</div>
+<p style="margin-bottom: 8px;">Berikut adalah referensi visual dan bahan bacaan untuk mendukung kegiatan pembelajaran:</p>
+
+Untuk SETIAP aktivitas yang mengandung "guru menampilkan/memperlihatkan gambar/ilustrasi/foto" atau "pertanyaan pemantik/apersepsi", buat satu baris:
+<div class="rpm-embed-visual">
+  <p><strong>📌 [Nama Aktivitas]</strong></p>
+  <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Cari gambar referensi di Google Images</a></p>
+  <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Buat ilustrasi dengan Bing Image Creator</a></p>
+  <p><em>Prompt: "PROMPT"</em></p>
+</div>
+GANTI KEYWORD dengan kata kunci Bahasa Indonesia SPESIFIK. GANTI PROMPT dengan deskripsi Bahasa Inggris untuk Bing + "educational illustration, flat design, colorful".
+
+Untuk SETIAP aktivitas yang mengandung "guru menayangkan video", buat satu baris:
+<div class="rpm-embed-visual">
+  <p><strong>▶️ [Nama Aktivitas]</strong></p>
+  <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">Cari video referensi di YouTube</a></p>
+</div>
+
+Jangan buat baris untuk aktivitas rutin (salam, doa, absensi).
 
 <div class="kop-surat">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" class="logo">
@@ -103,7 +119,7 @@ ATURAN EMBED VISUAL:
         <h3>PEMERINTAH KOTA PALEMBANG</h3>
         <h3>DINAS PENDIDIKAN</h3>
         <h3 style="font-size: 1.2em; font-weight: bold;">SMP NEGERI 58 PALEMBANG</h3>
-        <p style="font-size: 0.8em; font-style: italic; text-align: center;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
+        <p style="font-size: 0.8em; font-style: italic; text-align: center !important;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
     </div>
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/logo58.png" alt="Logo Kanan" class="logo">
 </div>
