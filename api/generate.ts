@@ -140,7 +140,7 @@ PERHATIAN KETAT:
 5. JUMLAH PERTEMUAN: Karena guru memilih ${data.meetingCount}, saya SUDAH MENYEDIAKAN kerangka kotak HTML khusus untuk setiap pertemuan. JANGAN DISINGKAT! JABARKAN aktivitas setiap pertemuan secara komprehensif.
 6. EMBED VISUAL — WAJIB! JANGAN LEWATKAN:
    SETIAP KALI ada kata "guru menampilkan gambar/ilustrasi/foto", "pertanyaan pemantik", atau "apersepsi", kamu WAJIB menyisipkan kode HTML ini PERSIS setelah teks deskripsi aktivitas tersebut:
-   <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div>
+   <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div>
    GANTI KEYWORD dengan kata kunci Bahasa Inggris spesifik sesuai konteks aktivitas. Contoh: "palembang fishcake" untuk pempek, "train station queue" untuk antrian.
 
    SETIAP KALI ada kata "guru menayangkan/menampilkan video", kamu WAJIB menyisipkan:

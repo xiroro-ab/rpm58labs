@@ -92,9 +92,9 @@ async function startServer() {
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
 ATURAN EMBED VISUAL:
-- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto", sematkan <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD kata kunci Bahasa Inggris yang relevan.
+- Jika aktivitas mengandung "guru menampilkan/memperlihatkan/menunjukkan gambar/ilustrasi/foto", sematkan <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD kata kunci Bahasa Inggris yang relevan.
 - Jika aktivitas mengandung "guru menayangkan/memperlihatkan video", sematkan <div class="rpm-embed-video"><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">🎥 Klik Untuk Melihat Referensi Video Ini di YouTube</a></div> dengan KEYWORD kata kunci Bahasa Indonesia.
-- Jika aktivitas mengandung "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-image"><img src="https://source.unsplash.com/600x300/?KEYWORD" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD relevan.
+- Jika aktivitas mengandung "pertanyaan pemantik/apersepsi", sematkan <div class="rpm-embed-image"><img src="https://picsum.photos/seed/KEYWORD/600/300" alt="KEYWORD" loading="lazy" /></div> dengan KEYWORD relevan.
 - Jangan sematkan gambar/video untuk aktivitas rutin seperti salam, doa, absensi.
 - Pastikan KEYWORD diganti dengan kata kunci SPESIFIK dalam Bahasa Inggris (untuk gambar) atau Indonesia (untuk video).
 
@@ -104,7 +104,7 @@ ATURAN EMBED VISUAL:
         <h3>PEMERINTAH KOTA PALEMBANG</h3>
         <h3>DINAS PENDIDIKAN</h3>
         <h3 style="font-size: 1.2em; font-weight: bold;">SMP NEGERI 58 PALEMBANG</h3>
-        <p style="font-size: 0.8em; font-style: italic;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
+        <p style="font-size: 0.8em; font-style: italic; text-align: center;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
     </div>
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/logo58.png" alt="Logo Kanan" class="logo">
 </div>
@@ -412,8 +412,8 @@ try {
             .rpm-embed-image { margin: 8px 0; text-align: center; }
             .rpm-embed-image img { max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
             .rpm-embed-video { margin: 8px 0; text-align: center; }
-            .rpm-embed-video a { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #ff0000; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
-            .rpm-embed-video a:hover { background: #cc0000; }
+                        .rpm-embed-video a { display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 10px 20px !important; background: #ff0000 !important; color: white !important; border-radius: 8px !important; text-decoration: none !important; font-weight: 600 !important; font-size: 14px !important; }
+            .rpm-embed-video a:hover { background: #cc0000 !important; }
 
           </style>
         </head>
