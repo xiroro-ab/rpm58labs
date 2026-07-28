@@ -74,19 +74,44 @@ export default async function handler(req: any, res: any) {
 
     let websiteHtml = response.text || '';
 
-    // Bersihkan markdown code block jika ada
-    websiteHtml = websiteHtml.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    // Bersihkan markdown
+    websiteHtml = websiteHtml.replace(/```[\s\S]*?```/g, '').trim();
 
-    // Pastikan output dimulai dengan <!DOCTYPE html> atau <html>
-    if (!websiteHtml.startsWith('<!DOCTYPE') && !websiteHtml.startsWith('<html') && !websiteHtml.startsWith('<HTML')) {
-      // Coba ekstrak HTML dari response jika ada markdown atau teks lain
-      const htmlMatch = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
-      if (htmlMatch) {
-        websiteHtml = htmlMatch[1];
-      }
+    // Ekstrak HTML jika ada
+    const htmlMatch = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+    if (htmlMatch) {
+      websiteHtml = htmlMatch[1];
     }
 
-    res.json({ html: websiteHtml });
+    // Validasi: pastikan hasilnya HTML utuh
+    const isValid = websiteHtml.includes('</html>') && websiteHtml.length > 500;
+
+    // Jika tidak valid, coba generate ulang dengan prompt super pendek
+    if (!isValid) {
+      console.log('First attempt invalid HTML, retrying with short prompt...');
+      const shortPrompt = [
+        'Buat website pembelajaran interaktif untuk siswa dalam SATU file HTML berdasarkan RPM di bawah.',
+        'Gaya Neo Brutalism: border hitam 4px, shadow offset 6px, warna #FFD700 #FF6B6B #4ECDC4 #000 #fff.',
+        'WAJIB: sidebar navigasi, custom pop-up notif (bukan alert), pertanyaan pemantik interaktif dengan animasi,',
+        'kegiatan inti dengan clue (bukan jawaban), game edukasi, evaluasi tanpa kunci.',
+        'JANGAN gunakan markdown. Output LANGSUNG <!DOCTYPE html>... tanpa teks lain.',
+        '',
+        'TOPIK: ' + topic,
+        'RPM:',
+        html,
+      ].join('\n');
+
+      const retry = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: shortPrompt,
+      });
+
+      websiteHtml = (retry.text || '').replace(/```[\s\S]*?```/g, '').trim();
+      const retryMatch = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+      if (retryMatch) websiteHtml = retryMatch[1];
+    }
+
+    res.json({ html: websiteHtml || '<html><body><p>Gagal generate website. Coba lagi.</p></body></html>' });
   } catch (error: any) {
     console.error('Generate Website Error:', error);
     if (!res.headersSent) res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
