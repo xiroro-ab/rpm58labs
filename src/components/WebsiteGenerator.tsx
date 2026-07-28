@@ -20,9 +20,10 @@ function saveHistory(items: WebHistoryItem[]) {
 interface WebsiteGeneratorProps {
   rpmHtml: string;
   topic: string;
+  customApiKey?: string;
 }
 
-export default function WebsiteGenerator({ rpmHtml, topic }: WebsiteGeneratorProps) {
+export default function WebsiteGenerator({ rpmHtml, topic, customApiKey }: WebsiteGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [websiteHtml, setWebsiteHtml] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +48,7 @@ export default function WebsiteGenerator({ rpmHtml, topic }: WebsiteGeneratorPro
       const res = await fetch('/api/generate-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: rpmHtml, topic }),
+        body: JSON.stringify({ html: rpmHtml, topic, customApiKey }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
@@ -97,7 +98,7 @@ export default function WebsiteGenerator({ rpmHtml, topic }: WebsiteGeneratorPro
       const res = await fetch('/api/revise-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: websiteHtml, instruction: chatInput }),
+        body: JSON.stringify({ html: websiteHtml, instruction: chatInput, customApiKey }),
       });
       const data = await res.json();
       if (data.html) {

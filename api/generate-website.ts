@@ -7,11 +7,12 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, topic } = body;
+    const { html, topic, customApiKey } = body;
     if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY belum dikonfigurasi' });
+    const key = customApiKey || process.env.GEMINI_API_KEY;
+    if (!key) return res.status(500).json({ error: 'API Key diperlukan. Masukkan di Pengaturan.' });
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: key });
     const prompt = [
       'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA berdasarkan RPM.',
       'Website ini adalah media belajar mandiri siswa — BUKAN dokumen guru.',

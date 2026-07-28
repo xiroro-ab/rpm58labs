@@ -14,9 +14,10 @@ interface ResultRPMProps {
   onSaveEdit?: (editedHtml: string) => void;
   formData: RPMFormData | null;
   isGeneratingContinue: boolean;
+  customApiKey?: string;
 }
 
-export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit }: ResultRPMProps) {
+export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit, customApiKey }: ResultRPMProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState(markdown);
@@ -165,7 +166,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <span className="hidden sm:inline">Cek</span>
           </button>
 
-          <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} />
+          <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} />
 
           <button
             onClick={handlePrintPDF}

@@ -7,11 +7,12 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, instruction } = body;
+    const { html, instruction, customApiKey } = body;
     if (!html || !instruction) return res.status(400).json({ error: 'HTML dan instruksi diperlukan' });
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY belum dikonfigurasi' });
+    const key = customApiKey || process.env.GEMINI_API_KEY;
+    if (!key) return res.status(500).json({ error: 'API Key diperlukan' });
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: key });
     const prompt = [
       'Anda adalah web developer. Revisi website pembelajaran berikut sesuai instruksi user.',
       'PERTAHANKAN tema Neo Brutalism, struktur, dan gaya desain. Jangan ubah layout di luar yang diminta.',

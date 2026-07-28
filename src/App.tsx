@@ -686,7 +686,8 @@ export default function App() {
             onReset={handleReset} 
             onContinue={handleContinue} 
             formData={formData} 
-            isGeneratingContinue={isGeneratingContinue} />
+            isGeneratingContinue={isGeneratingContinue}
+            customApiKey={customApiKey} />
           )}
         </section>
         <PWAPrompt isOpen={isPWAPromptOpen} onClose={() => setIsPWAPromptOpen(false)} />
