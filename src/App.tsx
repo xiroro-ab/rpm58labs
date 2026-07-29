@@ -188,6 +188,28 @@ export default function App() {
       setCurrentHistoryId(newItem.id);
       
       toast.success('RPM berhasil dibuat!');
+      
+      // Enhance RPM with SVG diagrams (background)
+      const enhanceId = newItem.id;
+      (async () => {
+        try {
+          const er = await fetch('/api/enhance-rpm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ html: finalResultText, customApiKey }),
+          });
+          const ed = await er.json();
+          if (ed.html && ed.enhanced > 0) {
+            setResult(ed.html);
+            setHistory(prev => {
+              const n = [...prev];
+              const i = n.findIndex(item => item.id === enhanceId);
+              if (i !== -1) { n[i].markdown = ed.html; localStorage.setItem('rpmHistory', JSON.stringify(n)); }
+              return n;
+            });
+          }
+        } catch (e) { console.error('Enhance RPM failed', e); }
+      })();
     } catch (err: any) {
       setIsWaitingForFirstChunk(false);
       console.error(err);
