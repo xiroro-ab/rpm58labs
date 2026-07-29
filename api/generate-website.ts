@@ -14,16 +14,14 @@ export default async function handler(req: any, res: any) {
 
     const ai = new GoogleGenAI({ apiKey: key });
 
-    // Helper: call Gemini with retry on 503
-    async function callGemini(prompt: string): Promise<string> {
-      for (let attempt = 0; attempt < 3; attempt++) {
+    async function callAI(prompt: string): Promise<string> {
+      for (let i = 0; i < 3; i++) {
         try {
-          const resp = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
-          return (resp.text || '').replace(/```[\s\S]*?```/g, '').trim();
+          const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
+          return (r.text || '').replace(/```[\s\S]*?```/g, '').trim();
         } catch (e: any) {
-          const is503 = e.message?.includes('503') || e.message?.includes('UNAVAILABLE') || e.status === 503;
-          if (is503 && attempt < 2) {
-            await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+          if ((e.message?.includes('503') || e.status === 503) && i < 2) {
+            await new Promise(r => setTimeout(r, (i + 1) * 2000));
             continue;
           }
           throw e;
@@ -32,22 +30,62 @@ export default async function handler(req: any, res: any) {
       return '';
     }
 
-    // PHASE 1: Generate structure + content (detailed prompt — same as best version)
-    const prompt1 = [
-      'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA.',
-      'Konten dari RPM: topik, tujuan, kegiatan per pertemuan, evaluasi.',
+    // Prompt LENGKAP seperti dulu (sebelum fase2) — isi: puzzle, animasi, game, teka-teki, dll
+    const prompt = [
+      'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA berdasarkan RPM.',
+      'Website ini untuk siswa belajar mandiri, BUKAN dokumen guru.',
       '',
-      'DESAIN: Neo Brutalism — border 4px #000, shadow 6px 6px 0 #000, #FFD700 #FF6B6B #4ECDC4.',
-      'Sidebar kiri (#1a1a2e) navigasi, header sticky.',
-      'Custom notif DIV pop-up, bukan alert browser.',
+      '=== STRUKTUR WAJIB ===',
+      '1. SIDEBAR kiri (toggle): Beranda ➔ Tujuan ➔ Pertemuan 1/2/dst ➔ Game ➔ Evaluasi per Pertemuan',
+      '2. HEADER sticky: judul mapel + hamburger menu',
+      '3. TIAP PERTEMUAN berisi 3 section berurutan: Awal ➔ Inti ➔ Penutup — dengan LABEL JELAS buat guru',
+      '4. LABEL kegiatan HARUS sama persis dengan di RPM (misal: "Kegiatan Awal", "Fase 1: Orientasi") biar guru tau ini bagian mana',
+      '5. GAME edukasi (min 1, seru, pakai JS murni — puzzle/drag/tebak)',
+      '6. EVALUASI: soal per PERTEMUAN, jangan digabung',
       '',
-      'STRUKTUR PER PERTEMUAN: Awal (soal interaktif dari Asesmen Diagnostik) ➔ Inti (clue + animasi) ➔ Penutup (refleksi).',
-      'Evaluasi: soal sama persis Asesmen Sumatif per pertemuan, tanpa kunci.',
-      'Game edukasi interaktif (puzzle/drag/tebak) pake JS.',
-      'Zero dependencies, responsive mobile.',
+      '=== KUALITAS ANIMASI & SVG (PENTING!) ===',
+      'Jika RPM menyebut "menampilkan video/menayangkan video/memperlihatkan gambar/ilustrasi":',
+      'BUAT ANIMASI atau SVG interaktif yang BENAR-BENAR BAGUS, SERU, dan MEMBANTU PEMAHAMAN:',
+      '- Gunakan HTML + CSS + JavaScript murni (bukan embed YouTube/Vimeo)',
+      '- Animasi harus GERAK, bukan gambar diam — ada transisi, efek, atau interaksi',
+      '- SVG/Canvas harus detail, proporsional, dan INFORMATIF — siswa bisa paham cuma dari liat visualnya',
+      '- Tambahkan teks label, warna kontras, dan elemen yang bisa diklik/disentuh',
+      '- Contoh: "proses antrian tiket" ➔ animasi orang bergerak ngantri; "sistem komputer" ➔ diagram interaktif 3 komponen; "flowchart" ➔ diagram alur dengan animasi langkah',
+      '- JANGAN asal-asalan. Visual ini adalah PENGGANTI video — harus sebagus mungkin membantu siswa paham.',
       '',
-      'JANGAN embed YouTube/video eksternal. Buat animasi sendiri pake HTML/JS.',
-      'Output <!DOCTYPE html> langsung, tanpa markdown.',
+      '=== INTERAKTIF WAJIB ===',
+      'Setiap pertanyaan HARUS berbentuk PERMAINAN, bukan teks doang:',
+      '- Puzzle (drag & drop, jodoh, susun kata)',
+      '- Teka-teki, tebak gambar, kuis interaktif dengan timer/efek',
+      '- Animasi yang bisa diklik/digerakin',
+      '- Custom notif (bukan alert)',
+      '',
+      '=== ISI PER SECTION ===',
+      'A. KEGIATAN AWAL:',
+      '   - Soal dari ASESMEN DIAGNOSTIK di RPM (soal asli, jangan bikin baru)',
+      '   - Bungkus dalam PERMAINAN interaktif (teka-teki, tebak, puzzle)',
+      '',
+      'B. KEGIATAN INTI:',
+      '   - Jika RPM bilang "tampilkan video/tayangkan video/gambar/ilustrasi":',
+      '     BUAT ANIMASI HTML/SVG/CANVAS yang menggambarkan adegan itu (bukan embed video)',
+      '   - Jika ada soal: beri CLUE interaktif (hover/klik), BUKAN jawaban',
+      '',
+      'C. KEGIATAN PENUTUP:',
+      '   - Refleksi interaktif (pilih emoji/sentimen, tarik slider)',
+      '',
+      'D. EVALUASI:',
+      '   - Soal sama PERSIS Asesmen Sumatif RPM (soal, opsi, jumlah)',
+      '   - TAMPILKAN PER PERTEMUAN (misal: Pertemuan 1 ➔ soal 1-10, Pertemuan 2 ➔ 11-20, dst)',
+      '   - JANGAN tampilkan kunci jawaban',
+      '',
+      '=== GAYA & TEKNIS ===',
+      '- Neo Brutalism: border 4px hitam, shadow offset 6px 6px 0 #000',
+      '- Warna: #FFD700, #FF6B6B, #4ECDC4, #000, #fff',
+      '- Sidebar background gelap (#1a1a2e), scrollbar kUSTOM sesuai tema (bukan bawaan browser)',
+      '- Satu file HTML, inline CSS/JS, zero dependencies',
+      '- Semua notif pake DIV kustom (bukan alert/confirm)',
+      '- Responsive mobile',
+      '- Output LANGSUNG <!DOCTYPE html> tanpa markdown, tanpa teks lain',
       '',
       'TOPIK: ' + topic,
       '',
@@ -55,46 +93,10 @@ export default async function handler(req: any, res: any) {
       html,
     ].join('\n');
 
-    const resp1 = await callGemini(prompt1);
-    let websiteHtml = resp1;
+    let websiteHtml = await callAI(prompt);
 
-    // Extract HTML
     const m1 = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
     if (m1) websiteHtml = m1[1];
-
-    // If too short, retry with simpler prompt
-    if (!websiteHtml.includes('</html>') || websiteHtml.length < 1000) {
-      const prompt2 = [
-        'Buat website pembelajaran HTML Neo Brutalism dari RPM. Satu file, zero deps.',
-        'TOPIK: ' + topic,
-        'Output <!DOCTYPE html> langsung.',
-        'RPM:', html,
-      ].join('\n');
-      const resp2 = await callGemini(prompt2);
-      websiteHtml = resp2;
-      const m2 = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
-      if (m2) websiteHtml = m2[1];
-    }
-
-    // PHASE 2: Enhance - generate a game section if the HTML has one
-    if (websiteHtml.includes('</html>')) {
-      try {
-        const gamePrompt = [
-          'Buat game edukasi HTML+CSS+JS interaktif untuk website pembelajaran. Tema Neo Brutalism.',
-          'Game: puzzle, drag & drop, atau tebak gambar. Satu file, zero deps, responsive.',
-          'Kreatif dan seru. Output kode HTML game LENGKAP (bisa langsung dipasang).',
-          'TOPIC: ' + topic,
-          'RPM:', html,
-        ].join('\n');
-        const gameResp = await callGemini(gamePrompt);
-        let gameHtml = gameResp;
-        const gMatch = gameHtml.match(/<section[\s\S]*?<\/section>|<div[\s\S]*?<\/div>/i);
-        if (gMatch && gMatch[0].length > 200) {
-          // Insert game before </body>
-          websiteHtml = websiteHtml.replace('</body>', gMatch[0] + '\n</body>');
-        }
-      } catch (e) { console.error('Game gen failed', e); }
-    }
 
     res.json({ html: websiteHtml || '<html><body><p>Coba generate ulang.</p></body></html>' });
   } catch (error: any) {
