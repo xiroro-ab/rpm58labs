@@ -311,6 +311,9 @@ LEWATI aktivitas rutin (salam, doa, absensi).
         } else if (provider === 'deepseek') {
           baseURL = 'https://api.deepseek.com/v1';
           modelName = 'deepseek-chat';
+        } else if (provider === 'groq') {
+          baseURL = 'https://api.groq.com/openai/v1';
+          modelName = 'llama3-70b-8192';
         } else if (provider === 'odysseus') {
           baseURL = 'https://api.odysseus.ai/v1';
           modelName = 'odysseus-model';

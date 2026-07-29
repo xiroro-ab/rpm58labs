@@ -144,7 +144,7 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
    <div class="rpm-embed-visual">
-     <p><strong>Pertemuan [N] ó [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] ÔøΩ [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p>üîç <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Google Images</a></p>
      <p>üé® <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Bing Image Creator</a></p>
      <p><em>Prompt: "PROMPT"</em></p>
@@ -152,7 +152,7 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menayangkan video":
    <div class="rpm-embed-visual">
-     <p><strong>Pertemuan [N] ó [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] ÔøΩ [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">YouTube</a></p>
    </div>
 
@@ -480,6 +480,9 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
         } else if (provider === 'deepseek') {
           baseURL = 'https://api.deepseek.com/v1';
           modelName = 'deepseek-chat';
+        } else if (provider === 'groq') {
+          baseURL = 'https://api.groq.com/openai/v1';
+          modelName = 'llama3-70b-8192';
         } else if (provider === 'odysseus') {
           baseURL = 'https://api.odysseus.ai/v1';
           modelName = 'odysseus-model';
