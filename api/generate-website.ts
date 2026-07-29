@@ -63,10 +63,10 @@ export default async function handler(req: any, res: any) {
       resultHtml = response.text || '';
     } else {
       let baseURL = 'https://api.groq.com/openai/v1';
-      let modelName = 'llama3-70b-8192';
+      let modelName = 'llama-3.3-70b-versatile';
       if (provider === 'openai') { baseURL = ''; modelName = 'gpt-4o-mini'; }
       else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
-      else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama3-70b-8192'; }
+      else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
 
       const openai = new OpenAI({ apiKey: key, baseURL: baseURL || undefined });
       const completion = await openai.chat.completions.create({
