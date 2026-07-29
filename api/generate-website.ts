@@ -1,6 +1,27 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 
+async function callAI(prompt: string, key: string, provider: string): Promise<string> {
+  if (provider === 'gemini') {
+    const ai = new GoogleGenAI({ apiKey: key });
+    const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
+    return (r.text || '').replace(/```[\s\S]*?```/g, '').trim();
+  }
+  let baseURL = 'https://api.groq.com/openai/v1';
+  let modelName = 'llama-3.3-70b-versatile';
+  if (provider === 'openai') { baseURL = ''; modelName = 'gpt-4o-mini'; }
+  else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
+
+  const oa = new OpenAI({ apiKey: key, baseURL: baseURL || undefined });
+  const c = await oa.chat.completions.create({ model: modelName, messages: [{ role: 'user', content: prompt }] });
+  return (c.choices[0]?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim();
+}
+
+function extractHTML(text: string): string {
+  const m = text.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+  return m ? m[1] : text;
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
 
@@ -12,86 +33,79 @@ export default async function handler(req: any, res: any) {
     if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
     const key = customApiKey || process.env.GEMINI_API_KEY;
     if (!key) return res.status(500).json({ error: 'API Key diperlukan.' });
-
     const provider = aiProvider || 'gemini';
 
-    const promptText = [
-      'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA berdasarkan RPM.',
-      'Website ini untuk siswa belajar mandiri, BUKAN dokumen guru.',
+    // === PHASE 1: Generate website structure + content (no heavy games yet) ===
+    const skeletonPrompt = [
+      'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA.',
+      'Konten dari RPM: topik, tujuan, kegiatan per pertemuan (Awal/Inti/Penutup), evaluasi.',
       '',
-      '=== STRUKTUR WAJIB ===',
-      '1. SIDEBAR kiri (toggle): Beranda, Tujuan, Pertemuan 1/2/dst, Game, Evaluasi per Pertemuan',
-      '2. HEADER sticky: judul + hamburger menu',
-      '3. TIAP PERTEMUAN berisi 3 section berurutan: Awal ➔ Inti ➔ Penutup',
-      '4. GAME edukasi (min 1, seru, pakai JS murni — puzzle/drag/tebak)',
-      '5. EVALUASI: soal per PERTEMUAN, jangan digabung',
+      'WAJIB: sidebar, header sticky, Neo Brutalism (#FFD700 #FF6B6B #4ECDC4 #000 #fff), border 4px hitam, shadow 6px 6px 0 #000.',
+      'Labekl kegiatan HARUS sama seperti di RPM.',
       '',
-      '=== KUALITAS ANIMASI & SVG ===',
-      'Jika RPM menyebut "menampilkan video/gambar/ilustrasi":',
-      'BUAT ANIMASI HTML+CSS+JS interaktif yang BENAR-BENAR BAGUS dan SERU:',
-      '- Animasi GERAK (transisi, efek), bukan gambar diam',
-      '- Bisa diklik/disentuh siswa',
-      '- Detail, proporsional, informatif — siswa paham dari visualnya',
-      '- JANGAN embed YouTube — bikin sendiri pake HTML/JS',
+      'UNTUK SEKARANG:',
+      '- Kegiatan Awal: soal dari Asesmen Diagnostik (tampilkan sebagai teks dulu, sederhana)',
+      '- Kegiatan Inti: konten teks + tempat kosong untuk visual nanti',
+      '- Evaluasi: soal dari Asesmen Sumatif, per pertemuan, tanpa kunci',
+      '- Custom notif DIV pop-up (bukan alert)',
       '',
-      '=== INTERAKTIF ===',
-      'Setiap pertanyaan HARUS berbentuk PERMAINAN (puzzle, drag, tebak, teka-teki)',
-      'Custom notif DIV pop-up (bukan alert browser)',
-      '',
-      '=== KONTEN ===',
-      'A. KEGIATAN AWAL: soal dari ASESMEN DIAGNOSTIK RPM, interaktif',
-      'B. KEGIATAN INTI: label fase jelas, clue interaktif (bukan jawaban), animasi kalo ada "tampilkan video/gambar"',
-      'C. KEGIATAN PENUTUP: refleksi emoji/slider',
-      'D. EVALUASI: soal SAMA PERSIS Asesmen Sumatif, per pertemuan, tanpa kunci',
-      '',
-      '=== GAYA ===',
-      'Neo Brutalism: border 4px hitam, shadow 6px 6px 0 #000, #FFD700 #FF6B6B #4ECDC4 #000 #fff',
-      'Sidebar #1a1a2e, scrollbar kustom, responsive, zero dependencies, satu file HTML',
-      'Output LANGSUNG <!DOCTYPE html> tanpa markdown, tanpa teks lain',
+      'BELUM perlu game berat atau animasi kompleks. Fokus struktur dulu.',
+      'Besarkan tempat untuk animasi nanti dengan komentar <!-- ANIMASI: [nama] -->',
+      'Output <!DOCTYPE html> langsung.',
       '',
       'TOPIK: ' + topic,
-      '',
-      'RPM:',
-      html,
+      'RPM:', html,
     ].join('\n');
 
-    let resultHtml = '';
+    let websiteHtml = extractHTML(await callAI(skeletonPrompt, key, provider));
 
-    if (provider === 'gemini') {
-      const ai = new GoogleGenAI({ apiKey: key });
-      const response = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: promptText });
-      resultHtml = response.text || '';
-    } else {
-      let baseURL = 'https://api.groq.com/openai/v1';
-      let modelName = 'llama-3.3-70b-versatile';
-      if (provider === 'openai') { baseURL = ''; modelName = 'gpt-4o-mini'; }
-      else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
-      else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
-
-      const openai = new OpenAI({ apiKey: key, baseURL: baseURL || undefined });
-      const completion = await openai.chat.completions.create({
-        model: modelName,
-        messages: [{ role: 'user', content: promptText }],
-      });
-      resultHtml = completion.choices[0]?.message?.content || '';
+    if (!websiteHtml.includes('</html>') || websiteHtml.length < 500) {
+      websiteHtml = extractHTML(await callAI(
+        'Buat website HTML Neo Brutalism sederhana. Output langsung. TOPIK: ' + topic + '\nRPM:\n' + html,
+        key, provider
+      ));
     }
 
-    resultHtml = resultHtml.replace(/```[\s\S]*?```/g, '').trim();
-    const htmlMatch = resultHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
-    if (htmlMatch) resultHtml = htmlMatch[1];
+    // === PHASE 2: Enhance with games and animations one by one ===
+    const sections = ['ANIMASI:', 'GAME:', 'KUIS:'];
+    for (const section of sections) {
+      const idx = websiteHtml.indexOf('<!-- ' + section);
+      if (idx === -1) continue;
 
-    if (!resultHtml.includes('</html>') || resultHtml.length < 500) {
-      if (provider === 'gemini') {
-        const shortPrompt = 'Buat website pembelajaran interaktif HTML. Neo Brutalism. Output langsung <!DOCTYPE html>. TOPIK: ' + topic + '\nRPM:\n' + html;
-        const ai = new GoogleGenAI({ apiKey: key });
-        const retry = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: shortPrompt });
-        resultHtml = (retry.text || '').replace(/```[\s\S]*?```/g, '').trim();
-        const m2 = resultHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
-        if (m2) resultHtml = m2[1];
+      const before = websiteHtml.substring(0, idx);
+      const after = websiteHtml.substring(idx);
+      const endIdx = after.indexOf('-->', 2);
+      const name = after.substring(0, endIdx + 3); // <!-- ANIMASI: xxx -->
+
+      const enhancePrompt = [
+        'Buat konten HTML+CSS+JS untuk ' + name.replace('<!--', '').replace('-->', '').trim() + ' dari RPM ini. Tema Neo Brutalism.',
+        'Hanya output kode HTML/JS yang dibutuhkan (tanpa <html><body>).',
+        'Kreatif, interaktif, seru untuk siswa.',
+        'RPM:', html,
+      ].join('\n');
+
+      const enhancement = await callAI(enhancePrompt, key, provider);
+      // Insert enhancement and remove comment
+      websiteHtml = before + enhancement + '\n' + after.substring(endIdx + 3);
+    }
+
+    // If no section markers found, try to enhance game/evaluasi sections by content
+    if (sections.every(s => !websiteHtml.includes('<!-- ' + s))) {
+      // Find Game section in the HTML
+      const gameMatch = websiteHtml.match(/<section[^>]*id="?game"?[^>]*>[\s\S]*?<\/section>/i);
+      if (!gameMatch) {
+        const anyGame = websiteHtml.match(/<div[^>]*>[\s\S]*?(?:Game|game|Permainan)[\s\S]*?<\/div>/i);
+        if (anyGame) {
+          const enhanceGame = await callAI(
+            'Buat game edukasi interaktif HTML+CSS+JS (puzzle/drag/tebak) dengan tema Neo Brutalism. Output langsung kode HTML. RPM:\n' + html,
+            key, provider
+          );
+          websiteHtml = websiteHtml.replace(anyGame[0], enhanceGame);
+        }
       }
     }
 
-    res.json({ html: resultHtml || '<html><body><p>Gagal generate. Coba lagi.</p></body></html>' });
+    res.json({ html: websiteHtml || '<html><body><p>Gagal generate.</p></body></html>' });
   } catch (error: any) {
     console.error('Generate Website Error:', error);
     if (!res.headersSent) res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
