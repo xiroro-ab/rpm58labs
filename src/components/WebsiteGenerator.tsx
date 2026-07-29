@@ -48,7 +48,7 @@ export default function WebsiteGenerator({ rpmHtml, topic, customApiKey }: Websi
       const res = await fetch('/api/generate-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: rpmHtml, topic, customApiKey }),
+        body: JSON.stringify({ html: rpmHtml, topic, customApiKey, aiProvider: localStorage.getItem('rpm_aiProvider') || 'gemini' }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
