@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone, User } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
@@ -10,6 +10,7 @@ import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { PWAPrompt } from './components/PWAPrompt';
 import { useConfirm } from './components/ConfirmDialog';
 import { analyticsManager } from './lib/analytics';
+import { AboutCreatorModal } from './components/AboutCreatorModal';
 
 export default function App() {
   const [result, setResult] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export default function App() {
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
+  const [isCreatorOpen, setIsCreatorOpen] = useState(false);
 
   const [isWaitingForFirstChunk, setIsWaitingForFirstChunk] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -612,6 +614,12 @@ export default function App() {
           >
             <Settings className="w-5 h-5" />
           </button>
+          <button onClick={() => setIsCreatorOpen(true)}
+            className="p-2.5 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
+            title="Tentang Pembuat"
+          >
+            <User className="w-5 h-5" />
+          </button>
           <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark shadow-button hover:shadow-button-hover transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span className="hidden sm:inline">Reset</span>
@@ -691,6 +699,7 @@ export default function App() {
           )}
         </section>
         <PWAPrompt isOpen={isPWAPromptOpen} onClose={() => setIsPWAPromptOpen(false)} />
+        <AboutCreatorModal isOpen={isCreatorOpen} onClose={() => setIsCreatorOpen(false)} />
       </main>
 
       {/* Footer */}
