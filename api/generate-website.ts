@@ -14,7 +14,25 @@ export default async function handler(req: any, res: any) {
 
     const ai = new GoogleGenAI({ apiKey: key });
 
-    // PHASE 1: Generate structure + content (lightweight)
+    // Helper: call Gemini with retry on 503
+    async function callGemini(prompt: string): Promise<string> {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const resp = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
+          return (resp.text || '').replace(/```[\s\S]*?```/g, '').trim();
+        } catch (e: any) {
+          const is503 = e.message?.includes('503') || e.message?.includes('UNAVAILABLE') || e.status === 503;
+          if (is503 && attempt < 2) {
+            await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+            continue;
+          }
+          throw e;
+        }
+      }
+      return '';
+    }
+
+    // PHASE 1: Generate structure + content (detailed prompt — same as best version)
     const prompt1 = [
       'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA.',
       'Konten dari RPM: topik, tujuan, kegiatan per pertemuan, evaluasi.',
@@ -37,8 +55,8 @@ export default async function handler(req: any, res: any) {
       html,
     ].join('\n');
 
-    const resp1 = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt1 });
-    let websiteHtml = (resp1.text || '').replace(/```[\s\S]*?```/g, '').trim();
+    const resp1 = await callGemini(prompt1);
+    let websiteHtml = resp1;
 
     // Extract HTML
     const m1 = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
@@ -52,8 +70,8 @@ export default async function handler(req: any, res: any) {
         'Output <!DOCTYPE html> langsung.',
         'RPM:', html,
       ].join('\n');
-      const resp2 = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt2 });
-      websiteHtml = (resp2.text || '').replace(/```[\s\S]*?```/g, '').trim();
+      const resp2 = await callGemini(prompt2);
+      websiteHtml = resp2;
       const m2 = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
       if (m2) websiteHtml = m2[1];
     }
@@ -68,8 +86,8 @@ export default async function handler(req: any, res: any) {
           'TOPIC: ' + topic,
           'RPM:', html,
         ].join('\n');
-        const gameResp = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: gamePrompt });
-        let gameHtml = (gameResp.text || '').replace(/```[\s\S]*?```/g, '').trim();
+        const gameResp = await callGemini(gamePrompt);
+        let gameHtml = gameResp;
         const gMatch = gameHtml.match(/<section[\s\S]*?<\/section>|<div[\s\S]*?<\/div>/i);
         if (gMatch && gMatch[0].length > 200) {
           // Insert game before </body>
