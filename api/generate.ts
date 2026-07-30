@@ -345,7 +345,7 @@ ${pengalamanBelajarHTML}
     <p style="margin: 0;">NIP. ${data.headmasterNip || '__________________'}</p>
   </div>
   <div>
-    <p style="margin: 0;">Palembang, ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
+        <p style="margin: 0;">${formattedDate}</p>
     <p style="margin: 0;"><b>Guru Mata Pelajaran</b></p>
     <div style="height: 70px;"></div>
     <p style="text-decoration: underline; font-weight: bold; margin: 0;">${data.teacher}</p>

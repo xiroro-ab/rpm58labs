@@ -88,6 +88,7 @@ async function startServer() {
 - Karakteristik Siswa: ${data.studentCharacteristics}
 - Moda Pembelajaran: ${data.learningMode}
 - Jumlah Pertemuan: ${data.meetingCount}
+- Tanggal Dokumen: ${data.documentDate || new Date().toISOString().split('T')[0]}
 
 WAJIB susun menggunakan struktur HTML di bawah. JANGAN gunakan markdown code block (` + '```html' + `). JANGAN HANYA MENYALIN KURUNG SIKU! Isi mendetail! ${isDaring ? "Tekankan interaksi digital/Zoom." : ""} ${isBlended ? "Gabungkan luring & daring." : ""}
 
