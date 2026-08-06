@@ -142,15 +142,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
           finalMode = true;
           finalText = buffer.slice(markerIdx + MARKER.length);
           buffer = '';
-          continue;
         }
-
-        // Belum marker: tampilkan progres AI menulis secara live
-        let live = buffer;
-        if (live.trim().startsWith('```html')) live = live.replace(/^```html\n?/, '');
-        else if (live.trim().startsWith('```')) live = live.replace(/^```\n?/, '');
-        if (live.trim().endsWith('```')) live = live.replace(/\n?```$/, '');
-        setTableHtml(live);
       }
 
       if (!finalMode) finalText = buffer;
@@ -224,6 +216,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
   return (
     <>
       <LoadingOverlay isVisible={isDownloading} message="Menyiapkan PDF Tabel Kisi-Kisi..." />
+      <LoadingOverlay isVisible={isGenerating} message="AI sedang membuat tabel kisi-kisi..." />
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm print:hidden">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
@@ -381,7 +374,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
                   </div>
                   <h3 className="text-lg font-semibold text-slate-700 mb-2">Belum Ada Tabel</h3>
                   <p className="text-sm text-slate-500 max-w-sm">
-                    Klik tombol "Generate Tabel Kisi-Kisi" untuk membuat 3 tabel kisi-kisi soal berdasarkan RPM yang sudah ada.
+                    Klik tombol "Generate Tabel Kisi-Kisi" untuk membuat kisi-kisi soal dan kartu soal berdasarkan RPM yang sudah ada.
                   </p>
                 </div>
               )}
