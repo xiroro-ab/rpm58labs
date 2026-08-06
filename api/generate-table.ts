@@ -63,11 +63,14 @@ function identitas(formData: any, formattedDate: string): string {
 
 const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;';
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
+// Penggabungan penuh tanpa pecah-ulang (tabel kisi-kisi & kartu soal pendek per kelompoknya).
+// Nilai di bawah membuat mergeCell tidak memotong sama sekali (1 blok utuh per nilai sama).
+const MERGE_SPAN = 1_000_000;
 
 // Gabung sel yang nilainya sama (baris kosong ikut nilai di atasnya).
-// Dibatasi `max` baris per gabungan: sel ber-rowspan terlalu tinggi TIDAK bisa dibelah oleh
-// PDF, sehingga memaksa pindah halaman (konten turun ke bawah). Dengan batas ini penggabungan
-// tetap rapi tapi tetap bisa memenggal halaman; teks diulang di batas agar tidak ada sel kosong.
+// Parameter `max`: batas baris per satu sel gabungan. Sel ber-rowspan terlalu TINGGI tidak bisa
+// dibelah oleh PDF, sehingga kelompok soal dipaksa pindah halaman; batasi hanya bila benar perlu.
+// Untuk kelompok kecil (kisi-kisi/indikator/kartu per TP) `max` besar → tampil sekali, tetap aman.
 function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan: number } | null)[] {
   const n = rows.length;
   const out = new Array(n).fill(null);
@@ -97,46 +100,9 @@ function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan:
   return out;
 }
 
-// Khusus kartu soal: CP digabung, lalu TP digabung DI DALAM kelompok CP yang sama (reset saat CP ganti).
-function kartuSpans(rows: any[], maxCp = 3, maxTp = 3) {
-  const cp = mergeCell(rows, 'cp', maxCp);
-  const n = rows.length;
-  const tp = new Array(n).fill(null);
-  let i = 0;
-  while (i < n) {
-    if (!cp[i]) { i++; continue; }
-    const end = i + cp[i].rowspan;
-    let prevTp = '';
-    let k = i;
-    while (k < end) {
-      let text = String(rows[k]?.['tp'] ?? '').trim();
-      if (!text) text = prevTp;
-      if (!text) { tp[k] = { text: '', rowspan: 1 }; k++; continue; }
-      let cnt = 1;
-      let j = k + 1;
-      while (j < end) {
-        const nt = String(rows[j]?.['tp'] ?? '').trim() || text;
-        if (nt === text) { cnt++; j++; } else break;
-      }
-      let z = k;
-      let remain = cnt;
-      while (remain > 0) {
-        const take = Math.min(maxTp, remain);
-        tp[z] = { text, rowspan: take };
-        z += take;
-        remain -= take;
-      }
-      prevTp = text;
-      k += cnt;
-    }
-    i = end;
-  }
-  return rows.map((_, idx) => ({ cp: cp[idx], tp: tp[idx] }));
-}
-
 function buildKisiKisi(rows: any[]): string {
-  const cpM = mergeCell(rows, 'cp');
-  const tpM = mergeCell(rows, 'tp');
+  const cpM = mergeCell(rows, 'cp', MERGE_SPAN);
+  const tpM = mergeCell(rows, 'tp', MERGE_SPAN);
   const body = (rows || []).map((r: any, i: number) => {
     const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
     const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
@@ -167,7 +133,7 @@ function buildKisiKisi(rows: any[]): string {
 }
 
 function buildIndikator(rows: any[]): string {
-  const cpM = mergeCell(rows, 'cp');
+  const cpM = mergeCell(rows, 'cp', MERGE_SPAN);
   const body = (rows || []).map((r: any, i: number) => {
     const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
     return `
@@ -196,24 +162,34 @@ function buildIndikator(rows: any[]): string {
 }
 
 function buildKartuSoal(rows: any[]): string {
-  const sp = kartuSpans(rows);
+  // CP ditampilkan SEKALI di atas tabel (bukan per baris). Kolom tabel hanya TP/Soal/Kunci,
+  // sehingga tidak ada sel gabungan raksasa yang memaksa pindah halaman di PDF.
+  let firstCp = '';
+  for (const r of (rows || [])) {
+    const c = String(r?.cp ?? '').trim();
+    if (c) { firstCp = c; break; }
+  }
+  const cpLine = firstCp
+    ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
+    : '';
+
+  const tpM = mergeCell(rows, 'tp', MERGE_SPAN);
   const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = sp[i].cp ? `<td style="${TD_STYLE}" rowspan="${sp[i].cp.rowspan}">${escapeHtml(sp[i].cp.text)}</td>` : '';
-    const tpCell = sp[i].tp ? `<td style="${TD_STYLE}" rowspan="${sp[i].tp.rowspan}">${escapeHtml(sp[i].tp.text)}</td>` : '';
+    const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
     return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        ${cpCell}${tpCell}
+        ${tpCell}
         <td style="${TD_STYLE}">${escapeHtml(r?.soal)}</td>
         <td style="${TD_STYLE} text-align: center;"><b>${escapeHtml(r?.kunciJawaban)}</b></td>
       </tr>`;
   }).join('');
   return `
+${cpLine}
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
       <tr>
         <th style="${TH_STYLE} width: 4%;">No</th>
-        <th style="${TH_STYLE} width: 14%;">CP</th>
         <th style="${TH_STYLE} width: 16%;">TP</th>
         <th style="${TH_STYLE}">Soal</th>
         <th style="${TH_STYLE} width: 10%;">Kunci Jawaban</th>
