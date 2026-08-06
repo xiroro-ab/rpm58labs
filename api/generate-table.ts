@@ -64,54 +64,82 @@ function identitas(formData: any, formattedDate: string): string {
 const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;';
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
 
-// Hitung rowspan: baris yang nilainya sama (atau kosong = ikut nilai sebelumnya) digabung menjadi satu sel.
-function colSpans(rows: any[], key: string): number[] {
+// Gabung sel yang nilainya sama (baris kosong ikut nilai di atasnya).
+// Dibatasi `max` baris per gabungan: sel ber-rowspan terlalu tinggi TIDAK bisa dibelah oleh
+// PDF, sehingga memaksa pindah halaman (konten turun ke bawah). Dengan batas ini penggabungan
+// tetap rapi tapi tetap bisa memenggal halaman; teks diulang di batas agar tidak ada sel kosong.
+function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan: number } | null)[] {
   const n = rows.length;
-  const s = new Array(n).fill(0);
-  let last = '\x00';
-  let start = -1;
-  rows.forEach((r, i) => {
-    const t = String(r?.[key] ?? '').trim();
-    if (t === '') {
-      if (start >= 0) s[start]++;
-      else { s[i] = 1; start = i; }
-    } else if (t === last) {
-      s[start]++;
-    } else {
-      last = t; start = i; s[i] = 1;
+  const out = new Array(n).fill(null);
+  let lastText = '';
+  let i = 0;
+  while (i < n) {
+    let text = String(rows[i]?.[key] ?? '').trim();
+    if (!text) text = lastText;
+    if (!text) { out[i] = { text: '', rowspan: 1 }; i++; continue; }
+    let cnt = 1;
+    let j = i + 1;
+    while (j < n) {
+      const nt = String(rows[j]?.[key] ?? '').trim() || text;
+      if (nt === text) { cnt++; j++; } else break;
     }
-  });
-  return s;
+    let k = i;
+    let remain = cnt;
+    while (remain > 0) {
+      const take = Math.min(max, remain);
+      out[k] = { text, rowspan: take };
+      k += take;
+      remain -= take;
+    }
+    lastText = text;
+    i += cnt;
+  }
+  return out;
 }
 
 // Khusus kartu soal: CP digabung, lalu TP digabung DI DALAM kelompok CP yang sama (reset saat CP ganti).
-function kartuSpans(rows: any[]): { cp: number; tp: number }[] {
-  const cp = colSpans(rows, 'cp');
+function kartuSpans(rows: any[], maxCp = 3, maxTp = 3) {
+  const cp = mergeCell(rows, 'cp', maxCp);
   const n = rows.length;
-  const tp = new Array(n).fill(0);
-  let tLast = '\x00';
-  let tStart = -1;
-  for (let i = 0; i < n; i++) {
-    if (i > 0 && cp[i] > 0) { tLast = '\x00'; tStart = i; }
-    const t = String(rows[i]?.tp ?? '').trim();
-    if (t === '') {
-      if (tStart >= 0) tp[tStart]++;
-      else { tp[i] = 1; tStart = i; }
-    } else if (t === tLast) {
-      tp[tStart]++;
-    } else {
-      tLast = t; tStart = i; tp[i] = 1;
+  const tp = new Array(n).fill(null);
+  let i = 0;
+  while (i < n) {
+    if (!cp[i]) { i++; continue; }
+    const end = i + cp[i].rowspan;
+    let prevTp = '';
+    let k = i;
+    while (k < end) {
+      let text = String(rows[k]?.['tp'] ?? '').trim();
+      if (!text) text = prevTp;
+      if (!text) { tp[k] = { text: '', rowspan: 1 }; k++; continue; }
+      let cnt = 1;
+      let j = k + 1;
+      while (j < end) {
+        const nt = String(rows[j]?.['tp'] ?? '').trim() || text;
+        if (nt === text) { cnt++; j++; } else break;
+      }
+      let z = k;
+      let remain = cnt;
+      while (remain > 0) {
+        const take = Math.min(maxTp, remain);
+        tp[z] = { text, rowspan: take };
+        z += take;
+        remain -= take;
+      }
+      prevTp = text;
+      k += cnt;
     }
+    i = end;
   }
-  return rows.map((_, i) => ({ cp: cp[i], tp: tp[i] }));
+  return rows.map((_, idx) => ({ cp: cp[idx], tp: tp[idx] }));
 }
 
 function buildKisiKisi(rows: any[]): string {
-  const cpS = colSpans(rows, 'cp');
-  const tpS = colSpans(rows, 'tp');
+  const cpM = mergeCell(rows, 'cp');
+  const tpM = mergeCell(rows, 'tp');
   const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = cpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${cpS[i]}">${escapeHtml(r?.cp)}</td>` : '';
-    const tpCell = tpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${tpS[i]}">${escapeHtml(r?.tp)}</td>` : '';
+    const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
+    const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
     return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
@@ -139,9 +167,9 @@ function buildKisiKisi(rows: any[]): string {
 }
 
 function buildIndikator(rows: any[]): string {
-  const cpS = colSpans(rows, 'cp');
+  const cpM = mergeCell(rows, 'cp');
   const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = cpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${cpS[i]}">${escapeHtml(r?.cp)}</td>` : '';
+    const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
     return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
@@ -170,8 +198,8 @@ function buildIndikator(rows: any[]): string {
 function buildKartuSoal(rows: any[]): string {
   const sp = kartuSpans(rows);
   const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = sp[i].cp > 0 ? `<td style="${TD_STYLE}" rowspan="${sp[i].cp}">${escapeHtml(r?.cp)}</td>` : '';
-    const tpCell = sp[i].tp > 0 ? `<td style="${TD_STYLE}" rowspan="${sp[i].tp}">${escapeHtml(r?.tp)}</td>` : '';
+    const cpCell = sp[i].cp ? `<td style="${TD_STYLE}" rowspan="${sp[i].cp.rowspan}">${escapeHtml(sp[i].cp.text)}</td>` : '';
+    const tpCell = sp[i].tp ? `<td style="${TD_STYLE}" rowspan="${sp[i].tp.rowspan}">${escapeHtml(sp[i].tp.text)}</td>` : '';
     return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
