@@ -110,7 +110,7 @@ ${identitas(formData, formattedDate)}
 `;
 
     const cardExample = `
-<div style="border: 1px solid #000; padding: 8px; margin-bottom: 12px; page-break-inside: avoid;">
+<div style="border: 1px solid #000; padding: 8px; margin-bottom: 12px;">
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt;">
     <tr>
       <td style="width: 18%; font-weight: bold; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">Materi Pokok</td>
@@ -187,6 +187,7 @@ ATURAN WAJIB:
 - JANGAN mengubah kop surat / identitas / ukuran font.
 - Ambil semua data (materi, TP, soal, jawaban) dari RPM di bawah.
 - Pada baris PALING AKHIR jawaban, tulis komentar HTML ini persis: <!--AKHIR-->
+- JANGAN pakai page-break-inside: avoid pada kartu soal atau tabel (membuat banyak halaman kosong di PDF). Biarkan konten mengalir dan berpindah halaman secara alami; hanya ganti halaman saat pindah dari kisi-kisi ke kartu soal.
 
 RPM:
 ${rpmHtml}
