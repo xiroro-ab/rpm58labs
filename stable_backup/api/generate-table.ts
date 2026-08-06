@@ -65,8 +65,9 @@ const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
 
 function buildKisiKisi(rows: any[]): string {
-  // CP tampil SEKALI di atas tabel (bukan per baris) agar teks CP panjang tidak membuat sel
-  // tinggi yang memaksa tabel lompat halaman di PDF.
+  // CP ditampilkan SEKALI di atas tabel (bukan per baris), karena teks CP panjang di kolom sempit
+  // membuat sel gabungan tinggi yang TIDAK bisa dibelah PDF (tabel lompat ke halaman baru).
+  // Baris-baris lainnya polos sehingga tabel bisa memenggal halaman secara normal.
   let firstCp = '';
   for (const r of (rows || [])) {
     const c = String(r?.cp ?? '').trim();
@@ -76,31 +77,57 @@ function buildKisiKisi(rows: any[]): string {
     ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
     : '';
 
-  const body = (rows || []).map((r: any, i: number) => {
-    const skorText = r?.skor ? ` (Skor: ${escapeHtml(r.skor)})` : '';
-    return `
+  const body = (rows || []).map((r: any, i: number) => `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
-        <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.levelKognitif)}</td>
+        <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
+        <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.jumlahSoal)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
-        <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.bentukSoal)}</td>
-        <td style="${TD_STYLE} text-align: center;"><b>${escapeHtml(r?.kunciJawaban)}</b>${skorText}</td>
-      </tr>`;
-  }).join('');
+      </tr>`).join('');
   return `
 ${cpLine}
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
       <tr>
-        <th style="${TH_STYLE} width: 3%;">No</th>
-        <th style="${TH_STYLE} width: 14%;">Materi Pokok</th>
-        <th style="${TH_STYLE} width: 15%;">TP</th>
-        <th style="${TH_STYLE} width: 8%;">Level Kognitif</th>
+        <th style="${TH_STYLE} width: 4%;">No</th>
+        <th style="${TH_STYLE}">TP (Tujuan Pembelajaran)</th>
+        <th style="${TH_STYLE}">Materi</th>
+        <th style="${TH_STYLE} width: 8%;">Jumlah Soal</th>
         <th style="${TH_STYLE}">Indikator Soal</th>
-        <th style="${TH_STYLE} width: 9%;">Bentuk Soal</th>
-        <th style="${TH_STYLE} width: 11%;">Kunci Jawaban & Skor</th>
+      </tr>
+    </thead>
+    <tbody>${body}
+    </tbody>
+  </table>`;
+}
+
+function buildIndikator(rows: any[]): string {
+  let firstCp = '';
+  for (const r of (rows || [])) {
+    const c = String(r?.cp ?? '').trim();
+    if (c) { firstCp = c; break; }
+  }
+  const cpLine = firstCp
+    ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
+    : '';
+
+  const body = (rows || []).map((r: any, i: number) => `
+      <tr>
+        <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
+        <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
+        <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
+        <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.nomorSoal)}</td>
+      </tr>`).join('');
+  return `
+${cpLine}
+  <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
+    <thead>
+      <tr>
+        <th style="${TH_STYLE} width: 4%;">No</th>
+        <th style="${TH_STYLE}">Materi</th>
+        <th style="${TH_STYLE}">Indikator Soal</th>
+        <th style="${TH_STYLE} width: 10%;">Nomor Soal</th>
       </tr>
     </thead>
     <tbody>${body}
@@ -109,52 +136,39 @@ ${cpLine}
 }
 
 function buildKartuSoal(rows: any[]): string {
-  // Format KARTU SOAL: satu kartu berbingkai per butir soal (standar Kemdikbud). Setiap kartu
-  // berisi identitas soal (Materi Pokok, No. Soal, TP, Level Kognitif, Indikator), Butir Soal,
-  // dan Kunci Jawaban. page-break-inside: avoid membuat setiap kartu utuh tanpa terpotong.
+  // CP ditampilkan SEKALI di atas tabel (bukan per baris). Kolom tabel hanya TP/Soal/Kunci.
+  // TANPA rowspan sama sekali: sel gabungan yang tinggi tidak bisa dibelah PDF sehingga tabel
+  // terpotong/lompat ke halaman baru. Baris polos → pagination normal.
   let firstCp = '';
   for (const r of (rows || [])) {
     const c = String(r?.cp ?? '').trim();
     if (c) { firstCp = c; break; }
   }
   const cpLine = firstCp
-    ? `<div style="margin: 0 0 12px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
+    ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
     : '';
 
-  const LBL = `width: 18%; font-weight: bold; border: 1px solid #000; border-collapse: collapse; padding: 5px 8px; vertical-align: top;`;
-  const VAL = `border: 1px solid #000; padding: 5px 8px; vertical-align: top;`;
-
-  const cards = (rows || []).map((r: any, i: number) => `
-  <div style="border: 1px solid #000; padding: 8px; margin-bottom: 12px; page-break-inside: avoid;">
-    <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt;">
+  const body = (rows || []).map((r: any, i: number) => `
       <tr>
-        <td style="${LBL}">Materi Pokok</td>
-        <td style="${VAL}">${escapeHtml(r?.materi)}</td>
-        <td style="${LBL}">No. Soal</td>
-        <td style="${VAL} text-align: center;">${i + 1}</td>
-      </tr>
+        <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
+        <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
+        <td style="${TD_STYLE}">${escapeHtml(r?.soal)}</td>
+        <td style="${TD_STYLE} text-align: center;"><b>${escapeHtml(r?.kunciJawaban)}</b></td>
+      </tr>`).join('');
+  return `
+${cpLine}
+  <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
+    <thead>
       <tr>
-        <td style="${LBL}">TP</td>
-        <td style="${VAL}" colspan="3">${escapeHtml(r?.tp)}</td>
+        <th style="${TH_STYLE} width: 4%;">No</th>
+        <th style="${TH_STYLE} width: 16%;">TP</th>
+        <th style="${TH_STYLE}">Soal</th>
+        <th style="${TH_STYLE} width: 10%;">Kunci Jawaban</th>
       </tr>
-      <tr>
-        <td style="${LBL}">Level Kognitif</td>
-        <td style="${VAL}" colspan="3">${escapeHtml(r?.levelKognitif)}</td>
-      </tr>
-      <tr>
-        <td style="${LBL}">Indikator</td>
-        <td style="${VAL}" colspan="3">${escapeHtml(r?.indikator)}</td>
-      </tr>
-    </table>
-    <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 0; margin: 6px 0;">
-      <b>Butir Soal:</b>
-      <div style="margin-top: 4px;">${escapeHtml(r?.soal)}</div>
-    </div>
-    <div><b>Kunci Jawaban: </b><span style="font-weight: bold; text-decoration: underline;">${escapeHtml(r?.kunciJawaban)}</span></div>
-  </div>`).join('');
-
-  return `${cpLine}
-${cards}`;
+    </thead>
+    <tbody>${body}
+    </tbody>
+  </table>`;
 }
 
 function cleanJson(text: string): string {
@@ -235,24 +249,26 @@ KELUARKAN HANYA SATU OBJEK JSON (TANPA markdown block, TANPA teks lain):
 {
   "kisiKisi": [
     {
-      "cp": "CP (isi pada BARIS PERTAMA saja; untuk baris berikutnya biarkan kosong \"\" jika CP-nya sama)",
-      "materi": "Materi pokok yang diuji (dari RPM)",
-      "tp": "Tujuan Pembelajaran dari RPM yang relevan dengan indikator ini",
-      "levelKognitif": "Level kognitif sesuai Taksonomi Bloom, contoh: C1 Mengingat, C2 Memahami, C3 Menerapkan, C4 Menganalisis, C5 Mengevaluasi, C6 Mencipta",
-      "indikator": "Rumusan indikator soal lengkap dengan konsep ABCD (Audience, Behavior, Condition, Degree)",
-      "bentukSoal": "Bentuk soal, contoh: Pilihan Ganda / Uraian",
-      "kunciJawaban": "Kunci jawaban untuk indikator ini",
-      "skor": "Skor/nilai untuk indikator ini, contoh: 1"
+      "cp": "Teks Capaian Pembelajaran sesuai Kurikulum Merdeka mapel ${formData?.subject} fase ${formData?.phase}",
+      "tp": "Tujuan Pembelajaran yang diambil dari RPM",
+      "materi": "Materi dari RPM",
+      "jumlahSoal": "angka jumlah soal untuk indikator ini",
+      "indikator": "Rumusan indikator soal yang sesuai"
+    }
+  ],
+  "indikatorSoal": [
+    {
+      "cp": "CP yang sama dengan baris kisi-kisi terkait",
+      "materi": "Materi dari RPM",
+      "indikator": "Indikator soal (rumus ABCD)",
+      "nomorSoal": "nomor-nomor soal yang memenuhi indikator ini, contoh: 1, 2, 3, 4"
     }
   ],
   "kartuSoal": [
     {
-      "cp": "CP (isi pada SOAL PERTAMA saja; untuk soal berikutnya biarkan kosong \"\" jika CP-nya sama)",
-      "materi": "Materi pokok yang diuji (dari RPM)",
+      "cp": "CP (isi pada SOAL PERTAMA saja; untuk soal berikutnya biarkan kosong \"\" jika CP-nya sama dengan soal pertama)",
       "tp": "TP spesifik yang menjadi acuan soal ini (bisa berbeda antar soal)",
-      "levelKognitif": "Level kognitif sesuai Taksonomi Bloom (C1-C6)",
-      "indikator": "Rumusan indikator soal ABCD untuk soal ini",
-      "soal": "Butir soal LENGKAP dari RPM dengan penomoran \"1. \" dst. Untuk soal PILIHAN GANDA, tuliskan setiap opsi pada BARIS TERPISAH dengan memisahkannya memakai tag <br>. Contoh format: \"1. Pertanyaan... <br>A. Opsi A <br>B. Opsi B <br>C. Opsi C <br>D. Opsi D\". JANGAN menggabungkan opsi A, B, C, D dalam satu baris menyamping.",
+      "soal": "Soal LENGKAP dari RPM dengan penomoran \"1. \" dst. Untuk soal PILIHAN GANDA, tuliskan setiap opsi pada BARIS TERPISAH dengan memisahkannya memakai tag <br>. Contoh format: \"1. Pertanyaan... <br>A. Opsi A <br>B. Opsi B <br>C. Opsi C <br>D. Opsi D\". JANGAN menggabungkan opsi A, B, C, D dalam satu baris menyamping.",
       "kunciJawaban": "Kunci jawaban soal ini, contoh: B"
     }
   ]
@@ -260,13 +276,13 @@ KELUARKAN HANYA SATU OBJEK JSON (TANPA markdown block, TANPA teks lain):
 
 ATURAN KETAT:
 1. kartuSoal WAJIB berisi SEMUA soal Asesmen Sumatif yang ada di RPM. Jika RPM punya 40 soal, kartuSoal harus punya 40 objek. JANGAN dikurangi!
-2. JANGAN mengulang CP yang sama di setiap soal/baris! CP hanya ditulis SATU KALI, yaitu di objek/baris PERTAMA. Untuk yang berikutnya dengan CP sama, isi "cp": "". TP tetap ditulis lengkap di setiap soal/baris karena TP dapat berbeda (TP-lah yang membedakan setiap soal, bukan CP).
-2b. KERAPIAN SOAL: Untuk soal pilihan ganda, setiap opsi jawaban (A, B, C, D) WAJIB berada pada BARIS TERPISAH yang dipisahkan tag <br> di dalam field "soal". JANGAN menyusun opsi menyamping dalam satu baris karena akan terlihat menumpuk.
-2c. INDIKATOR ABCD: Setiap field "indikator" (di kisiKisi maupun kartuSoal) WAJIB dirumuskan lengkap dengan konsep ABCD — Audience (peserta didik), Behavior (perilaku yang dapat diukur), Condition (kondisi/situasi/tugas), Degree (tingkat keberhasilan). Contoh: "Peserta didik mampu menentukan himpunan bagian dari suatu himpunan berdasarkan diagram Venn dengan tepat." JANGAN menulis indikator generik seperti "Siswa memahami materi".
-2d. LEVEL KOGNITIF: Setiap field "levelKognitif" WAJIB diisi level sesuai Taksonomi Bloom (C1 Mengingat, C2 Memahami, C3 Menerapkan, C4 Menganalisis, C5 Mengevaluasi, C6 Mencipta) yang paling sesuai dengan tingkat berpikir yang dituntut soal/indikator.
-3. Jumlah objek kisiKisi harus konsisten dengan kartuSoal: total soal di kartuSoal = jumlah soal Asesmen Sumatif.
-4. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
-5. Output HANYA JSON. Tidak ada kata pengantar atau penutup.`;
+2. JANGAN mengulang CP yang sama di setiap soal! CP hanya ditulis SATU KALI, yaitu di objek kartuSoal PERTAMA. Untuk soal berikutnya dengan CP yang sama, isi "cp": "". TP tetap ditulis lengkap di setiap soal karena TP dapat berbeda antar soal (TP-lah yang membedakan setiap soal, bukan CP).
+2b. KERAPIAN SOAL: Untuk soal pilihan ganda, setiap opsi jawaban (A, B, C, D) WAJIB berada pada BARIS TERPISAH yang dipisahkan tag <br> di dalam field "soal". JANGAN menyusun opsi menyamping dalam satu baris karena akan terlihat menumpuk di tabel.
+2c. INDIKATOR ABCD: Setiap field "indikator" (baik di kisiKisi maupun indikatorSoal) WAJIB dirumuskan lengkap dengan konsep ABCD — Audience (peserta didik), Behavior (perilaku yang dapat diukur), Condition (kondisi/situasi/tugas), Degree (tingkat keberhasilan). Contoh: "Peserta didik mampu menentukan himpunan bagian dari suatu himpunan berdasarkan diagram Venn dengan tepat." JANGAN menulis indikator generik seperti "Siswa memahami materi".
+3. indikatorSoal harus konsisten: total nomor soal di semua baris = total soal.
+4. kisiKisi harus mencakup semua indikator yang dipakai.
+5. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
+6. Output HANYA JSON. Tidak ada kata pengantar atau penutup.`;
 
     let aiText = '';
     if (provider === 'gemini') {
@@ -325,6 +341,16 @@ ${identitas(formData, formattedDate)}
 
 <h2 style="text-align: center; margin: 0 0 12px 0; font-size: 12pt; text-transform: uppercase;">KISI-KISI SOAL ${subjectUpper} ${phaseLabel}</h2>
 ${buildKisiKisi(data.kisiKisi)}
+</div>
+
+${pageBreak}
+
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 10.5pt; line-height: 1.35; color: #000; text-align: justify;">
+${kopSurat()}
+${identitas(formData, formattedDate)}
+
+<h2 style="text-align: center; margin: 0 0 12px 0; font-size: 12pt; text-transform: uppercase;">INDIKATOR SOAL ${subjectUpper} ${phaseLabel}</h2>
+${buildIndikator(data.indikatorSoal)}
 </div>
 
 ${pageBreak}
