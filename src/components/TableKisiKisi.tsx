@@ -27,6 +27,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [waitingFirst, setWaitingFirst] = useState(false);
   const [history, setHistory] = useState<TableHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -90,6 +91,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
 
     setIsGenerating(true);
     setTableHtml('');
+    setWaitingFirst(true);
 
     try {
       const response = await fetch('/api/generate-table', {
@@ -120,42 +122,25 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       const reader = response.body?.getReader();
       if (!reader) throw new Error('Response body is null');
       const decoder = new TextDecoder();
-      const MARKER = '@@@FINAL@@@';
-      let buffer = '';
-      let finalMode = false;
-      let finalText = '';
+      let resultText = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
+        if (waitingFirst) setWaitingFirst(false);
+        resultText += decoder.decode(value, { stream: true });
 
-        if (finalMode) {
-          finalText += buffer;
-          buffer = '';
-          continue;
-        }
+        let display = resultText;
+        if (display.trim().startsWith('```html')) display = display.replace(/^```html\n?/, '');
+        else if (display.trim().startsWith('```')) display = display.replace(/^```\n?/, '');
+        if (display.trim().endsWith('```')) display = display.replace(/\n?```$/, '');
 
-        const markerIdx = buffer.indexOf(MARKER);
-        if (markerIdx !== -1) {
-          finalMode = true;
-          finalText = buffer.slice(markerIdx + MARKER.length);
-          buffer = '';
-        }
+        setTableHtml(display);
       }
 
-      if (!finalMode) finalText = buffer;
-
-      let cleanFinal = finalText.replace(/^```html\n?/i, '').replace(/^```/i, '').replace(/\n?```$/i, '').trim();
-
-      if (cleanFinal.startsWith('@@ERROR@@')) {
-        let msg = 'Gagal memproses respons AI untuk tabel.';
-        try { msg = JSON.parse(cleanFinal.slice('@@ERROR@@'.length))?.error || msg; }
-        catch (e) {}
-        setTableHtml('');
-        throw new Error(msg);
-      }
+      const finalHtml = resultText;
+      let cleanFinal = finalHtml.replace(/^```html\n?/i, '').replace(/^```/i, '').replace(/\n?```$/i, '').trim();
 
       setTableHtml(cleanFinal);
       saveToHistory(cleanFinal);
@@ -167,6 +152,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       });
     } finally {
       setIsGenerating(false);
+      setWaitingFirst(false);
     }
   };
 
@@ -216,7 +202,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
   return (
     <>
       <LoadingOverlay isVisible={isDownloading} message="Menyiapkan PDF Tabel Kisi-Kisi..." />
-      <LoadingOverlay isVisible={isGenerating} message="AI sedang membuat tabel kisi-kisi..." />
+      <LoadingOverlay isVisible={isGenerating && waitingFirst} message="AI sedang membaca dan menganalisis RPM..." />
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm print:hidden">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
