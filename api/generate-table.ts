@@ -186,6 +186,7 @@ ATURAN WAJIB:
 - JANGAN mengulang konten awal (header1).
 - JANGAN mengubah kop surat / identitas / ukuran font.
 - Ambil semua data (materi, TP, soal, jawaban) dari RPM di bawah.
+- Pada baris PALING AKHIR jawaban, tulis komentar HTML ini persis: <!--AKHIR-->
 
 RPM:
 ${rpmHtml}
@@ -198,39 +199,70 @@ ${rpmHtml}
     // Header (kop+identitas) DITAHAN dulu: baru dikirim saat token AI pertama tiba, sehingga
     // popup "berpikir" hilang tepat ketika AI benar-benar mulai menulis, bukan saat request.
     let started = false;
+    let totalText = '';
 
-    if (provider === 'gemini') {
-      const ai = new GoogleGenAI({ apiKey: keyToUse });
-      const stream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-      });
-      for await (const chunk of stream) {
-        if (!chunk.text) continue;
-        if (!started) { started = true; res.write(header1); }
-        res.write(chunk.text);
-      }
-    } else {
-      let baseURL = undefined;
-      let modelName = '';
-      if (provider === 'openai') { modelName = 'gpt-4o-mini'; }
-      else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
-      else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
-      else if (provider === 'grok') { baseURL = 'https://api.x.ai/v1'; modelName = 'grok-2-latest'; }
-      else if (provider === 'qwen') { baseURL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'; modelName = 'qwen-plus'; }
+    // Auto-lanjut bila stream terpotong (rate-limit/kuota/model): AI diinstruksikan menulis
+    // komentar <!--AKHIR--> di akhir. Jika stream selesai TANPA marker itu berarti terpotong
+    // dan dilakukan 1x percobaan lanjut "sambung dari posisi terakhir". Jalan normal (marker
+    // ada) tetap satu pass, tanpa perubahan.
+    const END_MARK = '<!--AKHIR-->';
+    const MAX_ATTEMPTS = 2;
 
-      const openai = new OpenAI({ apiKey: keyToUse, baseURL });
-      const stream = await openai.chat.completions.create({
-        model: modelName,
-        messages: [{ role: 'user', content: prompt }],
-        stream: true,
-      });
-      for await (const chunk of stream) {
-        const c = chunk.choices[0]?.delta?.content || '';
-        if (!c) continue;
-        if (!started) { started = true; res.write(header1); }
-        res.write(c);
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      let gotAny = false;
+
+      if (provider === 'gemini') {
+        const ai = new GoogleGenAI({ apiKey: keyToUse });
+        const contents = attempt === 0 ? prompt : [
+          { role: 'user', parts: [{ text: prompt }] },
+          { role: 'model', parts: [{ text: totalText.replace(END_MARK, '') }] },
+          { role: 'user', parts: [{ text: 'Lanjutkan tepat dari posisi teks yang terpotong. JANGAN mengulang dari awal. Akhiri dengan komentar <!--AKHIR--> di baris terakhir.' }] },
+        ];
+        const stream = await ai.models.generateContentStream({
+          model: 'gemini-3.6-flash',
+          contents,
+        });
+        for await (const chunk of stream) {
+          if (!chunk.text) continue;
+          gotAny = true;
+          if (!started) { started = true; res.write(header1); }
+          res.write(chunk.text);
+          totalText += chunk.text;
+        }
+      } else {
+        let baseURL = undefined;
+        let modelName = '';
+        if (provider === 'openai') { modelName = 'gpt-4o-mini'; }
+        else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
+        else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
+        else if (provider === 'grok') { baseURL = 'https://api.x.ai/v1'; modelName = 'grok-2-latest'; }
+        else if (provider === 'qwen') { baseURL = 'https://dashscope.aliyuncs.com/compatible-mode/v1'; modelName = 'qwen-plus'; }
+
+        const openai = new OpenAI({ apiKey: keyToUse, baseURL });
+        const messages = attempt === 0
+          ? [{ role: 'user', content: prompt }]
+          : [
+              { role: 'user', content: prompt },
+              { role: 'assistant', content: totalText.replace(END_MARK, '') },
+              { role: 'user', content: 'Lanjutkan tepat dari posisi teks yang terpotong. JANGAN mengulang dari awal. Akhiri dengan komentar <!--AKHIR--> di baris terakhir.' },
+            ];
+        const stream = await openai.chat.completions.create({
+          model: modelName,
+          messages: messages as any,
+          stream: true,
+        });
+        for await (const chunk of stream) {
+          const c = chunk.choices[0]?.delta?.content || '';
+          if (!c) continue;
+          gotAny = true;
+          if (!started) { started = true; res.write(header1); }
+          res.write(c);
+          totalText += c;
+        }
       }
+
+      if (!gotAny) break;
+      if (totalText.includes(END_MARK)) break;
     }
 
     if (!started) {
