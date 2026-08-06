@@ -64,54 +64,66 @@ ATURAN PENTING:
 1. Ekstrak informasi dari bagian "Asesmen Sumatif" dan "Lampiran 2" di RPM
 2. Gunakan Capaian Pembelajaran (CP) yang sesuai dengan Kurikulum Merdeka untuk mapel ${formData?.subject} dan fase ${formData?.phase}
 3. Setiap tabel HARUS memiliki kop surat yang sama persis dengan RPM
-4. Gunakan page-break-between untuk memisahkan setiap tabel
-5. Output HANYA kode HTML, TANPA markdown code block
+4. Output HANYA kode HTML, TANPA markdown code block
 
-FORMAT KOPT SURAT (gunakan persis ini untuk setiap tabel):
-<div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 15px;">
-    <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" style="height: 90px; width: auto;">
-    <div style="text-align: center; flex: 1; padding: 0 15px;">
-        <h3 style="margin: 0; font-size: 14pt; font-family: 'IBM Plex Sans', sans-serif;">PEMERINTAH KOTA PALEMBANG</h3>
-        <h3 style="margin: 0; font-size: 14pt; font-family: 'IBM Plex Sans', sans-serif;">DINAS PENDIDIKAN</h3>
-        <h3 style="margin: 0; font-size: 16pt; font-weight: bold; font-family: 'IBM Plex Sans', sans-serif;">SMP NEGERI 58 PALEMBANG</h3>
-        <p style="margin: 5px 0 0 0; font-size: 8pt; font-style: italic;">Jl. Komering II, Kel. Demang Lebar Daun, Kec. Ilir Barat I, Kota Palembang 30137</p>
-    </div>
-    <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/logo58.png" alt="Logo Kanan" style="height: 90px; width: auto;">
+STRUKTUR SETIAP TABEL (SANGAT PENTING):
+Setiap tabel dibungkus dalam satu container div. Kop surat dan tabel harus dalam SATU CONTAINER yang sama. Page break diletakkan SETELAH container tersebut selesai.
+
+CONTOH STRUKTUR YANG BENAR:
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 10.5pt;">
+  <!-- KOP SURAT -->
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 15px;">
+      <img src="..." style="height: 90px;">
+      <div style="text-align: center; flex: 1;">
+          <h3>PEMERINTAH KOTA PALEMBANG</h3>
+          ...
+      </div>
+      <img src="..." style="height: 90px;">
+  </div>
+  
+  <!-- JUDUL TABEL -->
+  <h2 style="text-align: center; margin-bottom: 10px;">KISI-KISI SOAL ...</h2>
+  
+  <!-- TABEL -->
+  <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+    ...
+  </table>
 </div>
+<!-- PAGE BREAK SETELAH TABEL SELESAI -->
+<div style="page-break-after: always;"></div>
+
+<!-- LANJUT TABEL 2 DENGAN STRUCTURE YANG SAMA -->
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 10.5pt;">
+  <!-- KOP SURAT LAGI -->
+  ...
+  <!-- TABEL 2 -->
+  ...
+</div>
+<div style="page-break-after: always;"></div>
+
+<!-- LANJUT TABEL 3 -->
+...
 
 TABEL 1: KISI-KISI SOAL
 Judul: "KISI-KISI SOAL ${formData?.subject?.toUpperCase()} ${formData?.phase}"
 Tabel dengan kolom: No | CP (Capaian Pembelajaran) | TP (Tujuan Pembelajaran) | Materi | Jumlah Soal | Indikator Soal
-- Isi berdasarkan data dari Asesmen Sumatif di RPM
-- CP harus sesuai standar Kurikulum Merdeka untuk mapel ${formData?.subject}
-- TP diambil dari bagian Desain Pembelajaran
-- Materi diambil dari RPM
-- Jumlah soal sesuai dengan yang ada di RPM
-- Indikator soal dibuat berdasarkan soal yang ada
 
 TABEL 2: INDIKATOR SOAL
 Judul: "INDIKATOR SOAL ${formData?.subject?.toUpperCase()} ${formData?.phase}"
 Tabel dengan kolom: No | CP | Materi | Indikator Soal | Nomor Soal
-- Kelompokkan soal berdasarkan indikator
-- Cantumkan nomor soal yang sesuai dengan indikatornya
 
 TABEL 3: KARTU SOAL
 Judul: "KARTU SOAL ${formData?.subject?.toUpperCase()} ${formData?.phase}"
 Tabel dengan kolom: No | CP | TP | Soal | Kunci Jawaban
-- Tuliskan soal lengkap dari Asesmen Sumatif
-- Sertakan kunci jawaban untuk setiap soal
 
-GUNAKAN STYLE BERIKUT:
-- Font: 'Space Grotesk', sans-serif
-- Font size: 10.5pt
-- Border tabel: 1px solid #000
+STYLE TABEL:
+- Border: 1px solid #000
 - Border-collapse: collapse
 - Padding cell: 6px 8px
 - Header background: #1a4185
 - Header text: white, bold
-- Page break setelah setiap tabel menggunakan: <div style="page-break-after: always;"></div>
 
-MULAI DARI TABEL 1, GUNAKAN FORMAT HTML LENGKAP DENGAN KOP SURAT.`;
+MULAI DARI TABEL 1, GUNAKAN FORMAT HTML LENGKAP.`;
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
