@@ -101,28 +101,32 @@ function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan:
 }
 
 function buildKisiKisi(rows: any[]): string {
-  // Baris kisi-kisi pendek: gabungan dibatasi 4 baris agar sel tidak jadi tinggi (memaksa
-  // pindah halaman), tapi tetap ringkas tanpa mengulang di tiap baris.
-  const cpM = mergeCell(rows, 'cp', 4);
-  const tpM = mergeCell(rows, 'tp', 4);
-  const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
-    const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
-    return `
+  // CP ditampilkan SEKALI di atas tabel (bukan per baris), karena teks CP panjang di kolom sempit
+  // membuat sel gabungan tinggi yang TIDAK bisa dibelah PDF (tabel lompat ke halaman baru).
+  // Baris-baris lainnya polos sehingga tabel bisa memenggal halaman secara normal.
+  let firstCp = '';
+  for (const r of (rows || [])) {
+    const c = String(r?.cp ?? '').trim();
+    if (c) { firstCp = c; break; }
+  }
+  const cpLine = firstCp
+    ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
+    : '';
+
+  const body = (rows || []).map((r: any, i: number) => `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        ${cpCell}${tpCell}
+        <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
         <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.jumlahSoal)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
-      </tr>`;
-  }).join('');
+      </tr>`).join('');
   return `
+${cpLine}
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
       <tr>
         <th style="${TH_STYLE} width: 4%;">No</th>
-        <th style="${TH_STYLE}">CP (Capaian Pembelajaran)</th>
         <th style="${TH_STYLE}">TP (Tujuan Pembelajaran)</th>
         <th style="${TH_STYLE}">Materi</th>
         <th style="${TH_STYLE} width: 8%;">Jumlah Soal</th>
@@ -135,24 +139,28 @@ function buildKisiKisi(rows: any[]): string {
 }
 
 function buildIndikator(rows: any[]): string {
-  const cpM = mergeCell(rows, 'cp', 4);
-  const body = (rows || []).map((r: any, i: number) => {
-    const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
-    return `
+  let firstCp = '';
+  for (const r of (rows || [])) {
+    const c = String(r?.cp ?? '').trim();
+    if (c) { firstCp = c; break; }
+  }
+  const cpLine = firstCp
+    ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
+    : '';
+
+  const body = (rows || []).map((r: any, i: number) => `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        ${cpCell}
         <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
         <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.nomorSoal)}</td>
-      </tr>`;
-  }).join('');
+      </tr>`).join('');
   return `
+${cpLine}
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
       <tr>
         <th style="${TH_STYLE} width: 4%;">No</th>
-        <th style="${TH_STYLE}">CP</th>
         <th style="${TH_STYLE}">Materi</th>
         <th style="${TH_STYLE}">Indikator Soal</th>
         <th style="${TH_STYLE} width: 10%;">Nomor Soal</th>
