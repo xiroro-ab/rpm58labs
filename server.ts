@@ -392,12 +392,27 @@ try {
           <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Noto+Color+Emoji&family=Noto+Sans+Symbols&family=Noto+Sans+Symbols+2&display=swap" rel="stylesheet">
           
           <style>
+            * { box-sizing: border-box; }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; font-family: 'Space Grotesk', 'Noto Color Emoji', 'Noto Sans Symbols', 'Noto Sans Symbols 2', 'Segoe UI Symbol', sans-serif; }
-            table { page-break-inside: avoid; }
-            tr, td, th { page-break-inside: avoid; }
+            
+            /* Page break rules */
+            .page-break-before { page-break-before: always; }
+            .page-break-after { page-break-after: always; }
+            
+            /* Keep elements together */
             h1, h2, h3, h4, h5 { page-break-after: avoid; page-break-inside: avoid; }
-            table { page-break-inside: auto; }
+            img { page-break-inside: avoid; }
+            
+            /* Table specific - allow break inside table rows if needed, but try to avoid */
+            table { page-break-inside: auto; border-collapse: collapse; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
             tr { page-break-inside: avoid; page-break-after: auto; }
+            td, th { page-break-inside: avoid; }
+            
+            /* Kop surat should stay with content */
+            .kop-surat, [style*="border-bottom: 3px double"] { page-break-after: avoid; }
+            
             img.emoji { height: 1em; width: 1em; margin: 0 .05em 0 .1em; vertical-align: -0.1em; }
           
             .label-mindful { background-color: #ef4444 !important; color: white !important; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-weight: bold; margin-right: 4px; display: inline-block; margin-bottom: 4px; }
