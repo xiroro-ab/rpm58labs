@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
-import { Download, X, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Download, X, Loader2, History, Trash2, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
+
+interface TableHistoryItem {
+  id: string;
+  title: string;
+  date: string;
+  subject: string;
+  phase: string;
+  tableHtml: string;
+}
 
 interface TableKisiKisiProps {
   isOpen: boolean;
@@ -17,6 +26,60 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
   const [tableHtml, setTableHtml] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [history, setHistory] = useState<TableHistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('tableKisiKisiHistory');
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Failed to parse table history', e);
+      }
+    }
+  }, [isOpen]);
+
+  const saveToHistory = (html: string) => {
+    if (!html || !formData) return;
+
+    const newItem: TableHistoryItem = {
+      id: Date.now().toString(),
+      title: `Kisi-Kisi ${formData.subject} ${formData.phase}`,
+      date: new Date().toISOString(),
+      subject: formData.subject,
+      phase: formData.phase,
+      tableHtml: html
+    };
+
+    setHistory(prev => {
+      const next = [newItem, ...prev].slice(0, 20);
+      localStorage.setItem('tableKisiKisiHistory', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const loadFromHistory = (item: TableHistoryItem) => {
+    setTableHtml(item.tableHtml);
+    setShowHistory(false);
+    toast.success('Tabel dimuat dari riwayat');
+  };
+
+  const deleteHistoryItem = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHistory(prev => {
+      const next = prev.filter(item => item.id !== id);
+      localStorage.setItem('tableKisiKisiHistory', JSON.stringify(next));
+      return next;
+    });
+    toast.success('Riwayat dihapus');
+  };
+
+  const clearAllHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('tableKisiKisiHistory');
+    toast.success('Semua riwayat dihapus');
+  };
 
   const handleGenerateTable = async () => {
     if (!rpmHtml) {
@@ -77,6 +140,8 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
         setTableHtml(displayResult);
       }
 
+      const finalHtml = displayResult || resultText;
+      saveToHistory(finalHtml);
       toast.success('Tabel kisi-kisi berhasil dibuat!');
     } catch (err: any) {
       console.error(err);
@@ -145,15 +210,30 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
                 <p className="text-xs text-slate-500 mt-0.5">Berdasarkan RPM yang sudah di-generate</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {history.length > 0 && (
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    showHistory 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-white text-slate-600 hover:bg-green-50 border border-slate-200'
+                  }`}
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>Riwayat ({history.length})</span>
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+          <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3 flex-wrap">
             <button
               onClick={handleGenerateTable}
               disabled={isGenerating}
@@ -196,34 +276,85 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 bg-slate-100 custom-scrollbar">
-            {!tableHtml && !isGenerating && (
-              <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                <div className="w-20 h-20 flex items-center justify-center mb-4 bg-slate-200 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="3" y2="21"/><line x1="15" x2="15" y1="3" y2="21"/></svg>
+          <div className="flex-1 overflow-hidden flex">
+            {showHistory && history.length > 0 && (
+              <div className="w-72 border-r border-slate-200 bg-white overflow-y-auto flex-shrink-0">
+                <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-600">Riwayat Tabel</span>
+                  <button
+                    onClick={clearAllHistory}
+                    className="text-xs text-red-500 hover:text-red-700 font-medium"
+                  >
+                    Hapus Semua
+                  </button>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">Belum Ada Tabel</h3>
-                <p className="text-sm text-slate-500 max-w-sm">
-                  Klik tombol "Generate Tabel Kisi-Kisi" untuk membuat 3 tabel kisi-kisi soal berdasarkan RPM yang sudah ada.
-                </p>
+                <div className="p-2 space-y-2">
+                  {history.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => loadFromHistory(item)}
+                      className="p-3 bg-slate-50 hover:bg-green-50 border border-slate-200 hover:border-green-300 rounded-lg cursor-pointer transition-all group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-semibold text-slate-800 truncate">{item.title}</h4>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(item.date).toLocaleDateString('id-ID', {
+                              day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                            })}
+                          </div>
+                          <div className="flex gap-1 mt-1.5">
+                            <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded">
+                              {item.subject}
+                            </span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+                              {item.phase}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => deleteHistoryItem(item.id, e)}
+                          className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {isGenerating && !tableHtml && (
-              <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 animate-spin text-green-600 mb-4" />
-                <p className="text-sm text-slate-600">AI sedang membuat tabel kisi-kisi...</p>
-              </div>
-            )}
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-100 custom-scrollbar">
+              {!tableHtml && !isGenerating && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-20">
+                  <div className="w-20 h-20 flex items-center justify-center mb-4 bg-slate-200 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="3" y2="21"/><line x1="15" x2="15" y1="3" y2="21"/></svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-2">Belum Ada Tabel</h3>
+                  <p className="text-sm text-slate-500 max-w-sm">
+                    Klik tombol "Generate Tabel Kisi-Kisi" untuk membuat 3 tabel kisi-kisi soal berdasarkan RPM yang sudah ada.
+                  </p>
+                </div>
+              )}
 
-            {tableHtml && (
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-slate-200">
-                <div
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: tableHtml }}
-                />
-              </div>
-            )}
+              {isGenerating && !tableHtml && (
+                <div className="flex flex-col items-center justify-center h-full py-20">
+                  <Loader2 className="w-10 h-10 animate-spin text-green-600 mb-4" />
+                  <p className="text-sm text-slate-600">AI sedang membuat tabel kisi-kisi...</p>
+                </div>
+              )}
+
+              {tableHtml && (
+                <div className="bg-white rounded-lg shadow-lg p-6 border border-slate-200">
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: tableHtml }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
