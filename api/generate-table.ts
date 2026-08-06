@@ -221,6 +221,7 @@ ${rpmHtml}
         const stream = await ai.models.generateContentStream({
           model: 'gemini-3.6-flash',
           contents,
+          config: { maxOutputTokens: 32768 },
         });
         for await (const chunk of stream) {
           if (!chunk.text) continue;
@@ -263,6 +264,12 @@ ${rpmHtml}
 
       if (!gotAny) break;
       if (totalText.includes(END_MARK)) break;
+    }
+
+    // Bila masih belum ada penanda selesai setelah semua percobaan → beri tahu klien
+    // bahwa hasil terpotong (bukan diam-diam).
+    if (started && !totalText.includes(END_MARK)) {
+      res.write('<!--TERPOTONG-->');
     }
 
     if (!started) {

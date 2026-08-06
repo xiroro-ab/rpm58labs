@@ -146,6 +146,12 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       const finalHtml = resultText;
       let cleanFinal = finalHtml.replace(/^```html\n?/i, '').replace(/^```/i, '').replace(/\n?```$/i, '').trim();
 
+      if (cleanFinal.includes('<!--TERPOTONG-->')) {
+        toast.error('Generate terpotong (batas output AI tercapai). Coba generate ulang, atau gunakan API Key berbayar untuk hasil lebih panjang.', {
+          duration: 7000,
+        });
+      }
+
       setTableHtml(cleanFinal);
       saveToHistory(cleanFinal);
       toast.success('Tabel kisi-kisi berhasil dibuat!');
