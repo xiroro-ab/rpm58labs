@@ -26,6 +26,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
   const [tableHtml, setTableHtml] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [history, setHistory] = useState<TableHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -190,6 +191,7 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           html: tableHtml,
+          orientation,
           filename: `Tabel_Kisi-Kisi_${formData?.subject || 'Mapel'}_Kelas_${formData?.phase || ''}.pdf`,
           footerText: `Tabel Kisi-Kisi ${formData?.subject || ''} ${formData?.phase || ''} - ${formData?.school || ''}`
         })
@@ -292,6 +294,27 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
               <Download className="w-4 h-4" />
               <span>Download PDF</span>
             </button>
+
+            <div className="flex items-center gap-1 border border-slate-300 rounded-lg overflow-hidden bg-white" title="Orientasi halaman PDF">
+              <button
+                onClick={() => setOrientation('portrait')}
+                disabled={isDownloading}
+                className={`px-3 py-2 text-xs font-semibold transition-all ${
+                  orientation === 'portrait' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-blue-50'
+                }`}
+              >
+                Potret
+              </button>
+              <button
+                onClick={() => setOrientation('landscape')}
+                disabled={isDownloading}
+                className={`px-3 py-2 text-xs font-semibold transition-all ${
+                  orientation === 'landscape' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-blue-50'
+                }`}
+              >
+                Lanskap
+              </button>
+            </div>
 
             {tableHtml && (
               <span className="text-xs text-green-600 font-medium ml-2">

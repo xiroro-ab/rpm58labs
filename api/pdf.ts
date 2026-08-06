@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       } catch (e) {}
     }
 
-    let { html, filename, footerText } = body;
+    let { html, filename, footerText, orientation } = body;
         if (html) {
       html = html.replace(/✓/g, '✅').replace(/✔/g, '✅');
       html = html.replace(/<span style="[^"]*background-color:[^"]*"[^>]*>(Mindful[^<]*)<\/span>/gi, '$1');
@@ -75,6 +75,7 @@ export default async function handler(req, res) {
     
     const pdfBuffer = await page.pdf({
       format: 'A4',
+      landscape: orientation === 'landscape',
       printBackground: true,
       margin: { top: '15mm', right: '15mm', bottom: '20mm', left: '15mm' },
       displayHeaderFooter: true,
