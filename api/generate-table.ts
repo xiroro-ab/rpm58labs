@@ -64,16 +64,63 @@ function identitas(formData: any, formattedDate: string): string {
 const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;';
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
 
+// Hitung rowspan: baris yang nilainya sama (atau kosong = ikut nilai sebelumnya) digabung menjadi satu sel.
+function colSpans(rows: any[], key: string): number[] {
+  const n = rows.length;
+  const s = new Array(n).fill(0);
+  let last = '\x00';
+  let start = -1;
+  rows.forEach((r, i) => {
+    const t = String(r?.[key] ?? '').trim();
+    if (t === '') {
+      if (start >= 0) s[start]++;
+      else { s[i] = 1; start = i; }
+    } else if (t === last) {
+      s[start]++;
+    } else {
+      last = t; start = i; s[i] = 1;
+    }
+  });
+  return s;
+}
+
+// Khusus kartu soal: CP digabung, lalu TP digabung DI DALAM kelompok CP yang sama (reset saat CP ganti).
+function kartuSpans(rows: any[]): { cp: number; tp: number }[] {
+  const cp = colSpans(rows, 'cp');
+  const n = rows.length;
+  const tp = new Array(n).fill(0);
+  let tLast = '\x00';
+  let tStart = -1;
+  for (let i = 0; i < n; i++) {
+    if (i > 0 && cp[i] > 0) { tLast = '\x00'; tStart = i; }
+    const t = String(rows[i]?.tp ?? '').trim();
+    if (t === '') {
+      if (tStart >= 0) tp[tStart]++;
+      else { tp[i] = 1; tStart = i; }
+    } else if (t === tLast) {
+      tp[tStart]++;
+    } else {
+      tLast = t; tStart = i; tp[i] = 1;
+    }
+  }
+  return rows.map((_, i) => ({ cp: cp[i], tp: tp[i] }));
+}
+
 function buildKisiKisi(rows: any[]): string {
-  const body = (rows || []).map((r: any, i: number) => `
+  const cpS = colSpans(rows, 'cp');
+  const tpS = colSpans(rows, 'tp');
+  const body = (rows || []).map((r: any, i: number) => {
+    const cpCell = cpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${cpS[i]}">${escapeHtml(r?.cp)}</td>` : '';
+    const tpCell = tpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${tpS[i]}">${escapeHtml(r?.tp)}</td>` : '';
+    return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.cp)}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
+        ${cpCell}${tpCell}
         <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
         <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.jumlahSoal)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
-      </tr>`).join('');
+      </tr>`;
+  }).join('');
   return `
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
@@ -92,14 +139,18 @@ function buildKisiKisi(rows: any[]): string {
 }
 
 function buildIndikator(rows: any[]): string {
-  const body = (rows || []).map((r: any, i: number) => `
+  const cpS = colSpans(rows, 'cp');
+  const body = (rows || []).map((r: any, i: number) => {
+    const cpCell = cpS[i] > 0 ? `<td style="${TD_STYLE}" rowspan="${cpS[i]}">${escapeHtml(r?.cp)}</td>` : '';
+    return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.cp)}</td>
+        ${cpCell}
         <td style="${TD_STYLE}">${escapeHtml(r?.materi)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.indikator)}</td>
         <td style="${TD_STYLE} text-align: center;">${escapeHtml(r?.nomorSoal)}</td>
-      </tr>`).join('');
+      </tr>`;
+  }).join('');
   return `
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
@@ -117,14 +168,18 @@ function buildIndikator(rows: any[]): string {
 }
 
 function buildKartuSoal(rows: any[]): string {
-  const body = (rows || []).map((r: any, i: number) => `
+  const sp = kartuSpans(rows);
+  const body = (rows || []).map((r: any, i: number) => {
+    const cpCell = sp[i].cp > 0 ? `<td style="${TD_STYLE}" rowspan="${sp[i].cp}">${escapeHtml(r?.cp)}</td>` : '';
+    const tpCell = sp[i].tp > 0 ? `<td style="${TD_STYLE}" rowspan="${sp[i].tp}">${escapeHtml(r?.tp)}</td>` : '';
+    return `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.cp)}</td>
-        <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
+        ${cpCell}${tpCell}
         <td style="${TD_STYLE}">${escapeHtml(r?.soal)}</td>
         <td style="${TD_STYLE} text-align: center;"><b>${escapeHtml(r?.kunciJawaban)}</b></td>
-      </tr>`).join('');
+      </tr>`;
+  }).join('');
   return `
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
     <thead>
