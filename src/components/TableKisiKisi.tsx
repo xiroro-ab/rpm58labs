@@ -123,12 +123,16 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       if (!reader) throw new Error('Response body is null');
       const decoder = new TextDecoder();
       let resultText = '';
+      let gotChunk = false;
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        if (waitingFirst) setWaitingFirst(false);
+        if (!gotChunk) {
+          gotChunk = true;
+          setWaitingFirst(false);
+        }
         resultText += decoder.decode(value, { stream: true });
 
         let display = resultText;
