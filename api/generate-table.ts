@@ -63,42 +63,6 @@ function identitas(formData: any, formattedDate: string): string {
 
 const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;';
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
-// Penggabungan penuh (tanpa pecah-ulang) hanya untuk kartu soal per kelompok TP yang kecil.
-// Nilai di bawah membuat mergeCell tidak memotong sama sekali (1 blok utuh per nilai sama).
-const MERGE_SPAN = 1_000_000;
-
-// Gabung sel yang nilainya sama (baris kosong ikut nilai di atasnya).
-// Parameter `max`: batas baris per satu sel gabungan. Sel ber-rowspan terlalu TINGGI tidak bisa
-// dibelah oleh PDF, sehingga kelompok soal dipaksa pindah halaman; batasi hanya bila benar perlu.
-// Untuk kelompok kecil (kisi-kisi/indikator/kartu per TP) `max` besar → tampil sekali, tetap aman.
-function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan: number } | null)[] {
-  const n = rows.length;
-  const out = new Array(n).fill(null);
-  let lastText = '';
-  let i = 0;
-  while (i < n) {
-    let text = String(rows[i]?.[key] ?? '').trim();
-    if (!text) text = lastText;
-    if (!text) { out[i] = { text: '', rowspan: 1 }; i++; continue; }
-    let cnt = 1;
-    let j = i + 1;
-    while (j < n) {
-      const nt = String(rows[j]?.[key] ?? '').trim() || text;
-      if (nt === text) { cnt++; j++; } else break;
-    }
-    let k = i;
-    let remain = cnt;
-    while (remain > 0) {
-      const take = Math.min(max, remain);
-      out[k] = { text, rowspan: take };
-      k += take;
-      remain -= take;
-    }
-    lastText = text;
-    i += cnt;
-  }
-  return out;
-}
 
 function buildKisiKisi(rows: any[]): string {
   // CP ditampilkan SEKALI di atas tabel (bukan per baris), karena teks CP panjang di kolom sempit
@@ -172,8 +136,9 @@ ${cpLine}
 }
 
 function buildKartuSoal(rows: any[]): string {
-  // CP ditampilkan SEKALI di atas tabel (bukan per baris). Kolom tabel hanya TP/Soal/Kunci,
-  // sehingga tidak ada sel gabungan raksasa yang memaksa pindah halaman di PDF.
+  // CP ditampilkan SEKALI di atas tabel (bukan per baris). Kolom tabel hanya TP/Soal/Kunci.
+  // TANPA rowspan sama sekali: sel gabungan yang tinggi tidak bisa dibelah PDF sehingga tabel
+  // terpotong/lompat ke halaman baru. Baris polos → pagination normal.
   let firstCp = '';
   for (const r of (rows || [])) {
     const c = String(r?.cp ?? '').trim();
@@ -183,17 +148,13 @@ function buildKartuSoal(rows: any[]): string {
     ? `<div style="margin: 0 0 10px 0; font-size: 10pt;"><b>Capaian Pembelajaran:</b> ${escapeHtml(firstCp)}</div>`
     : '';
 
-  const tpM = mergeCell(rows, 'tp', MERGE_SPAN);
-  const body = (rows || []).map((r: any, i: number) => {
-    const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
-    return `
+  const body = (rows || []).map((r: any, i: number) => `
       <tr>
         <td style="${TD_STYLE} text-align: center;">${i + 1}</td>
-        ${tpCell}
+        <td style="${TD_STYLE}">${escapeHtml(r?.tp)}</td>
         <td style="${TD_STYLE}">${escapeHtml(r?.soal)}</td>
         <td style="${TD_STYLE} text-align: center;"><b>${escapeHtml(r?.kunciJawaban)}</b></td>
-      </tr>`;
-  }).join('');
+      </tr>`).join('');
   return `
 ${cpLine}
   <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: 1px solid #000;">
@@ -299,7 +260,7 @@ KELUARKAN HANYA SATU OBJEK JSON (TANPA markdown block, TANPA teks lain):
     {
       "cp": "CP yang sama dengan baris kisi-kisi terkait",
       "materi": "Materi dari RPM",
-      "indikator": "Indikator soal",
+      "indikator": "Indikator soal (rumus ABCD)",
       "nomorSoal": "nomor-nomor soal yang memenuhi indikator ini, contoh: 1, 2, 3, 4"
     }
   ],
@@ -317,6 +278,7 @@ ATURAN KETAT:
 1. kartuSoal WAJIB berisi SEMUA soal Asesmen Sumatif yang ada di RPM. Jika RPM punya 40 soal, kartuSoal harus punya 40 objek. JANGAN dikurangi!
 2. JANGAN mengulang CP yang sama di setiap soal! CP hanya ditulis SATU KALI, yaitu di objek kartuSoal PERTAMA. Untuk soal berikutnya dengan CP yang sama, isi "cp": "". TP tetap ditulis lengkap di setiap soal karena TP dapat berbeda antar soal (TP-lah yang membedakan setiap soal, bukan CP).
 2b. KERAPIAN SOAL: Untuk soal pilihan ganda, setiap opsi jawaban (A, B, C, D) WAJIB berada pada BARIS TERPISAH yang dipisahkan tag <br> di dalam field "soal". JANGAN menyusun opsi menyamping dalam satu baris karena akan terlihat menumpuk di tabel.
+2c. INDIKATOR ABCD: Setiap field "indikator" (baik di kisiKisi maupun indikatorSoal) WAJIB dirumuskan lengkap dengan konsep ABCD — Audience (peserta didik), Behavior (perilaku yang dapat diukur), Condition (kondisi/situasi/tugas), Degree (tingkat keberhasilan). Contoh: "Peserta didik mampu menentukan himpunan bagian dari suatu himpunan berdasarkan diagram Venn dengan tepat." JANGAN menulis indikator generik seperti "Siswa memahami materi".
 3. indikatorSoal harus konsisten: total nomor soal di semua baris = total soal.
 4. kisiKisi harus mencakup semua indikator yang dipakai.
 5. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
