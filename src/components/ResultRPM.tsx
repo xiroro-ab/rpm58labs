@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield } from 'lucide-react';
+import { Download, Printer, X, FileText, Play, Bot, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Undo, Redo, Shield, Table } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { RPMFormData } from '../types';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
 import WebsiteGenerator from './WebsiteGenerator';
+import TableKisiKisi from './TableKisiKisi';
 
 interface ResultRPMProps {
   markdown: string;
@@ -24,6 +25,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [streamHtml, setStreamHtml] = useState('');
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isTableKisiKisiOpen, setIsTableKisiKisiOpen] = useState(false);
 
   useEffect(() => {
     if (!isStreaming) {
@@ -169,6 +171,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} />
 
           <button
+            onClick={() => setIsTableKisiKisiOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-2 text-purple-700 bg-white hover:bg-purple-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-purple-200 shadow-card hover:shadow-card-hover"
+          >
+            <Table className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Kisi-Kisi</span>
+          </button>
+
+          <button
             onClick={handlePrintPDF}
             disabled={isDownloading}
             className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-button hover:shadow-button-hover transition-all shrink-0 ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark'}`}
@@ -248,6 +258,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           onClose={() => setIsComplianceCheckerOpen(false)}
           htmlContent={currentHtml}
           formPhase={formData?.phase || ''}
+        />
+
+        <TableKisiKisi
+          isOpen={isTableKisiKisiOpen}
+          onClose={() => setIsTableKisiKisiOpen(false)}
+          rpmHtml={currentHtml}
+          formData={formData}
+          customApiKey={customApiKey}
         />
       </div>
     </div>
