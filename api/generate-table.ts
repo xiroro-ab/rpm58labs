@@ -195,8 +195,9 @@ ${rpmHtml}
     res.setHeader('Transfer-Encoding', 'chunked');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
 
-    // Tulis bagian stabil server lebih dulu (kop + identitas + judul kisi).
-    res.write(header1);
+    // Header (kop+identitas) DITAHAN dulu: baru dikirim saat token AI pertama tiba, sehingga
+    // popup "berpikir" hilang tepat ketika AI benar-benar mulai menulis, bukan saat request.
+    let started = false;
 
     if (provider === 'gemini') {
       const ai = new GoogleGenAI({ apiKey: keyToUse });
@@ -205,7 +206,9 @@ ${rpmHtml}
         contents: prompt,
       });
       for await (const chunk of stream) {
-        if (chunk.text) res.write(chunk.text);
+        if (!chunk.text) continue;
+        if (!started) { started = true; res.write(header1); }
+        res.write(chunk.text);
       }
     } else {
       let baseURL = undefined;
@@ -224,8 +227,14 @@ ${rpmHtml}
       });
       for await (const chunk of stream) {
         const c = chunk.choices[0]?.delta?.content || '';
-        if (c) res.write(c);
+        if (!c) continue;
+        if (!started) { started = true; res.write(header1); }
+        res.write(c);
       }
+    }
+
+    if (!started) {
+      return res.status(500).json({ error: 'AI tidak menghasilkan respons. Silakan coba lagi.' });
     }
 
     res.end();
