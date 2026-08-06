@@ -236,9 +236,9 @@ KELUARKAN HANYA SATU OBJEK JSON (TANPA markdown block, TANPA teks lain):
   ],
   "kartuSoal": [
     {
-      "cp": "CP yang relevan",
-      "tp": "TP yang relevan",
-      "soal": "Soal LENGKAP dari RPM (untuk pilihan ganda sertakan semua opsi A, B, C, D)",
+      "cp": "CP (isi pada SOAL PERTAMA saja; untuk soal berikutnya biarkan kosong \"\" jika CP-nya sama dengan soal pertama)",
+      "tp": "TP spesifik yang menjadi acuan soal ini (bisa berbeda antar soal)",
+      "soal": "Soal LENGKAP dari RPM dengan penomoran \"1. \" dst. Untuk soal PILIHAN GANDA, tuliskan setiap opsi pada BARIS TERPISAH dengan memisahkannya memakai tag <br>. Contoh format: \"1. Pertanyaan... <br>A. Opsi A <br>B. Opsi B <br>C. Opsi C <br>D. Opsi D\". JANGAN menggabungkan opsi A, B, C, D dalam satu baris menyamping.",
       "kunciJawaban": "Kunci jawaban soal ini, contoh: B"
     }
   ]
@@ -246,10 +246,12 @@ KELUARKAN HANYA SATU OBJEK JSON (TANPA markdown block, TANPA teks lain):
 
 ATURAN KETAT:
 1. kartuSoal WAJIB berisi SEMUA soal Asesmen Sumatif yang ada di RPM. Jika RPM punya 40 soal, kartuSoal harus punya 40 objek. JANGAN dikurangi!
-2. indikatorSoal harus konsisten: total nomor soal di semua baris = total soal.
-3. kisiKisi harus mencakup semua indikator yang dipakai.
-4. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
-5. Output HANYA JSON. Tidak ada kata pengantar atau penutup.`;
+2. JANGAN mengulang CP yang sama di setiap soal! CP hanya ditulis SATU KALI, yaitu di objek kartuSoal PERTAMA. Untuk soal berikutnya dengan CP yang sama, isi "cp": "". TP tetap ditulis lengkap di setiap soal karena TP dapat berbeda antar soal (TP-lah yang membedakan setiap soal, bukan CP).
+2b. KERAPIAN SOAL: Untuk soal pilihan ganda, setiap opsi jawaban (A, B, C, D) WAJIB berada pada BARIS TERPISAH yang dipisahkan tag <br> di dalam field "soal". JANGAN menyusun opsi menyamping dalam satu baris karena akan terlihat menumpuk di tabel.
+3. indikatorSoal harus konsisten: total nomor soal di semua baris = total soal.
+4. kisiKisi harus mencakup semua indikator yang dipakai.
+5. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
+6. Output HANYA JSON. Tidak ada kata pengantar atau penutup.`;
 
     let aiText = '';
     if (provider === 'gemini') {
