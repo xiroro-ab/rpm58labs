@@ -119,29 +119,53 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       const reader = response.body?.getReader();
       if (!reader) throw new Error('Response body is null');
       const decoder = new TextDecoder();
-      let resultText = '';
+      const MARKER = '@@@FINAL@@@';
+      let buffer = '';
+      let finalMode = false;
+      let finalText = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        resultText += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
 
-        var displayResult = resultText;
-        if (displayResult.trim().startsWith('```html')) {
-          displayResult = displayResult.replace(/^```html\n?/, '');
-        } else if (displayResult.trim().startsWith('```')) {
-          displayResult = displayResult.replace(/^```\n?/, '');
-        }
-        if (displayResult.trim().endsWith('```')) {
-          displayResult = displayResult.replace(/\n?```$/, '');
+        if (finalMode) {
+          finalText += buffer;
+          buffer = '';
+          continue;
         }
 
-        setTableHtml(displayResult);
+        const markerIdx = buffer.indexOf(MARKER);
+        if (markerIdx !== -1) {
+          finalMode = true;
+          finalText = buffer.slice(markerIdx + MARKER.length);
+          buffer = '';
+          continue;
+        }
+
+        // Belum marker: tampilkan progres AI menulis secara live
+        let live = buffer;
+        if (live.trim().startsWith('```html')) live = live.replace(/^```html\n?/, '');
+        else if (live.trim().startsWith('```')) live = live.replace(/^```\n?/, '');
+        if (live.trim().endsWith('```')) live = live.replace(/\n?```$/, '');
+        setTableHtml(live);
       }
 
-      const finalHtml = displayResult || resultText;
-      saveToHistory(finalHtml);
+      if (!finalMode) finalText = buffer;
+
+      let cleanFinal = finalText.replace(/^```html\n?/i, '').replace(/^```/i, '').replace(/\n?```$/i, '').trim();
+
+      if (cleanFinal.startsWith('@@ERROR@@')) {
+        let msg = 'Gagal memproses respons AI untuk tabel.';
+        try { msg = JSON.parse(cleanFinal.slice('@@ERROR@@'.length))?.error || msg; }
+        catch (e) {}
+        setTableHtml('');
+        throw new Error(msg);
+      }
+
+      setTableHtml(cleanFinal);
+      saveToHistory(cleanFinal);
       toast.success('Tabel kisi-kisi berhasil dibuat!');
     } catch (err: any) {
       console.error(err);

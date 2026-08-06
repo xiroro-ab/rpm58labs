@@ -268,14 +268,27 @@ ATURAN KETAT:
 4. Semua isi harus diambil/mengikuti RPM. JANGAN menambah soal baru.
 5. Output HANYA JSON. Tidak ada kata pengantar atau penutup.`;
 
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+
+    // Tulis progres AI langsung ke klien (streaming), lalu kirim HTML final setelah marker.
+    // Marker dipakai frontend: teks sebelum marker = progres, setelah marker = HTML final.
+    const FINAL_MARKER = '@@@FINAL@@@';
+
     let aiText = '';
     if (provider === 'gemini') {
       const ai = new GoogleGenAI({ apiKey: keyToUse });
-      const response = await ai.models.generateContent({
+      const responseStream = await ai.models.generateContentStream({
         model: 'gemini-3.6-flash',
         contents: prompt,
       });
-      aiText = response.text || '';
+      for await (const chunk of responseStream) {
+        if (chunk.text) {
+          aiText += chunk.text;
+          res.write(chunk.text);
+        }
+      }
     } else {
       let baseURL = undefined;
       let modelName = '';
@@ -297,11 +310,18 @@ ATURAN KETAT:
       }
 
       const openai = new OpenAI({ apiKey: keyToUse, baseURL });
-      const completion = await openai.chat.completions.create({
+      const responseStream = await openai.chat.completions.create({
         model: modelName,
         messages: [{ role: 'user', content: prompt }],
+        stream: true,
       });
-      aiText = completion.choices[0]?.message?.content || '';
+      for await (const chunk of responseStream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          aiText += content;
+          res.write(content);
+        }
+      }
     }
 
     let data: any;
@@ -310,7 +330,10 @@ ATURAN KETAT:
     } catch (e) {
       console.error('Failed to parse AI JSON for tables:', e);
       console.error('Raw AI output:', aiText.slice(0, 500));
-      return res.status(500).json({ error: 'Gagal memproses respons AI untuk tabel. Silakan coba lagi.' });
+      res.write('\n' + FINAL_MARKER + '\n');
+      res.write('@@ERROR@@' + JSON.stringify({ error: 'Gagal memproses respons AI untuk tabel. Silakan coba lagi.' }));
+      res.end();
+      return;
     }
 
     const subjectUpper = escapeHtml(formData?.subject || 'MAPEL').toUpperCase();
@@ -337,12 +360,18 @@ ${identitas(formData, formattedDate)}
 ${buildKartuSoal(data.kartuSoal)}
 </div>`;
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.send(fullHtml);
+    res.write('\n' + FINAL_MARKER + '\n');
+    res.write(fullHtml);
+    res.end();
   } catch (error: any) {
     console.error('Error generating table:', error);
-    res.status(500).json({ error: 'Gagal membuat tabel kisi-kisi. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Gagal membuat tabel kisi-kisi. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });
+    } else {
+      res.write('\n@@@FINAL@@@\n');
+      res.write('@@ERROR@@' + JSON.stringify({ error: 'Gagal membuat tabel kisi-kisi. Silakan coba lagi.' }));
+      res.end();
+    }
   }
 }
 
