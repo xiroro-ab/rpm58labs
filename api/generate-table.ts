@@ -63,7 +63,7 @@ function identitas(formData: any, formattedDate: string): string {
 
 const TH_STYLE = 'border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;';
 const TD_STYLE = 'border: 1px solid #000; padding: 6px 8px; vertical-align: top;';
-// Penggabungan penuh tanpa pecah-ulang (tabel kisi-kisi & kartu soal pendek per kelompoknya).
+// Penggabungan penuh (tanpa pecah-ulang) hanya untuk kartu soal per kelompok TP yang kecil.
 // Nilai di bawah membuat mergeCell tidak memotong sama sekali (1 blok utuh per nilai sama).
 const MERGE_SPAN = 1_000_000;
 
@@ -101,8 +101,10 @@ function mergeCell(rows: any[], key: string, max = 4): ({ text: string; rowspan:
 }
 
 function buildKisiKisi(rows: any[]): string {
-  const cpM = mergeCell(rows, 'cp', MERGE_SPAN);
-  const tpM = mergeCell(rows, 'tp', MERGE_SPAN);
+  // Baris kisi-kisi pendek: gabungan dibatasi 4 baris agar sel tidak jadi tinggi (memaksa
+  // pindah halaman), tapi tetap ringkas tanpa mengulang di tiap baris.
+  const cpM = mergeCell(rows, 'cp', 4);
+  const tpM = mergeCell(rows, 'tp', 4);
   const body = (rows || []).map((r: any, i: number) => {
     const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
     const tpCell = tpM[i] ? `<td style="${TD_STYLE}" rowspan="${tpM[i].rowspan}">${escapeHtml(tpM[i].text)}</td>` : '';
@@ -133,7 +135,7 @@ function buildKisiKisi(rows: any[]): string {
 }
 
 function buildIndikator(rows: any[]): string {
-  const cpM = mergeCell(rows, 'cp', MERGE_SPAN);
+  const cpM = mergeCell(rows, 'cp', 4);
   const body = (rows || []).map((r: any, i: number) => {
     const cpCell = cpM[i] ? `<td style="${TD_STYLE}" rowspan="${cpM[i].rowspan}">${escapeHtml(cpM[i].text)}</td>` : '';
     return `
