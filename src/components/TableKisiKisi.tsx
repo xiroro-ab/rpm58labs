@@ -146,6 +146,10 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
       const finalHtml = resultText;
       let cleanFinal = finalHtml.replace(/^```html\n?/i, '').replace(/^```/i, '').replace(/\n?```$/i, '').trim();
 
+      // Pastikan tidak ada sel/tabel yang dipaksa tidak boleh terbagi, agar isi kisi-kisi
+      // mengalir ke halaman berikut (bukan melompat dan menyisakan halaman kosong).
+      cleanFinal = cleanFinal.replace(/page-break-inside:\s*avoid/gi, 'page-break-inside: auto');
+
       if (cleanFinal.includes('<!--TERPOTONG-->')) {
         toast.error('Generate terpotong (batas output AI tercapai). Coba generate ulang, atau gunakan API Key berbayar untuk hasil lebih panjang.', {
           duration: 7000,
