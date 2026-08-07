@@ -160,7 +160,7 @@ Buat satu <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt
 
 Isi berasal dari RPM: materi pokok, tujuan pembelajaran, dan indikator yang sesuai. Untuk header kolom gunakan: <th style="border: 1px solid #000; padding: 6px 8px; background-color: #1a4185; color: white; font-weight: bold; text-align: center;"> dan sel <td style="border: 1px solid #000; padding: 6px 8px; vertical-align: top;">.
 
-PENGGABUNGAN (MERGE) — WAJIB: Jika ada dua baris atau lebih YANG BERURUTAN dengan Materi Pokok DAN TP yang sama persis, gabungkan sel Materi Pokok dan sel TP dengan atribut rowspan="N". N = jumlah baris yang sama, MAKSIMUM 4 (sel gabungan yang terlalu besar tidak bisa dibelah halaman PDF). Jika lebih dari 4, mulai grup baru lagi dari baris ke-5. Untuk sel yang tergabung, tulis teksnya SEKALI di baris pertama. Jika Materi Pokok atau TP-nya BERBEDA, baris dipisah seperti biasa. Jangan menambah properti page-break-inside: avoid pada tabel kisi-kisi maupun membungkusnya dengan elemen yang punya page-break-inside: avoid (biarkan mengalir lintas halaman; tidak boleh menyisakan halaman kosong).
+PENULISAN BARIS: Tulis SETIAP indikator sebagai baris tersendiri TANPA menggabungkan (tanpa rowspan / tanpa merge). Meskipun Materi Pokok atau TP pada beberapa baris sama, tetap tulis lengkap di setiap baris. Ini agar tabel bisa mengalir pecah halaman dengan rapi. Jangan menambah properti page-break-inside: avoid pada tabel kisi-kisi maupun membungkusnya dengan elemen yang punya page-break-inside: avoid (biarkan mengalir lintas halaman; tidak boleh menyisakan halaman kosong).
 
 - Indikator Soal WAJIB rumusan ABCD (Audience, Behavior, Condition, Degree).
 - Level Kognitif sesuai Taksonomi Bloom C1-C6.
