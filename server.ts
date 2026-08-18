@@ -8,6 +8,7 @@ import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import generateTableHandler from './api/generate-table';
+import generateSoalHandler from './api/generate-soal';
 
 async function startServer() {
   const app = express();
@@ -668,6 +669,7 @@ ${html}`;
     }
   });
   app.post("/api/generate-table", (req, res) => { generateTableHandler(req, res); });
+  app.post("/api/generate-soal", (req, res) => { generateSoalHandler(req, res); });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {

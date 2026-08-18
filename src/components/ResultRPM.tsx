@@ -7,6 +7,7 @@ import { RevisionChatbot } from './RevisionChatbot';
 import { ComplianceCheckerModal } from './ComplianceCheckerModal';
 import WebsiteGenerator from './WebsiteGenerator';
 import TableKisiKisi from './TableKisiKisi';
+import LembarSoal from './LembarSoal';
 
 interface ResultRPMProps {
   markdown: string;
@@ -26,6 +27,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
   const [isComplianceCheckerOpen, setIsComplianceCheckerOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isTableKisiKisiOpen, setIsTableKisiKisiOpen] = useState(false);
+  const [isLembarSoalOpen, setIsLembarSoalOpen] = useState(false);
 
   useEffect(() => {
     if (!isStreaming) {
@@ -179,6 +181,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           </button>
 
           <button
+            onClick={() => setIsLembarSoalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-2 text-blue-700 bg-white hover:bg-blue-50 text-xs sm:text-sm font-semibold rounded-lg transition-all border border-blue-200 shadow-card hover:shadow-card-hover"
+          >
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Lembar Soal</span>
+          </button>
+
+          <button
             onClick={handlePrintPDF}
             disabled={isDownloading}
             className={`flex items-center gap-1.5 px-3 py-2 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-button hover:shadow-button-hover transition-all shrink-0 ${isDownloading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark'}`}
@@ -263,6 +273,14 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
         <TableKisiKisi
           isOpen={isTableKisiKisiOpen}
           onClose={() => setIsTableKisiKisiOpen(false)}
+          rpmHtml={currentHtml}
+          formData={formData}
+          customApiKey={customApiKey}
+        />
+
+        <LembarSoal
+          isOpen={isLembarSoalOpen}
+          onClose={() => setIsLembarSoalOpen(false)}
           rpmHtml={currentHtml}
           formData={formData}
           customApiKey={customApiKey}
