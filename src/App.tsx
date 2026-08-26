@@ -617,7 +617,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
-            className="hidden sm:flex items-center gap-1 px-2 sm:px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="flex items-center gap-1 px-2 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Backup & Restore (Ctrl+B)"
           >
             <HardDrive className="w-4 h-4" />
@@ -633,7 +633,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setIsAnalyticsDashboardOpen(true)}
-            className="hidden sm:flex items-center gap-1 px-2 sm:px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="flex items-center gap-1 px-2 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Analytics Dashboard (Ctrl+D)"
           >
             <BarChart3 className="w-4 h-4" />
@@ -647,7 +647,7 @@ export default function App() {
             <Settings className="w-5 h-5" />
           </button>
           <button onClick={() => setIsCreatorOpen(true)}
-            className="hidden sm:block p-2 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
+            className="p-2 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
             title="Tentang Pembuat"
           >
             <User className="w-5 h-5" />
