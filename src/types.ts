@@ -29,3 +29,62 @@ export interface HistoryItem {
   formData: RPMFormData;
   markdown: string;
 }
+
+export type QuestionType = 'pg' | 'essay';
+
+export interface QuestionBankItem {
+  number: number;
+  type: QuestionType;
+  question: string;
+  options: string[];
+  answer: string;
+}
+
+export interface StudentAnswers {
+  name: string;
+  answers: Record<string, string>;
+}
+
+export interface StudentResult {
+  name: string;
+  pgCorrect: number;
+  pgTotal: number;
+  essayScores: Record<string, number>;
+  essayFeedback: Record<string, string>;
+  value: number;
+  tuntas: boolean;
+  solo: string;
+  soloReason: string;
+}
+
+export interface ItemAnalysis {
+  number: number;
+  type: QuestionType;
+  question: string;
+  correctPct: number;
+  status: string;
+}
+
+export interface ClassStats {
+  count: number;
+  average: number;
+  highest: number;
+  lowest: number;
+  tuntasCount: number;
+  kkm: number;
+  soloDist: Record<string, number>;
+}
+
+export interface AnalyzeResult {
+  results: StudentResult[];
+  stats: ClassStats;
+  itemAnalysis: ItemAnalysis[];
+  narrative: {
+    analisisKlasikal: string;
+    remedial: string;
+    pengayaan: string;
+    saranTindakLanjut: string;
+    catatanSoal: { number: number; catatan: string }[];
+  };
+  reportHtml: string;
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FormRPM from './components/FormRPM';
 import ResultRPM from './components/ResultRPM';
 import { RPMFormData, HistoryItem } from './types';
-import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone, User } from 'lucide-react';
+import { Settings, X, History, Clock, Trash2, Search, PanelLeftClose, PanelLeftOpen, HardDrive, BarChart3, Smartphone, User, ClipboardCheck } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { BackupRestoreModal } from './components/BackupRestoreModal';
@@ -11,6 +11,7 @@ import { PWAPrompt } from './components/PWAPrompt';
 import { useConfirm } from './components/ConfirmDialog';
 import { analyticsManager } from './lib/analytics';
 import { AboutCreatorModal } from './components/AboutCreatorModal';
+import AnswerAnalyzer from './components/AnswerAnalyzer';
 
 export default function App() {
   const [result, setResult] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
+  const [isAnalyzerOpen, setIsAnalyzerOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
 
@@ -621,7 +623,15 @@ export default function App() {
             <HardDrive className="w-4 h-4" />
             <span className="hidden sm:inline">Backup</span>
           </button>
-          <button 
+          <button
+            onClick={() => setIsAnalyzerOpen(true)}
+            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
+            title="Koreksi & Analisis Jawaban Siswa"
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            <span className="hidden sm:inline">Koreksi</span>
+          </button>
+          <button
             onClick={() => setIsAnalyticsDashboardOpen(true)}
             className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Analytics Dashboard (Ctrl+D)"
@@ -666,6 +676,13 @@ export default function App() {
           isOpen={isAnalyticsDashboardOpen}
           onClose={() => setIsAnalyticsDashboardOpen(false)}
           history={history}
+        />
+
+        <AnswerAnalyzer
+          isOpen={isAnalyzerOpen}
+          onClose={() => setIsAnalyzerOpen(false)}
+          history={history}
+          customApiKey={customApiKey}
         />
 
         {/* Mobile Overlay */}

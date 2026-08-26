@@ -9,6 +9,12 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import generateTableHandler from './api/generate-table';
 import generateSoalHandler from './api/generate-soal';
+import enhanceRpmHandler from './api/enhance-rpm';
+import generateWebsiteHandler from './api/generate-website';
+import reviseWebsiteHandler from './api/revise-website';
+import extractQuestionsHandler from './api/extract-questions';
+import parseAnswersHandler from './api/parse-answers';
+import analyzeResultsHandler from './api/analyze-results';
 
 async function startServer() {
   const app = express();
@@ -255,7 +261,7 @@ LEWATI aktivitas rutin (salam, doa, absensi).
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
       
-      let modelName = 'gemini-1.5-flash';
+      let modelName = 'gemini-3.6-flash';
       let baseURL = '';
       
       if (provider === 'gemini') {
@@ -670,6 +676,12 @@ ${html}`;
   });
   app.post("/api/generate-table", (req, res) => { generateTableHandler(req, res); });
   app.post("/api/generate-soal", (req, res) => { generateSoalHandler(req, res); });
+  app.post("/api/enhance-rpm", (req, res) => { enhanceRpmHandler(req, res); });
+  app.post("/api/generate-website", (req, res) => { generateWebsiteHandler(req, res); });
+  app.post("/api/revise-website", (req, res) => { reviseWebsiteHandler(req, res); });
+  app.post("/api/extract-questions", (req, res) => { extractQuestionsHandler(req, res); });
+  app.post("/api/parse-answers", (req, res) => { parseAnswersHandler(req, res); });
+  app.post("/api/analyze-results", (req, res) => { analyzeResultsHandler(req, res); });
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
