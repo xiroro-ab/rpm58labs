@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { X, Loader2, Download, Upload, Image as ImageIcon, ClipboardPaste, FileSpreadsheet, BookOpen, PenLine, Trash2, Plus, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { QuestionBankItem, StudentAnswers, AnalyzeResult, HistoryItem } from '../types';
+import { X, Loader2, Download, Upload, Image as ImageIcon, ClipboardPaste, FileSpreadsheet, BookOpen, PenLine, Trash2, Plus, CheckCircle2, AlertTriangle, History } from 'lucide-react';
+import { QuestionBankItem, StudentAnswers, AnalyzeResult, HistoryItem, AnalysisSession } from '../types';
 
 interface AnswerAnalyzerProps {
   isOpen: boolean;
@@ -11,6 +11,33 @@ interface AnswerAnalyzerProps {
 }
 
 const STEP_LABELS = ['Sumber Soal', 'Bank Soal', 'Jawaban Siswa', 'Hasil Analisis'];
+const ANALYSES_KEY = 'rpmAnalysisHistory';
+const MAX_SESSIONS = 12;
+
+function loadAnalyses(): AnalysisSession[] {
+  try {
+    const raw = localStorage.getItem(ANALYSES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error('Failed to parse analysis history', e);
+    return [];
+  }
+}
+
+function persistAnalyses(sessions: AnalysisSession[]) {
+  const save = (list: AnalysisSession[]) => localStorage.setItem(ANALYSES_KEY, JSON.stringify(list));
+  try {
+    save(sessions);
+  } catch (e) {
+    try {
+      save(sessions.slice(0, Math.ceil(sessions.length / 2)));
+    } catch (e2) {
+      console.error('Failed to save analysis history (storage full)', e2);
+    }
+  }
+}
 
 export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey }: AnswerAnalyzerProps) {
   const [step, setStep] = useState(1);
@@ -35,12 +62,50 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [metaInfo, setMetaInfo] = useState<{ subject: string; phase: string; teacher: string; school: string; headmaster: string }>({ subject: '', phase: '', teacher: '', school: '', headmaster: '' });
   const [isDownloading, setIsDownloading] = useState(false);
+  const [analyses, setAnalyses] = useState<AnalysisSession[]>(() => loadAnalyses());
+  const [showAnalyses, setShowAnalyses] = useState(false);
 
   if (!isOpen) return null;
 
   const resetAll = () => {
     setStep(1); setQuestions([]); setStudents([]); setResult(null);
     setExtText(''); setExtImage(null); setPasteText(''); setPhoto(null); setSelectedRpmId('');
+    setShowAnalyses(false);
+  };
+
+  const saveSession = (r: AnalyzeResult) => {
+    const session: AnalysisSession = {
+      id: Date.now().toString(),
+      title: `${metaInfo.subject || 'Analisis'}${metaInfo.phase || className ? ' - ' + (metaInfo.phase || className) : ''}`,
+      date: new Date().toISOString(),
+      kkm: parseInt(kkm) || 75,
+      className,
+      meta: metaInfo,
+      questions: [...questions],
+      students: [...students],
+      result: r,
+    };
+    const next = [session, ...analyses].slice(0, MAX_SESSIONS);
+    setAnalyses(next);
+    persistAnalyses(next);
+  };
+
+  const restoreSession = (s: AnalysisSession) => {
+    setQuestions(s.questions);
+    setStudents(s.students);
+    setResult(s.result);
+    setMetaInfo(s.meta);
+    setKkm(String(s.kkm));
+    setClassName(s.className || '');
+    setShowAnalyses(false);
+    setStep(4);
+  };
+
+  const deleteSession = (id: string) => {
+    const next = analyses.filter(a => a.id !== id);
+    setAnalyses(next);
+    persistAnalyses(next);
+    toast.success('Riwayat analisis dihapus');
   };
 
   const readFileBase64 = (file: File, cb: (base64: string, mime: string) => void) => {
@@ -133,7 +198,8 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
       if (!res.ok) throw new Error(data?.error || 'Gagal menganalisis.');
       setResult(data);
       setStep(4);
-      toast.success('Analisis selesai!');
+      saveSession(data);
+      toast.success('Analisis selesai! Tersimpan di riwayat.');
     } catch (err: any) {
       toast.error(err.message || 'Gagal menganalisis.', { duration: 6000 });
     } finally { setIsWorking(false); setWaitingFirst(false); }
@@ -207,12 +273,28 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
                 <p className="text-xs text-slate-500 mt-0.5">Koreksi otomatis + Taksonomi SOLO + Laporan PDF</p>
               </div>
             </div>
-            <button onClick={() => { resetAll(); onClose(); }} className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500">
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {analyses.length > 0 && (
+                <button
+                  onClick={() => setShowAnalyses(!showAnalyses)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    showAnalyses
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-white text-slate-600 hover:bg-violet-50 border border-slate-200'
+                  }`}
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>Riwayat ({analyses.length})</span>
+                </button>
+              )}
+              <button onClick={() => { resetAll(); onClose(); }} className="p-2 hover:bg-white/50 rounded-lg transition-colors text-slate-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Stepper */}
+          {!showAnalyses && (
           <div className="flex items-center gap-1 px-5 py-3 bg-slate-50 border-b border-slate-200 overflow-x-auto">
             {STEP_LABELS.map((label, i) => {
               const n = i + 1;
@@ -237,9 +319,51 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
               );
             })}
           </div>
+          )}
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
+            {showAnalyses ? (
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600 mb-3">Riwayat analisis tersimpan di perangkat ini ({analyses.length}/{MAX_SESSIONS}). Klik untuk membuka kembali hasilnya.</p>
+                {analyses.length === 0 && (
+                  <div className="text-center py-10 text-slate-400">
+                    <History className="w-10 h-10 mb-2 opacity-20 mx-auto" />
+                    <p className="text-sm">Belum ada riwayat analisis</p>
+                  </div>
+                )}
+                {analyses.map(s => (
+                  <div
+                    key={s.id}
+                    onClick={() => restoreSession(s)}
+                    className="p-3 rounded-lg border border-slate-200 hover:border-violet-300 hover:bg-violet-50/50 cursor-pointer transition-all flex items-start justify-between gap-2 bg-white"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-slate-800 text-sm truncate">{s.title}</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {' • '}{s.students.length} siswa • {s.questions.length} soal • Rata-rata {s.result.stats.average} • Tuntas {s.result.stats.tuntasCount}/{s.result.stats.count}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {s.meta.subject && <span className="px-1.5 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-semibold rounded">{s.meta.subject}</span>}
+                        {(s.meta.phase || s.className) && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded">{s.meta.phase || s.className}</span>}
+                        <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-semibold rounded">KKM {s.kkm}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
+                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button onClick={() => setShowAnalyses(false)} className="mt-3 px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">
+                  ← Tutup Riwayat
+                </button>
+              </div>
+            ) : (
+            <>
             {step === 1 && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -643,6 +767,8 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
                   </div>
                 </div>
               )})()}
+            </>
+            )}
           </div>
         </div>
       </div>

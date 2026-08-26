@@ -88,3 +88,15 @@ export interface AnalyzeResult {
   };
   reportHtml: string;
 }
+
+export interface AnalysisSession {
+  id: string;
+  title: string;
+  date: string;
+  kkm: number;
+  className: string;
+  meta: { subject: string; phase: string; teacher: string; school: string; headmaster: string };
+  questions: QuestionBankItem[];
+  students: StudentAnswers[];
+  result: AnalyzeResult;
+}

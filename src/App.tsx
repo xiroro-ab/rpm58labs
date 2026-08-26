@@ -582,8 +582,8 @@ export default function App() {
       )}
 
       {/* Header */}
-      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-4 lg:px-8 py-4 bg-white/80 backdrop-blur-md border-b border-warm-border/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] flex-wrap gap-4 z-50">
-        <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
+      <header className="print:hidden flex flex-shrink-0 items-center justify-between px-3 sm:px-4 lg:px-8 py-2.5 sm:py-4 bg-white/80 backdrop-blur-md border-b border-warm-border/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] flex-wrap gap-x-2 gap-y-2 z-50">
+        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-[140px]">
           <div className="flex shrink-0 items-center justify-center w-10 h-10 md:w-11 md:h-11 overflow-hidden bg-white rounded-xl border border-slate-200/60 shadow-sm">
             <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/ico.png" alt="Logo SMP 58" className="object-contain w-full h-full p-1.5 hover:scale-105 transition-transform duration-300" />
           </div>
@@ -593,7 +593,7 @@ export default function App() {
           </div>
         </div>
         
-        <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0 flex-wrap justify-end">
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="flex items-center justify-center p-2 text-slate-500 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all shadow-card md:hidden"
@@ -610,22 +610,22 @@ export default function App() {
           </button>
           <button 
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="flex items-center gap-1 px-2 sm:px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
           >
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Riwayat</span>
           </button>
           <button 
             onClick={() => setIsBackupRestoreOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="hidden sm:flex items-center gap-1 px-2 sm:px-3 py-2 text-slate-600 bg-white border border-warm-border hover:border-primary/30 hover:bg-warm rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Backup & Restore (Ctrl+B)"
           >
             <HardDrive className="w-4 h-4" />
-            <span className="hidden sm:inline">Backup</span>
+            <span className="hidden md:inline">Backup</span>
           </button>
           <button
             onClick={() => setIsAnalyzerOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="flex items-center gap-1 px-2 sm:px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Koreksi & Analisis Jawaban Siswa"
           >
             <ClipboardCheck className="w-4 h-4" />
@@ -633,26 +633,26 @@ export default function App() {
           </button>
           <button
             onClick={() => setIsAnalyticsDashboardOpen(true)}
-            className="flex items-center gap-1 px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
+            className="hidden sm:flex items-center gap-1 px-2 sm:px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Analytics Dashboard (Ctrl+D)"
           >
             <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Analytics</span>
+            <span className="hidden md:inline">Analytics</span>
           </button>
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2.5 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
+            className="p-2 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
             title="Pengaturan API"
           >
             <Settings className="w-5 h-5" />
           </button>
           <button onClick={() => setIsCreatorOpen(true)}
-            className="p-2.5 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
+            className="hidden sm:block p-2 text-slate-500 hover:text-primary hover:bg-warm rounded-lg transition-all border border-transparent hover:border-warm-border"
             title="Tentang Pembuat"
           >
             <User className="w-5 h-5" />
           </button>
-          <button onClick={handleReset} className="flex items-center gap-1 px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark shadow-button hover:shadow-button-hover transition-all">
+          <button onClick={handleReset} className="flex items-center gap-1 px-2 sm:px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark shadow-button hover:shadow-button-hover transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span className="hidden sm:inline">Reset</span>
           </button>
