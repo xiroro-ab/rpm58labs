@@ -13,6 +13,7 @@ export interface RPMFormData {
   meetingCount: string;
   documentDate: string;
   learningModel: string;
+  learningModelPhases?: string;
   additionalContext?: string;
 }
 

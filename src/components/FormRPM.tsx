@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { RPMFormData } from '../types';
 import toast from 'react-hot-toast';
 
+const PREDEFINED_MODELS = [
+  'Auto (Biar AI yang memilih)',
+  'Problem Based Learning (PBL)',
+  'Project Based Learning (PjBL)',
+  'Discovery Learning',
+  'Inquiry Learning',
+  'Direct Instruction'
+];
+
 interface FormRPMProps {
   onSubmit: (data: RPMFormData) => void;
   isLoading: boolean;
@@ -32,9 +41,12 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
     meetingCount: '1',
     documentDate: new Date().toISOString().split('T')[0],
     learningModel: 'Problem Based Learning (PBL)',
+    learningModelPhases: '',
     additionalContext: '',
   };
   });
+
+  const isModelCustom = formData.learningModel ? !PREDEFINED_MODELS.includes(formData.learningModel) : false;
 
   useEffect(() => {
     localStorage.setItem('rpmFormData', JSON.stringify(formData));
@@ -91,6 +103,7 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
                 meetingCount: '1',
                 documentDate: new Date().toISOString().split('T')[0],
                 learningModel: 'Problem Based Learning (PBL)',
+                learningModelPhases: '',
                 additionalContext: '',
               });
               localStorage.removeItem('rpmFormData');
@@ -240,19 +253,43 @@ export default function FormRPM({ onSubmit, isLoading }: FormRPMProps) {
               />
             </div>
           </div>
-          <select required name="learningModel"
-            
-            value={formData.learningModel}
-            onChange={handleChange}
+          <select required name="learningModelSelect"
+            value={isModelCustom ? 'custom' : formData.learningModel}
+            onChange={(e) => {
+              if (e.target.value === 'custom') {
+                handleChange({ target: { name: 'learningModel', value: '' } } as any);
+              } else {
+                handleChange({ target: { name: 'learningModel', value: e.target.value } } as any);
+                handleChange({ target: { name: 'learningModelPhases', value: '' } } as any);
+              }
+            }}
             className="w-full px-3 py-2 border border-slate-200 rounded text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           >
-            <option value="Auto (Biar AI yang memilih)">Auto (Biar AI yang memilih)</option>
-            <option value="Problem Based Learning (PBL)">Problem Based Learning (PBL)</option>
-            <option value="Project Based Learning (PjBL)">Project Based Learning (PjBL)</option>
-            <option value="Discovery Learning">Discovery Learning</option>
-            <option value="Inquiry Learning">Inquiry Learning</option>
-            <option value="Direct Instruction">Direct Instruction</option>
+            {PREDEFINED_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+            <option value="custom">Lainnya (Ketik Manual)...</option>
           </select>
+          {isModelCustom && (
+            <div className="space-y-2 p-3 bg-blue-50/50 border border-blue-100 rounded-lg animate-in fade-in slide-in-from-top-2">
+              <input required type="text"
+                name="learningModel"
+                value={formData.learningModel}
+                onChange={handleChange}
+                placeholder="Nama Model Pembelajaran (Misal: Jigsaw)"
+                className="w-full px-3 py-2 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+              />
+              <textarea
+                name="learningModelPhases"
+                value={formData.learningModelPhases || ''}
+                onChange={handleChange}
+                placeholder="Fase/Sintaks Model (Opsional). Misal: 1. Orientasi, 2. Kelompok..."
+                rows={2}
+                className="w-full px-3 py-2 border border-slate-200 rounded text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+              />
+              <p className="text-[10.5px] text-blue-600/80 leading-tight">
+                *Opsional: Jika AI tidak tahu urutan fase dari model ini (misal karena model baru), silakan tulis urutan fasenya agar AI dapat menuliskannya dengan benar.
+              </p>
+            </div>
+          )}
           <input required type="text"
             name="topic"
             

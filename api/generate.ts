@@ -54,7 +54,9 @@ export default async function handler(req, res) {
     const isAutoModel = data.learningModel === 'Auto (Biar AI yang memilih)';
     const modelInstruction = isAutoModel 
       ? `Karena guru memilih "Auto", kamu BEBAS MEMILIH model pembelajaran yang paling cocok dengan materi (misalnya PBL, PjBL, Discovery, dll). Tuliskan nama model yang kamu pilih pada tabel DESAIN PEMBELAJARAN di bagian "Model Pembelajaran". Tuliskan SEMUA fasenya secara utuh. Jangan dikurangi.`
-      : `Kamu menggunakan model ${data.learningModel}. Tuliskan SEMUA fasenya secara utuh. Jangan dikurangi.`;
+      : data.learningModelPhases
+        ? `Kamu menggunakan model pembelajaran "${data.learningModel}". Guru TELAH MENETAPKAN fase-fase spesifiknya yaitu: ${data.learningModelPhases}. Kamu WAJIB MENGGUNAKAN fase-fase tersebut PERSIS seperti urutan yang diminta guru. JANGAN mengarang fase sendiri atau menggunakan fase standar AI.`
+        : `Kamu menggunakan model ${data.learningModel}. Tuliskan SEMUA fasenya secara utuh sesuai dengan standar baku model tersebut. Jangan dikurangi.`;
 
     let pengalamanBelajarHTML = '';
     for(let i = 1; i <= meetingCount; i++) {
@@ -152,14 +154,14 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menayangkan video":
    <div class="rpm-embed-visual">
-     <p><strong>Pertemuan [N] � [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] - [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p><a href="https://www.youtube.com/results?search_query=KEYWORD" target="_blank">YouTube</a></p>
    </div>
 
    GANTI KEYWORD dengan kata kunci SPESIFIK Bahasa Indonesia. GANTI PROMPT dengan deskripsi Inggris + "educational illustration, flat design, colorful".
    LEWATI aktivitas rutin (salam, doa, absensi).
 6. STRUKTUR PERTEMUAN & MANAJEMEN WAKTU: Di bagian III. PENGALAMAN BELAJAR, saya sudah menyediakan kerangka kotak-kotak. GANTI teks instruksinya dengan aktivitas nyata yang mendetail! Alokasikan waktu dalam hitungan Menit untuk Kegiatan Awal, Inti, dan Penutup secara logis menyesuaikan dengan total alokasi waktu JP. Tulis angkanya di bagian (... Menit)!
-7. SINKRONISASI MODEL PEMBELAJARAN: Pada Kegiatan Inti di "Pengalaman Belajar", kamu WAJIB menggunakan Fase/Sintaks dari model pembelajaran ${isAutoModel ? 'yang kamu pilih' : data.learningModel}. Gantikan "[Nama Fase Model]" dengan fase yang sebenarnya, dan urutkan sesuai standar model tersebut. Jika fase lebih dari 3, tambahkan ke dalam HTML dengan format yang serupa.
+7. SINKRONISASI MODEL PEMBELAJARAN: Pada Kegiatan Inti di "Pengalaman Belajar", kamu WAJIB menggunakan Fase/Sintaks dari model pembelajaran ${isAutoModel ? 'yang kamu pilih' : data.learningModel}. Gantikan "[Nama Fase Model]" dengan fase yang spesifik. ${data.learningModelPhases ? 'Gunakan URUTAN FASE YANG TELAH DITETAPKAN OLEH GURU (lihat poin 2). JANGAN menggunakan standar lain.' : 'Urutkan sesuai standar model tersebut.'} Jika fase lebih dari 3, tambahkan ke dalam HTML dengan format yang serupa.
 8. SINKRONISASI ASESMEN & KEGIATAN (SANGAT KRUSIAL!): Asesmen Diagnostik WAJIB SAMA PERSIS (PLEK KETIPLEK) dengan "Pertanyaan Pemantik" yang ada di Kegiatan Awal. Tuliskan ulang pertanyaan pemantik tersebut sebagai soal Asesmen Diagnostik. Asesmen Formatif WAJIB MENGUKUR aktivitas yang sedang dilakukan pada Kegiatan Inti. Asesmen Sumatif (10 Soal per pertemuan, total ${data.meetingCount * 10} soal) WAJIB MENGUJI materi pada Kegiatan Inti. JANGAN ADA YANG BEDA! Masukkan semua soal tersebut ke dalam "Lampiran 2: Instrumen Asesmen dan Rubrik".
 9. DEEP LEARNING LABELS: Kamu WAJIB menyematkan label span warna-warni (Joyful / Meaningful / Mindful) SECARA SELEKTIF di sebelah kanan teks menit <b>(... Menit)</b> pada aktivitas yang relevan di Kegiatan Awal, Inti, dan Penutup. Jangan taruh di semua aktivitas, pilih aktivitas yang benar-benar menggambarkan salah satu elemen tersebut.
 10. FORMAT KELUARAN: KELUARKAN LANGSUNG KODE HTML-NYA TANPA BUNGKUSAN MARKDOWN (JANGAN GUNAKAN \`\`\`html ATAU \`\`\`). KELUARKAN RAW HTML SECARA LANGSUNG.
