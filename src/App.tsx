@@ -12,6 +12,7 @@ import { useConfirm } from './components/ConfirmDialog';
 import { analyticsManager } from './lib/analytics';
 import { AboutCreatorModal } from './components/AboutCreatorModal';
 import AnswerAnalyzer from './components/AnswerAnalyzer';
+import ManualSoalModal from './components/ManualSoalModal';
 
 export default function App() {
   const [result, setResult] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export default function App() {
   const [isAnalyticsDashboardOpen, setIsAnalyticsDashboardOpen] = useState(false);
   const [isBackupRestoreOpen, setIsBackupRestoreOpen] = useState(false);
   const [isAnalyzerOpen, setIsAnalyzerOpen] = useState(false);
+  const [isManualSoalOpen, setIsManualSoalOpen] = useState(false);
   const [isPWAPromptOpen, setIsPWAPromptOpen] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
 
@@ -624,6 +626,14 @@ export default function App() {
             <span className="hidden md:inline">Backup</span>
           </button>
           <button
+            onClick={() => setIsManualSoalOpen(true)}
+            className="flex items-center gap-1 px-2 sm:px-3 py-2 text-orange-600 bg-white border border-orange-200 hover:border-orange-300 hover:bg-orange-50 rounded-lg transition-all text-sm font-semibold shadow-card"
+            title="Generate dari Soal Manual"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <span className="hidden sm:inline">Soal Manual</span>
+          </button>
+          <button
             onClick={() => setIsAnalyzerOpen(true)}
             className="flex items-center gap-1 px-2 sm:px-3 py-2 text-violet-600 bg-white border border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-lg transition-all text-sm font-semibold shadow-card"
             title="Koreksi & Analisis Jawaban Siswa"
@@ -683,6 +693,14 @@ export default function App() {
           onClose={() => setIsAnalyzerOpen(false)}
           history={history}
           customApiKey={customApiKey}
+        />
+
+        <ManualSoalModal
+          isOpen={isManualSoalOpen}
+          onClose={() => setIsManualSoalOpen(false)}
+          formData={formData}
+          customApiKey={customApiKey}
+          aiProvider={aiProvider}
         />
 
         {/* Mobile Overlay */}
