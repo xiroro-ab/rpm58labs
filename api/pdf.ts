@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     });
 
     const page = await browser.newPage();
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' as any });
+    await page.setContent(fullHtml, { waitUntil: 'networkidle2' as any });
         await page.evaluateHandle('document.fonts.ready');
     
     // Parse emojis to SVG
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       if ((window as any).twemoji) (window as any).twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
     });
     // Wait for the SVG images from twemoji to load
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb',
+      sizeLimit: '4mb',
     },
   },
 };
