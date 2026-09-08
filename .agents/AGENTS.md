@@ -32,3 +32,22 @@ Repositori ini adalah aplikasi web untuk men-generate Rencana Pembelajaran Menda
    - AI dilarang menggunakan output LaTeX matematis karena web merender raw HTML.
 3. **Moda Deployment:**
    - Selalu *build* (menggunakan Vite) untuk mengecek potensi error TS sebelum *push*.
+
+## Aturan Khusus Deployment (Terutama Vercel Hobby Plan)
+1. **Batas Maksimal Serverless Functions:**
+   - Vercel Hobby Plan (gratis) memiliki batas maksimal **12 Serverless Functions** per deployment.
+   - Karena setiap file di dalam folder `api/` otomatis dianggap sebagai 1 function, kita harus menjaga jumlah file di dalamnya agar tidak melebihi 12.
+   - **Solusi/Trik Bypass:** Jika butuh banyak endpoint, gabungkan ke dalam satu file *gateway/entrypoint* (contoh: `api/generate-manual.js` yang membaca `req.query.type`). Pindahkan logika asli ke file yang berawalan *underscore* (contoh: `api/_generate-manual-soal.js`). Vercel akan **mengabaikan** file berawalan `_` sehingga tidak dihitung dalam kuota fungsi.
+2. **TypeScript & tsconfig.json di folder api/:**
+   - Karena package.json menggunakan `\"type\": \"module\"`, jangan pernah menaruh file `tsconfig.json` dengan `\"module\": \"CommonJS\"` di dalam folder `api/`. Hal ini akan menyebabkan Vercel melakukan kompilasi ke ekstensi `.js` biasa namun menggunakan sintaks `require()`, yang pada akhirnya memicu runtime error \ReferenceError: require is not defined in ES module scope\ dan menggagalkan build/deploy.
+   - Pastikan kodenya menggunakan sintaks ES Module asli (`import`/`export`). Jika error tipe TS pada dependensi tertentu (seperti genai) mengganggu, gunakan anotasi `// @ts-nocheck` atau rename file tersebut ke ekstensi `.js` saja agar tidak dikompilasi oleh TS Vercel.
+3. **Generasi PDF (Puppeteer / sparticuz/chromium):**
+   - Vercel Hobby membatasi durasi eksekusi hanya **10 detik**. Jika melebihi batas, request akan diputus paksa dengan Vercel HTML error \504 Gateway Timeout\. Hal ini mengakibatkan frontend menerima respon yang bukan JSON, sehingga muncul pesan generik: \\u0022Gagal dari server\u0022\.
+   - **Solusi Optimasi:** Selalu gunakan `waitUntil: 'networkidle2'` di Puppeteer (karena `networkidle0` bisa menggantung menunggu *tracker* atau gambar luar), kurangi waktu jeda buatan (`setTimeout` untuk twemoji dibuat sebentar saja), dan atur `bodyParser.sizeLimit` menjadi `'4mb'` agar sesuai dengan batas payload Vercel gratis (4.5MB).
+
+## Penambahan Fitur Baru (Soal Manual & Kisi-kisi)
+- Fitur ini merupakan fitur terpisah dari generator RPM yang dapat diakses via tombol **Soal Manual** di menu utama.
+- File frontend: `src/components/ManualSoalModal.tsx`.
+- File backend: Mengarah ke `/api/generate-manual` (proxy) yang kemudian mengeksekusi `api/_generate-manual-soal.js` atau `api/_generate-manual-table.js`.
+- Kedua file backend menggunakan JavaScript native untuk memotong kebutuhan TypeScript transpile, dan keduanya berbagi konfigurasi Puppeteer PDF (`/api/pdf`) yang sama dengan generator RPM utama (`src/components/LembarSoal.tsx`).
+
