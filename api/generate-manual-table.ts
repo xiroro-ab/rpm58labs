@@ -66,7 +66,7 @@ export default async function handler(req: any, res: any) {
 
     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const docDate = formData?.documentDate ? new Date(formData.documentDate) : new Date();
-    const formattedDate = \`Palembang, \${docDate.getDate()} \${months[docDate.getMonth()]} \${docDate.getFullYear()}\`;
+    const formattedDate = `${'Palembang'}, ${docDate.getDate()} ${months[docDate.getMonth()]} ${docDate.getFullYear()}`;
 
     const subjectUpper = escapeHtml(formData?.subject || 'MAPEL').toUpperCase();
     const phaseLabel = escapeHtml(formData?.phase || '');
