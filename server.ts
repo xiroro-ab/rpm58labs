@@ -677,18 +677,9 @@ ${html}`;
   });
   app.post("/api/generate-table", (req, res) => { generateTableHandler(req, res); });
   app.post("/api/generate-soal", (req, res) => { generateSoalHandler(req, res); });
-  app.post("/api/generate-manual-soal", async (req, res) => { 
+  app.post("/api/generate-manual", async (req, res) => { 
     try {
-      const handler = (await import('./api/generate-manual-soal.js')).default;
-      return handler(req, res);
-    } catch (e) {
-      console.error(e);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
-  app.post("/api/generate-manual-table", async (req, res) => { 
-    try {
-      const handler = (await import('./api/generate-manual-table.js')).default;
+      const handler = (await import('./api/generate-manual.js')).default;
       return handler(req, res);
     } catch (e) {
       console.error(e);

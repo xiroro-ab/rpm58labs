@@ -120,7 +120,7 @@ export default function ManualSoalModal({ isOpen, onClose, formData, customApiKe
     }
 
     try {
-      const endpoint = type === 'soal' ? '/api/generate-manual-soal' : '/api/generate-manual-table';
+      const endpoint = type === 'soal' ? '/api/generate-manual?type=soal' : '/api/generate-manual?type=table';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
