@@ -1,13 +1,12 @@
-// @ts-nocheck
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 
-function escapeHtml(s: any): string {
+function escapeHtml(s) {
   if (s === null || s === undefined) return '';
   return String(s);
 }
 
-function kopSurat(): string {
+function kopSurat() {
   return `
   <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 12px; page-break-after: avoid;">
     <img src="https://raw.githubusercontent.com/xiroro-ab/smp58dataguru/refs/heads/main/Logo_Palembang.png" alt="Logo Kiri" style="height: 90px; width: auto; object-fit: contain;">
@@ -21,8 +20,8 @@ function kopSurat(): string {
   </div>`;
 }
 
-function identitas(formData: any, formattedDate: string): string {
-  const val = (v: any) => escapeHtml(v || '-');
+function identitas(formData, formattedDate) {
+  const val = (v) => escapeHtml(v || '-');
   return `
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10pt; border: 1px solid #000; page-break-inside: avoid;">
     <tr>
@@ -46,7 +45,7 @@ function identitas(formData: any, formattedDate: string): string {
   </table>`;
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -216,7 +215,7 @@ ${manualSoal}
             ];
         const stream = await openai.chat.completions.create({
           model: modelName,
-          messages: messages as any,
+          messages: messages,
           stream: true,
         });
         for await (const chunk of stream) {
@@ -242,7 +241,7 @@ ${manualSoal}
     }
 
     res.end();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating manual table:', error);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Gagal membuat tabel kisi-kisi manual. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });

@@ -15,8 +15,7 @@ import reviseWebsiteHandler from './api/revise-website';
 import extractQuestionsHandler from './api/extract-questions';
 import parseAnswersHandler from './api/parse-answers';
 import analyzeResultsHandler from './api/analyze-results';
-import generateManualSoalHandler from './api/generate-manual-soal';
-import generateManualTableHandler from './api/generate-manual-table';
+// Removed static imports for generate-manual-* since they are dynamically imported
 
 async function startServer() {
   const app = express();
@@ -678,8 +677,24 @@ ${html}`;
   });
   app.post("/api/generate-table", (req, res) => { generateTableHandler(req, res); });
   app.post("/api/generate-soal", (req, res) => { generateSoalHandler(req, res); });
-  app.post("/api/generate-manual-soal", (req, res) => { generateManualSoalHandler(req, res); });
-  app.post("/api/generate-manual-table", (req, res) => { generateManualTableHandler(req, res); });
+  app.post("/api/generate-manual-soal", async (req, res) => { 
+    try {
+      const handler = (await import('./api/generate-manual-soal.js')).default;
+      return handler(req, res);
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  app.post("/api/generate-manual-table", async (req, res) => { 
+    try {
+      const handler = (await import('./api/generate-manual-table.js')).default;
+      return handler(req, res);
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
   app.post("/api/enhance-rpm", (req, res) => { enhanceRpmHandler(req, res); });
   app.post("/api/generate-website", (req, res) => { generateWebsiteHandler(req, res); });
   app.post("/api/revise-website", (req, res) => { reviseWebsiteHandler(req, res); });
