@@ -20,6 +20,8 @@ interface RevisionChatbotProps {
   onStreamUpdate?: (html: string, isDone: boolean) => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  customApiKey?: string;
+  aiProvider?: string;
 }
 
 const quickActions = [
@@ -38,7 +40,7 @@ const smartSuggestions = [
   { icon: '📋', text: 'Buat kegiatan inti lebih detail' },
 ];
 
-export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, isOpen, setIsOpen }: RevisionChatbotProps) {
+export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, isOpen, setIsOpen, customApiKey, aiProvider = 'gemini' }: RevisionChatbotProps) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -186,8 +188,10 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
           html: relevantHtml,
           instruction: msg,
           chatHistory: [...chatHistory, { role: 'user', content: msg }],
-          sectionOnly: sectionId !== 'full',
-        }),
+           sectionOnly: sectionId !== 'full',
+           customApiKey,
+           aiProvider,
+         }),
       });
 
       if (!response.ok) throw new Error('Gagal menghubungi server');

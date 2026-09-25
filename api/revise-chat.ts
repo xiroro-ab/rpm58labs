@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -11,16 +12,18 @@ export default async function handler(req: any, res: any) {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const { html, instruction, chatHistory, sectionOnly } = body;
+    const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider } = body;
     if (!html || !instruction) {
       return res.status(400).json({ error: 'HTML and instruction are required' });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on server' });
+    const provider = normalizeProvider(aiProvider);
+    const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+    if (!key) {
+      return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: key });
 
     let historyContext = '';
     if (chatHistory && chatHistory.length > 0) {
@@ -55,14 +58,26 @@ ${html}`;
     res.setHeader('Transfer-Encoding', 'chunked');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
 
-    const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3.6-flash',
-      contents: prompt,
-    });
+    if (isOpenRouterProvider(provider)) {
+      const responseStream = await createOpenRouterClient(key).chat.completions.create({
+        model: getOpenRouterModel(provider),
+        messages: [{ role: 'user', content: prompt }],
+        stream: true,
+      });
+      for await (const chunk of responseStream) {
+        const text = chunk.choices[0]?.delta?.content || '';
+        if (text) res.write(text);
+      }
+    } else {
+      const responseStream = await ai.models.generateContentStream({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+      });
 
-    for await (const chunk of responseStream) {
-      if (chunk.text) {
-        res.write(chunk.text);
+      for await (const chunk of responseStream) {
+        if (chunk.text) {
+          res.write(chunk.text);
+        }
       }
     }
 

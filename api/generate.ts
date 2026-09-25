@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,36 +10,33 @@ export default async function handler(req, res) {
 
   try {
     let data;
+    let customApiKey;
+    let aiProvider;
     if (typeof req.body === 'string') {
       try {
         const parsed = JSON.parse(req.body);
         data = parsed.data;
-        var customApiKey = parsed.customApiKey;
-        var aiProvider = parsed.aiProvider;
+        customApiKey = parsed.customApiKey;
+        aiProvider = parsed.aiProvider;
       } catch (e) {
         return res.status(400).json({ error: 'Format request tidak valid.' });
       }
     } else {
       data = req.body?.data;
-    const customApiKey = req.body?.customApiKey;
-    const aiProvider = req.body?.aiProvider;
+      customApiKey = req.body?.customApiKey;
+      aiProvider = req.body?.aiProvider;
     }
 
     if (!data) {
       return res.status(400).json({ error: 'Data form tidak ditemukan.' });
     }
-    
-    const defaultGeminiKey = process.env.GEMINI_API_KEY;
-    const provider = (typeof aiProvider !== 'undefined' ? aiProvider : null) || (typeof req.body === 'string' ? JSON.parse(req.body).aiProvider : req.body?.aiProvider) || 'gemini';
-    const cApiKey = (typeof customApiKey !== 'undefined' ? customApiKey : null) || (typeof req.body === 'string' ? JSON.parse(req.body).customApiKey : req.body?.customApiKey);
 
-    if (!cApiKey && !defaultGeminiKey && provider === 'gemini') {
-      return res.status(400).json({ error: 'API Key diperlukan.' });
+    const provider = normalizeProvider(aiProvider);
+    const keyToUse = getApiKey(customApiKey, provider);
+
+    if (!keyToUse) {
+      return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
     }
-    if (!cApiKey && provider !== 'gemini') {
-      return res.status(400).json({ error: 'Custom API Key diperlukan untuk provider ' + provider + '.' });
-    }
-    const keyToUse = cApiKey || defaultGeminiKey;
 
     
     
@@ -474,9 +472,9 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
         let baseURL = undefined;
         let modelName = '';
         
-        if (provider === 'groq') {
-          baseURL = 'https://api.groq.com/openai/v1';
-          modelName = 'llama-3.3-70b-versatile';
+        if (isOpenRouterProvider(provider)) {
+          baseURL = OPENROUTER_BASE_URL;
+          modelName = getOpenRouterModel(provider);
         } else if (provider === 'openai') {
           modelName = 'gpt-4o-mini';
         } else if (provider === 'deepseek') {

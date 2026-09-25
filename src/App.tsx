@@ -200,7 +200,7 @@ export default function App() {
           const er = await fetch('/api/enhance-rpm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html: finalResultText, customApiKey }),
+             body: JSON.stringify({ html: finalResultText, customApiKey, aiProvider }),
           });
           const ed = await er.json();
           if (ed.html && ed.enhanced > 0) {
@@ -547,6 +547,8 @@ export default function App() {
                   <option value="odysseus">Odysseus AI</option>
                   <option value="grok">xAI Grok</option>
                   <option value="qwen">Qwen (Alibaba)</option>
+                  <option value="openrouter">OpenRouter (Gemini 3.6)</option>
+                  <option value="openrouter-free">OpenRouter Free (Auto)</option>
                 </select>
               </div>
               
@@ -562,7 +564,7 @@ export default function App() {
                   className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Jika limit API default habis, Anda dapat menggunakan API key milik Anda sendiri. API key tidak akan disimpan di server.
+                  Jika limit API default habis, gunakan API key dari provider yang dipilih. API key tidak akan disimpan di server.
                 </p>
               </div>
             </div>
@@ -693,6 +695,7 @@ export default function App() {
           onClose={() => setIsAnalyzerOpen(false)}
           history={history}
           customApiKey={customApiKey}
+          aiProvider={aiProvider}
         />
 
         <ManualSoalModal
@@ -752,7 +755,8 @@ export default function App() {
             onContinue={handleContinue} 
             formData={formData} 
             isGeneratingContinue={isGeneratingContinue}
-            customApiKey={customApiKey} />
+            customApiKey={customApiKey}
+            aiProvider={aiProvider} />
           )}
         </section>
         <PWAPrompt isOpen={isPWAPromptOpen} onClose={() => setIsPWAPromptOpen(false)} />

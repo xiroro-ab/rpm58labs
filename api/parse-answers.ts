@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export const config = {
   api: {
@@ -78,9 +79,19 @@ function parseCsv(text: string): { name: string; answers: Record<string, string>
   return students.length > 0 ? students : null;
 }
 
-async function callAI(ai: any, parts: any[]): Promise<string> {
+async function callAI(provider: string, key: string, ai: any, parts: any[]): Promise<string> {
   for (let i = 0; i < 3; i++) {
     try {
+      if (isOpenRouterProvider(provider)) {
+        const content = parts.map((part: any) => part.inlineData
+          ? { type: 'image_url', image_url: { url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` } }
+          : { type: 'text', text: part.text || '' });
+        const r = await createOpenRouterClient(key).chat.completions.create({
+          model: getOpenRouterModel(provider),
+          messages: [{ role: 'user', content: content as any }],
+        });
+        return (r.choices[0]?.message?.content || '').trim();
+      }
       const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: [{ role: 'user', parts }] });
       return (r.text || '').trim();
     } catch (e: any) {
@@ -101,7 +112,7 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { csvText, text, imageBase64, imageMime, customApiKey } = body;
+    const { csvText, text, imageBase64, imageMime, customApiKey, aiProvider } = body;
 
     if (csvText && csvText.trim()) {
       const students = parseCsv(csvText);
@@ -112,8 +123,9 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Data jawaban siswa diperlukan (file CSV, teks, atau foto).' });
     }
 
-    const key = customApiKey || process.env.GEMINI_API_KEY;
-    if (!key) return res.status(500).json({ error: 'API Key diperlukan.' });
+    const provider = normalizeProvider(aiProvider);
+    const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+    if (!key) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
     const ai = new GoogleGenAI({ apiKey: key });
 
     const parts: any[] = [];
@@ -131,7 +143,7 @@ ATURAN:
 Balas HANYA JSON valid tanpa markdown:
 {"students":[{"name":"Budi Santoso","answers":{"1":"A","2":"C","3":"teks jawaban uraian"}}]}` });
 
-    const raw = await callAI(ai, parts);
+    const raw = await callAI(provider, key, ai, parts);
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error('Format respons AI tidak valid');
     const parsed = JSON.parse(m[0]);

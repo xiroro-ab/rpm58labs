@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
@@ -7,10 +8,11 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, customApiKey } = body;
+    const { html, customApiKey, aiProvider } = body;
     if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
-    const key = customApiKey || process.env.GEMINI_API_KEY;
-    if (!key) return res.status(500).json({ error: 'API Key diperlukan' });
+    const provider = normalizeProvider(aiProvider);
+    const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+    if (!key) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan' });
 
     const ai = new GoogleGenAI({ apiKey: key });
 
@@ -49,12 +51,22 @@ export default async function handler(req: any, res: any) {
           'Detail: ' + section.content.substring(0, 300),
         ].join('\n');
 
-        const resp = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: prompt,
-        });
+        let responseText = '';
+        if (isOpenRouterProvider(provider)) {
+          const response = await createOpenRouterClient(key).chat.completions.create({
+            model: getOpenRouterModel(provider),
+            messages: [{ role: 'user', content: prompt }],
+          });
+          responseText = response.choices[0]?.message?.content || '';
+        } else {
+          const response = await ai.models.generateContent({
+            model: 'gemini-3.6-flash',
+            contents: prompt,
+          });
+          responseText = response.text || '';
+        }
 
-        let svg = (resp.text || '').replace(/```[\s\S]*?```/g, '').trim();
+        let svg = responseText.replace(/```[\s\S]*?```/g, '').trim();
         const svgMatch = svg.match(/<svg[\s\S]*?<\/svg>/i);
         if (svgMatch) {
           svg = svgMatch[0];

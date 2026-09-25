@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 const SOLO_LEVELS = ['prestructural', 'unistructural', 'multistructural', 'relational', 'extended'];
 const SOLO_LABELS: Record<string, string> = {
@@ -17,9 +18,16 @@ function pgLetter(v: string): string {
   return '';
 }
 
-async function callAI(ai: any, prompt: string): Promise<string> {
+async function callAI(provider: string, key: string, ai: any, prompt: string): Promise<string> {
   for (let i = 0; i < 3; i++) {
     try {
+      if (isOpenRouterProvider(provider)) {
+        const r = await createOpenRouterClient(key).chat.completions.create({
+          model: getOpenRouterModel(provider),
+          messages: [{ role: 'user', content: prompt }],
+        });
+        return (r.choices[0]?.message?.content || '').trim();
+      }
       const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
       return (r.text || '').trim();
     } catch (e: any) {
@@ -186,7 +194,9 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { questions, students, kkm, meta, customApiKey } = body;
+    const { questions, students, kkm, meta, customApiKey, aiProvider } = body;
+    const provider = normalizeProvider(aiProvider);
+    const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
     if (!Array.isArray(questions) || questions.length === 0 || !Array.isArray(students) || students.length === 0) {
       return res.status(400).json({ error: 'Bank soal dan jawaban siswa diperlukan.' });
     }
@@ -217,8 +227,7 @@ export default async function handler(req: any, res: any) {
 
     // Koreksi uraian + SOLO via AI (paralel per chunk)
     if (essayQs.length > 0) {
-      const key = customApiKey || process.env.GEMINI_API_KEY;
-      if (!key) return res.status(500).json({ error: 'API Key diperlukan untuk mengoreksi soal uraian.' });
+      if (!key) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan untuk mengoreksi soal uraian.' });
       const ai = new GoogleGenAI({ apiKey: key });
 
       const essayDesc = essayQs.map((q: any) => `No ${q.number} [uraian]: ${q.question}\nKunci: ${q.answer}`).join('\n\n');
@@ -249,7 +258,7 @@ Balas HANYA JSON valid tanpa markdown:
 {"students":[{"name":"...","essays":{"11":{"score":80,"feedback":"..."}},"solo":"relational","soloReason":"..."}]}`;
 
         try {
-          const raw = await callAI(ai, prompt);
+          const raw = await callAI(provider, key, ai, prompt);
           const m = raw.match(/\{[\s\S]*\}/);
           if (!m) return;
           const parsed = JSON.parse(m[0]);
@@ -319,12 +328,11 @@ Balas HANYA JSON valid tanpa markdown:
     // Narasi rekomendasi via AI
     let narrative = { analisisKlasikal: '', remedial: '', pengayaan: '', saranTindakLanjut: '', catatanSoal: [] as any[] };
     try {
-      const key = customApiKey || process.env.GEMINI_API_KEY;
       if (key) {
         const ai = new GoogleGenAI({ apiKey: key });
         const ringkas = results.map(r => `${r.name}: nilai ${r.value}, SOLO ${r.solo}`).join('; ');
         const butir = itemAnalysis.map((it: any) => `Soal ${it.number}${it.type === 'pg' ? '(PG)' : '(Uraian)'}: ${it.correctPct}%`).join(', ');
-        const nr = await callAI(ai, `Analisis hasil belajar kelas berikut (KKM ${kkmNum}).
+        const nr = await callAI(provider, key, ai, `Analisis hasil belajar kelas berikut (KKM ${kkmNum}).
 
 DATA SISWA: ${ringkas}
 KETEPATAN BUTIR SOAL: ${butir}

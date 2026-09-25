@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
@@ -7,16 +8,25 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, topic, customApiKey } = body;
+    const { html, topic, customApiKey, aiProvider } = body;
     if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
-    const key = customApiKey || process.env.GEMINI_API_KEY;
-    if (!key) return res.status(500).json({ error: 'API Key diperlukan.' });
+    const provider = normalizeProvider(aiProvider);
+    const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+    if (!key) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
 
     const ai = new GoogleGenAI({ apiKey: key });
+    const openRouter = isOpenRouterProvider(provider) ? createOpenRouterClient(key) : null;
 
     async function callAI(prompt: string): Promise<string> {
       for (let i = 0; i < 3; i++) {
         try {
+          if (openRouter) {
+            const r = await openRouter.chat.completions.create({
+              model: getOpenRouterModel(provider),
+              messages: [{ role: 'user', content: prompt }],
+            });
+            return (r.choices[0]?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim();
+          }
           const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
           return (r.text || '').replace(/```[\s\S]*?```/g, '').trim();
         } catch (e: any) {

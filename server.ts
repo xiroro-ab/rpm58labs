@@ -7,6 +7,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './api/_ai-provider.js';
 import generateTableHandler from './api/generate-table';
 import generateSoalHandler from './api/generate-soal';
 import enhanceRpmHandler from './api/enhance-rpm';
@@ -27,16 +28,12 @@ async function startServer() {
   app.post('/api/generate', async (req, res) => {
     try {
       const { data, customApiKey, aiProvider, previousOutput } = req.body;
-      const defaultGeminiKey = process.env.GEMINI_API_KEY;
-      const provider = aiProvider || 'gemini';
-      
-      if (!customApiKey && !defaultGeminiKey && provider === 'gemini') {
-        return res.status(400).json({ error: 'API Key diperlukan.' });
+      const provider = normalizeProvider(aiProvider);
+      const keyToUse = getApiKey(customApiKey, provider);
+
+      if (!keyToUse) {
+        return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
       }
-      if (!customApiKey && provider !== 'gemini') {
-        return res.status(400).json({ error: 'Custom API Key diperlukan untuk provider ' + provider + '.' });
-      }
-      const keyToUse = customApiKey || defaultGeminiKey;
 
       const isDaring = data.learningMode?.includes('Daring');
       const isBlended = data.learningMode?.includes('Blended');
@@ -316,7 +313,10 @@ LEWATI aktivitas rutin (salam, doa, absensi).
           }
         }
       } else {
-        if (provider === 'openai') {
+        if (isOpenRouterProvider(provider)) {
+          baseURL = OPENROUTER_BASE_URL;
+          modelName = getOpenRouterModel(provider);
+        } else if (provider === 'openai') {
           modelName = 'gpt-4o-mini';
         } else if (provider === 'deepseek') {
           baseURL = 'https://api.deepseek.com/v1';
@@ -513,18 +513,18 @@ try {
 
   app.post("/api/revise", async (req, res) => {
     try {
-      const { html, instruction } = req.body;
+      const { html, instruction, customApiKey, aiProvider } = req.body;
       if (!html || !instruction) {
         return res.status(400).json({ error: 'HTML and instruction are required' });
       }
 
-      const { GoogleGenAI } = await import('@google/genai');
-      // Require GEMINI_API_KEY
-      if (!process.env.GEMINI_API_KEY) {
-         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on server' });
+      const provider = normalizeProvider(aiProvider);
+      const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+      if (!key) {
+        return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
       }
-      
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+      const ai = new GoogleGenAI({ apiKey: key });
       const prompt = `Anda adalah asisten AI untuk merevisi dokumen modul ajar (RPM).
 Tugas Anda: Revisi dokumen HTML berikut HANYA pada bagian yang diminta oleh instruksi pengguna. 
 - JANGAN mengubah kerangka dasar, layout, atau gaya desain (inline styles, class).
@@ -538,12 +538,20 @@ DOKUMEN HTML ASLI:
 ${html}
 `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-      });
-
-      let revisedHtml = response.text || html;
+      let revisedHtml = '';
+      if (isOpenRouterProvider(provider)) {
+        const response = await createOpenRouterClient(key).chat.completions.create({
+          model: getOpenRouterModel(provider),
+          messages: [{ role: 'user', content: prompt }],
+        });
+        revisedHtml = response.choices[0]?.message?.content || html;
+      } else {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: prompt,
+        });
+        revisedHtml = response.text || html;
+      }
       // Clean up potential markdown formatting from the response
       revisedHtml = revisedHtml.replace(/^```html\n?/i, '').replace(/```$/i, '').trim();
 
@@ -556,17 +564,18 @@ ${html}
 
   app.post("/api/revise-chat", async (req, res) => {
     try {
-      const { html, instruction, chatHistory, sectionOnly } = req.body;
+      const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider } = req.body;
       if (!html || !instruction) {
         return res.status(400).json({ error: 'HTML and instruction are required' });
       }
 
-      const { GoogleGenAI } = await import('@google/genai');
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      const provider = normalizeProvider(aiProvider);
+      const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+      if (!key) {
+        return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey: key });
 
       let historyContext = '';
       if (chatHistory?.length) {
@@ -598,13 +607,25 @@ ${html}`;
       res.setHeader('Transfer-Encoding', 'chunked');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
 
-      const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-      });
+      if (isOpenRouterProvider(provider)) {
+        const responseStream = await createOpenRouterClient(key).chat.completions.create({
+          model: getOpenRouterModel(provider),
+          messages: [{ role: 'user', content: prompt }],
+          stream: true,
+        });
+        for await (const chunk of responseStream) {
+          const text = chunk.choices[0]?.delta?.content || '';
+          if (text) res.write(text);
+        }
+      } else {
+        const responseStream = await ai.models.generateContentStream({
+          model: 'gemini-3.6-flash',
+          contents: prompt,
+        });
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) res.write(chunk.text);
+        for await (const chunk of responseStream) {
+          if (chunk.text) res.write(chunk.text);
+        }
       }
       res.end();
     } catch (error: any) {
@@ -616,14 +637,16 @@ ${html}`;
 
   app.post("/api/teaching-aids", async (req, res) => {
     try {
-      const { html, topic } = req.body;
+      const { html, topic, customApiKey, aiProvider } = req.body;
       if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY belum dikonfigurasi' });
+      const provider = normalizeProvider(aiProvider);
+      const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
+      if (!key) {
+        return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey: key });
       const prompt = `Anda adalah asisten pembuat alat bantu visual untuk guru. Analisis RPM berikut dan buat alat bantu visual untuk SETIAP aktivitas pembelajaran.
 
 Untuk setiap aktivitas, buat:
@@ -661,13 +684,25 @@ ${html}`;
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
-      const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-      });
+      if (isOpenRouterProvider(provider)) {
+        const responseStream = await createOpenRouterClient(key).chat.completions.create({
+          model: getOpenRouterModel(provider),
+          messages: [{ role: 'user', content: prompt }],
+          stream: true,
+        });
+        for await (const chunk of responseStream) {
+          const text = chunk.choices[0]?.delta?.content || '';
+          if (text) res.write(text);
+        }
+      } else {
+        const responseStream = await ai.models.generateContentStream({
+          model: 'gemini-3.6-flash',
+          contents: prompt,
+        });
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) res.write(chunk.text);
+        for await (const chunk of responseStream) {
+          if (chunk.text) res.write(chunk.text);
+        }
       }
       res.end();
     } catch (error) {

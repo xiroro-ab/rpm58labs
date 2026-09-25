@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 // ============================================================
 // LEMBAR SOAL & KUNCI JAWABAN - streaming hasil AI langsung seperti RPM.
@@ -66,10 +67,9 @@ export default async function handler(req: any, res: any) {
     const { rpmHtml, formData, customApiKey, aiProvider } = body || {};
     if (!rpmHtml) return res.status(400).json({ error: 'RPM HTML diperlukan.' });
 
-    const defaultGeminiKey = process.env.GEMINI_API_KEY;
-    const provider = aiProvider || 'gemini';
-    const keyToUse = customApiKey || defaultGeminiKey;
-    if (!keyToUse) return res.status(500).json({ error: 'API Key diperlukan.' });
+    const provider = normalizeProvider(aiProvider);
+    const keyToUse = getApiKey(customApiKey, provider);
+    if (!keyToUse) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
 
     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const docDate = formData?.documentDate ? new Date(formData.documentDate) : new Date();
@@ -245,7 +245,8 @@ ${rpmHtml}
       } else {
         let baseURL = undefined;
         let modelName = '';
-        if (provider === 'openai') { modelName = 'gpt-4o-mini'; }
+        if (isOpenRouterProvider(provider)) { baseURL = OPENROUTER_BASE_URL; modelName = getOpenRouterModel(provider); }
+        else if (provider === 'openai') { modelName = 'gpt-4o-mini'; }
         else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
         else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
         else if (provider === 'grok') { baseURL = 'https://api.x.ai/v1'; modelName = 'grok-2-latest'; }

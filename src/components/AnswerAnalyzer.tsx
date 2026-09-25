@@ -8,6 +8,7 @@ interface AnswerAnalyzerProps {
   onClose: () => void;
   history: HistoryItem[];
   customApiKey?: string;
+  aiProvider?: string;
 }
 
 const STEP_LABELS = ['Sumber Soal', 'Bank Soal', 'Jawaban Siswa', 'Hasil Analisis'];
@@ -39,7 +40,7 @@ function persistAnalyses(sessions: AnalysisSession[]) {
   }
 }
 
-export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey }: AnswerAnalyzerProps) {
+export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey, aiProvider = 'gemini' }: AnswerAnalyzerProps) {
   const [step, setStep] = useState(1);
   const [isWorking, setIsWorking] = useState(false);
   const [waitingFirst, setWaitingFirst] = useState(false);
@@ -118,7 +119,7 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
   };
 
   const handleExtract = async () => {
-    let payload: any = { customApiKey };
+    let payload: any = { customApiKey, aiProvider };
     if (srcMode === 'rpm') {
       const item = history.find(h => h.id === selectedRpmId);
       if (!item) { toast.error('Pilih dokumen RPM terlebih dahulu.'); return; }
@@ -150,7 +151,7 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
   };
 
   const handleParseAnswers = async () => {
-    let payload: any = { customApiKey };
+    let payload: any = { customApiKey, aiProvider };
     if (ansTab === 'file') {
       const input = document.getElementById('analyzer-csv-input') as HTMLInputElement | null;
       const file = input?.files?.[0];
@@ -192,6 +193,7 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey 
           questions, students, kkm,
           meta: { ...metaInfo, phase: metaInfo.phase || className },
           customApiKey,
+          aiProvider,
         }),
       });
       const data = await res.json().catch(() => null);

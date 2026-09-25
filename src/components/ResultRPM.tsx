@@ -17,9 +17,10 @@ interface ResultRPMProps {
   formData: RPMFormData | null;
   isGeneratingContinue: boolean;
   customApiKey?: string;
+  aiProvider?: string;
 }
 
-export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit, customApiKey }: ResultRPMProps) {
+export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit, customApiKey, aiProvider }: ResultRPMProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState(markdown);
@@ -170,7 +171,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <span className="hidden sm:inline">Cek</span>
           </button>
 
-          <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} />
+           <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} aiProvider={aiProvider} />
 
           <button
             onClick={() => setIsTableKisiKisiOpen(true)}
@@ -261,6 +262,8 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
              if (onSaveEdit) onSaveEdit(newHtml);
           }}
           onStreamUpdate={handleStreamUpdate}
+          customApiKey={customApiKey}
+          aiProvider={aiProvider}
         />
 
         <ComplianceCheckerModal
@@ -276,6 +279,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           rpmHtml={currentHtml}
           formData={formData}
           customApiKey={customApiKey}
+          aiProvider={aiProvider}
         />
 
         <LembarSoal
@@ -284,6 +288,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           rpmHtml={currentHtml}
           formData={formData}
           customApiKey={customApiKey}
+          aiProvider={aiProvider}
         />
       </div>
     </div>

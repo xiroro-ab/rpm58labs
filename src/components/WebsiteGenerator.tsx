@@ -21,9 +21,10 @@ interface WebsiteGeneratorProps {
   rpmHtml: string;
   topic: string;
   customApiKey?: string;
+  aiProvider?: string;
 }
 
-export default function WebsiteGenerator({ rpmHtml, topic, customApiKey }: WebsiteGeneratorProps) {
+export default function WebsiteGenerator({ rpmHtml, topic, customApiKey, aiProvider = 'gemini' }: WebsiteGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [websiteHtml, setWebsiteHtml] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +49,7 @@ export default function WebsiteGenerator({ rpmHtml, topic, customApiKey }: Websi
       const res = await fetch('/api/generate-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: rpmHtml, topic, customApiKey, aiProvider: localStorage.getItem('rpm_aiProvider') || 'gemini' }),
+        body: JSON.stringify({ html: rpmHtml, topic, customApiKey, aiProvider }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
@@ -98,7 +99,7 @@ export default function WebsiteGenerator({ rpmHtml, topic, customApiKey }: Websi
       const res = await fetch('/api/revise-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: websiteHtml, instruction: chatInput, customApiKey }),
+        body: JSON.stringify({ html: websiteHtml, instruction: chatInput, customApiKey, aiProvider }),
       });
       const data = await res.json();
       if (data.html) {
