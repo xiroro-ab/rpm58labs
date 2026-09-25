@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 // ============================================================
 // LEMBAR SOAL & KUNCI JAWABAN - streaming hasil AI langsung seperti RPM.
@@ -262,8 +262,9 @@ ${rpmHtml}
             ];
         const stream = await openai.chat.completions.create({
           model: modelName,
-          messages: messages as any,
-          stream: true,
+           messages: messages as any,
+           stream: true,
+           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {}),
         });
         for await (const chunk of stream) {
           const c = chunk.choices[0]?.delta?.content || '';

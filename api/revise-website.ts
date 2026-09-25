@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
@@ -31,7 +31,11 @@ export default async function handler(req: any, res: any) {
       else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
 
       const openai = new OpenAI({ apiKey: key, baseURL: baseURL || undefined });
-      const completion = await openai.chat.completions.create({ model: modelName, messages: [{ role: 'user', content: promptText }] });
+       const completion = await openai.chat.completions.create({
+         model: modelName,
+         messages: [{ role: 'user', content: promptText }],
+         ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {}),
+       });
       revisedHtml = completion.choices[0]?.message?.content || '';
     }
 

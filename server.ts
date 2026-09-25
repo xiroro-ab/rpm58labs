@@ -7,7 +7,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './api/_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './api/_ai-provider.js';
 import generateTableHandler from './api/generate-table';
 import generateSoalHandler from './api/generate-soal';
 import enhanceRpmHandler from './api/enhance-rpm';
@@ -338,8 +338,9 @@ LEWATI aktivitas rutin (salam, doa, absensi).
         const openai = new OpenAI({ apiKey: keyToUse, baseURL });
         const responseStream = await openai.chat.completions.create({
           model: modelName,
-          messages: previousOutput ? [{ role: 'user', content: prompt }, { role: 'assistant', content: previousOutput }, { role: 'user', content: 'Lanjutkan tepat dari bagian teksmu yang terpotong. JANGAN mengulang dari awal, langsung sambung teksnya. JANGAN menambahkan pengantar atau penutup.' }] : [{ role: 'user', content: prompt }],
-          stream: true
+           messages: previousOutput ? [{ role: 'user', content: prompt }, { role: 'assistant', content: previousOutput }, { role: 'user', content: 'Lanjutkan tepat dari bagian teksmu yang terpotong. JANGAN mengulang dari awal, langsung sambung teksnya. JANGAN menambahkan pengantar atau penutup.' }] : [{ role: 'user', content: prompt }],
+           stream: true,
+           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {})
         });
         
         for await (const chunk of responseStream) {
@@ -542,8 +543,9 @@ ${html}
       if (isOpenRouterProvider(provider)) {
         const response = await createOpenRouterClient(key).chat.completions.create({
           model: getOpenRouterModel(provider),
-          messages: [{ role: 'user', content: prompt }],
-        });
+           messages: [{ role: 'user', content: prompt }],
+           max_tokens: OPENROUTER_MAX_TOKENS,
+         });
         revisedHtml = response.choices[0]?.message?.content || html;
       } else {
         const response = await ai.models.generateContent({
@@ -610,8 +612,9 @@ ${html}`;
       if (isOpenRouterProvider(provider)) {
         const responseStream = await createOpenRouterClient(key).chat.completions.create({
           model: getOpenRouterModel(provider),
-          messages: [{ role: 'user', content: prompt }],
-          stream: true,
+           messages: [{ role: 'user', content: prompt }],
+           stream: true,
+           max_tokens: OPENROUTER_MAX_TOKENS,
         });
         for await (const chunk of responseStream) {
           const text = chunk.choices[0]?.delta?.content || '';
@@ -687,8 +690,9 @@ ${html}`;
       if (isOpenRouterProvider(provider)) {
         const responseStream = await createOpenRouterClient(key).chat.completions.create({
           model: getOpenRouterModel(provider),
-          messages: [{ role: 'user', content: prompt }],
-          stream: true,
+           messages: [{ role: 'user', content: prompt }],
+           stream: true,
+           max_tokens: OPENROUTER_MAX_TOKENS,
         });
         for await (const chunk of responseStream) {
           const text = chunk.choices[0]?.delta?.content || '';

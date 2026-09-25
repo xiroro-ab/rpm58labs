@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -61,8 +61,9 @@ ${html}`;
     if (isOpenRouterProvider(provider)) {
       const responseStream = await createOpenRouterClient(key).chat.completions.create({
         model: getOpenRouterModel(provider),
-        messages: [{ role: 'user', content: prompt }],
-        stream: true,
+         messages: [{ role: 'user', content: prompt }],
+         stream: true,
+         max_tokens: OPENROUTER_MAX_TOKENS,
       });
       for await (const chunk of responseStream) {
         const text = chunk.choices[0]?.delta?.content || '';

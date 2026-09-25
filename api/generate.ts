@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -435,8 +435,9 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
           body: JSON.stringify({
             model: 'claude-3-haiku-20240307',
             max_tokens: 4000,
-            messages: [{ role: 'user', content: prompt }],
-            stream: true
+           messages: [{ role: 'user', content: prompt }],
+           stream: true,
+           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {})
           })
         });
         

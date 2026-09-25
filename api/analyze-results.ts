@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 const SOLO_LEVELS = ['prestructural', 'unistructural', 'multistructural', 'relational', 'extended'];
 const SOLO_LABELS: Record<string, string> = {
@@ -25,6 +25,7 @@ async function callAI(provider: string, key: string, ai: any, prompt: string): P
         const r = await createOpenRouterClient(key).chat.completions.create({
           model: getOpenRouterModel(provider),
           messages: [{ role: 'user', content: prompt }],
+          max_tokens: OPENROUTER_MAX_TOKENS,
         });
         return (r.choices[0]?.message?.content || '').trim();
       }

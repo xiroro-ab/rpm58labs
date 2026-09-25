@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
 
 export const config = {
   api: {
@@ -89,6 +89,7 @@ async function callAI(provider: string, key: string, ai: any, parts: any[]): Pro
         const r = await createOpenRouterClient(key).chat.completions.create({
           model: getOpenRouterModel(provider),
           messages: [{ role: 'user', content: content as any }],
+          max_tokens: OPENROUTER_MAX_TOKENS,
         });
         return (r.choices[0]?.message?.content || '').trim();
       }
