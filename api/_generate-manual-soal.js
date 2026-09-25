@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 function escapeHtml(s) {
   if (s === null || s === undefined) return '';
@@ -246,7 +246,6 @@ ${manualSoal}
           model: modelName,
            messages: messages,
            stream: true,
-           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {}),
         });
         for await (const chunk of stream) {
           const c = chunk.choices[0]?.delta?.content || '';

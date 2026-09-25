@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
@@ -24,7 +24,6 @@ export default async function handler(req: any, res: any) {
             const r = await openRouter.chat.completions.create({
               model: getOpenRouterModel(provider),
                messages: [{ role: 'user', content: prompt }],
-               max_tokens: OPENROUTER_MAX_TOKENS,
              });
             return (r.choices[0]?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim();
           }

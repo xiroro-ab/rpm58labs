@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL, OPENROUTER_MAX_TOKENS } from './_ai-provider.js';
+import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -436,8 +436,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
             model: 'claude-3-haiku-20240307',
             max_tokens: 4000,
            messages: [{ role: 'user', content: prompt }],
-           stream: true,
-           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {})
+           stream: true
           })
         });
         
@@ -496,13 +495,11 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
         }
         
          const openai = new OpenAI({ apiKey: keyToUse, baseURL });
-         const requestBody: { model: string; messages: any[]; stream: boolean; max_tokens?: number } = {
+         const responseStream: any = await openai.chat.completions.create({
            model: modelName,
            messages: [{ role: 'user', content: prompt }],
            stream: true,
-         };
-         if (isOpenRouterProvider(provider)) requestBody.max_tokens = OPENROUTER_MAX_TOKENS;
-         const responseStream: any = await openai.chat.completions.create(requestBody as any);
+         });
         
         for await (const chunk of responseStream) {
           const content = chunk.choices[0]?.delta?.content || '';
