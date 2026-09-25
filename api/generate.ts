@@ -495,12 +495,14 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
           modelName = 'qwen-plus';
         }
         
-        const openai = new OpenAI({ apiKey: keyToUse, baseURL });
-        const responseStream = await openai.chat.completions.create({
-          model: modelName,
-          messages: [{ role: 'user', content: prompt }],
-          stream: true
-        });
+         const openai = new OpenAI({ apiKey: keyToUse, baseURL });
+         const requestBody: { model: string; messages: any[]; stream: boolean; max_tokens?: number } = {
+           model: modelName,
+           messages: [{ role: 'user', content: prompt }],
+           stream: true,
+         };
+         if (isOpenRouterProvider(provider)) requestBody.max_tokens = OPENROUTER_MAX_TOKENS;
+         const responseStream: any = await openai.chat.completions.create(requestBody as any);
         
         for await (const chunk of responseStream) {
           const content = chunk.choices[0]?.delta?.content || '';

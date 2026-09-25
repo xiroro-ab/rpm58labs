@@ -335,13 +335,14 @@ LEWATI aktivitas rutin (salam, doa, absensi).
           modelName = 'qwen-plus';
         }
         
-        const openai = new OpenAI({ apiKey: keyToUse, baseURL });
-        const responseStream = await openai.chat.completions.create({
-          model: modelName,
+         const openai = new OpenAI({ apiKey: keyToUse, baseURL });
+         const requestBody: { model: string; messages: any[]; stream: boolean; max_tokens?: number } = {
+           model: modelName,
            messages: previousOutput ? [{ role: 'user', content: prompt }, { role: 'assistant', content: previousOutput }, { role: 'user', content: 'Lanjutkan tepat dari bagian teksmu yang terpotong. JANGAN mengulang dari awal, langsung sambung teksnya. JANGAN menambahkan pengantar atau penutup.' }] : [{ role: 'user', content: prompt }],
            stream: true,
-           ...(isOpenRouterProvider(provider) ? { max_tokens: OPENROUTER_MAX_TOKENS } : {})
-        });
+         };
+         if (isOpenRouterProvider(provider)) requestBody.max_tokens = OPENROUTER_MAX_TOKENS;
+         const responseStream: any = await openai.chat.completions.create(requestBody as any);
         
         for await (const chunk of responseStream) {
           const content = chunk.choices[0]?.delta?.content || '';

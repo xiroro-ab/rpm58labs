@@ -1,6 +1,6 @@
-const CACHE_NAME = 'rpm-generator-v2';
-const STATIC_CACHE = 'rpm-static-v2';
-const API_CACHE = 'rpm-api-v2';
+const CACHE_NAME = 'rpm-generator-v3';
+const STATIC_CACHE = 'rpm-static-v3';
+const API_CACHE = 'rpm-api-v3';
 
 const STATIC_ASSETS = [
   '/',
@@ -43,7 +43,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // API requests - network first, cache fallback
-  if (API_CACHE_URLS.some((path) => url.pathname.startsWith(path))) {
+  if (request.method === 'GET' && API_CACHE_URLS.some((path) => url.pathname.startsWith(path))) {
     event.respondWith(
       fetch(request)
         .then((response) => {
