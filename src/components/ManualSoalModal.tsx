@@ -20,9 +20,10 @@ interface ManualSoalModalProps {
   formData: RPMFormData | null;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
-export default function ManualSoalModal({ isOpen, onClose, formData, customApiKey, aiProvider }: ManualSoalModalProps) {
+export default function ManualSoalModal({ isOpen, onClose, formData, customApiKey, aiProvider, aiModel }: ManualSoalModalProps) {
   const [manualInput, setManualInput] = useState<string>('');
   const [soalHtml, setSoalHtml] = useState<string>('');
   const [kisiHtml, setKisiHtml] = useState<string>('');
@@ -129,8 +130,9 @@ export default function ManualSoalModal({ isOpen, onClose, formData, customApiKe
         body: JSON.stringify({
           manualSoal: manualInput,
           formData,
-          customApiKey,
-          aiProvider
+           customApiKey,
+           aiProvider,
+           aiModel
         }),
       });
 

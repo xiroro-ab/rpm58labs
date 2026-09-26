@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') { return res.status(405).json({ error: 'Method Not Allowed' }); }
@@ -9,7 +9,7 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, instruction, customApiKey, aiProvider } = body;
+    const { html, instruction, customApiKey, aiProvider, aiModel } = body;
     if (!html || !instruction) return res.status(400).json({ error: 'HTML dan instruksi diperlukan' });
     const provider = normalizeProvider(aiProvider);
     const key = getApiKey(customApiKey, provider);
@@ -20,12 +20,12 @@ export default async function handler(req: any, res: any) {
 
     if (provider === 'gemini') {
       const ai = new GoogleGenAI({ apiKey: key });
-      const response = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: promptText });
+      const response = await ai.models.generateContent({ model: getGeminiModel(aiModel), contents: promptText });
       revisedHtml = response.text || '';
     } else {
       let baseURL = 'https://api.groq.com/openai/v1';
       let modelName = 'llama-3.3-70b-versatile';
-      if (isOpenRouterProvider(provider)) { baseURL = OPENROUTER_BASE_URL; modelName = getOpenRouterModel(provider); }
+      if (isOpenRouterProvider(provider)) { baseURL = OPENROUTER_BASE_URL; modelName = getOpenRouterModel(provider, aiModel); }
       else if (provider === 'openai') { baseURL = ''; modelName = 'gpt-4o-mini'; }
       else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }
       else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }

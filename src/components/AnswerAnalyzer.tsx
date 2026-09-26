@@ -9,6 +9,7 @@ interface AnswerAnalyzerProps {
   history: HistoryItem[];
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
 const STEP_LABELS = ['Sumber Soal', 'Bank Soal', 'Jawaban Siswa', 'Hasil Analisis'];
@@ -40,7 +41,7 @@ function persistAnalyses(sessions: AnalysisSession[]) {
   }
 }
 
-export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey, aiProvider = 'gemini' }: AnswerAnalyzerProps) {
+export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey, aiProvider = 'gemini', aiModel = '' }: AnswerAnalyzerProps) {
   const [step, setStep] = useState(1);
   const [isWorking, setIsWorking] = useState(false);
   const [waitingFirst, setWaitingFirst] = useState(false);
@@ -119,7 +120,7 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey,
   };
 
   const handleExtract = async () => {
-    let payload: any = { customApiKey, aiProvider };
+    let payload: any = { customApiKey, aiProvider, aiModel };
     if (srcMode === 'rpm') {
       const item = history.find(h => h.id === selectedRpmId);
       if (!item) { toast.error('Pilih dokumen RPM terlebih dahulu.'); return; }
@@ -151,7 +152,7 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey,
   };
 
   const handleParseAnswers = async () => {
-    let payload: any = { customApiKey, aiProvider };
+    let payload: any = { customApiKey, aiProvider, aiModel };
     if (ansTab === 'file') {
       const input = document.getElementById('analyzer-csv-input') as HTMLInputElement | null;
       const file = input?.files?.[0];
@@ -192,9 +193,10 @@ export default function AnswerAnalyzer({ isOpen, onClose, history, customApiKey,
         body: JSON.stringify({
           questions, students, kkm,
           meta: { ...metaInfo, phase: metaInfo.phase || className },
-          customApiKey,
-          aiProvider,
-        }),
+           customApiKey,
+           aiProvider,
+           aiModel,
+         }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error || 'Gagal menganalisis.');

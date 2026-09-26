@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -12,7 +12,7 @@ export default async function handler(req: any, res: any) {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider } = body;
+    const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider, aiModel } = body;
     if (!html || !instruction) {
       return res.status(400).json({ error: 'HTML and instruction are required' });
     }
@@ -60,7 +60,7 @@ ${html}`;
 
     if (isOpenRouterProvider(provider)) {
       const responseStream = await createOpenRouterClient(key).chat.completions.create({
-        model: getOpenRouterModel(provider),
+        model: getOpenRouterModel(provider, aiModel),
          messages: [{ role: 'user', content: prompt }],
          stream: true,
       });
@@ -70,7 +70,7 @@ ${html}`;
       }
     } else {
       const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3.6-flash',
+        model: getGeminiModel(aiModel),
         contents: prompt,
       });
 

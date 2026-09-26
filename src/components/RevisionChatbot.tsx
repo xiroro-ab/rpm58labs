@@ -22,6 +22,7 @@ interface RevisionChatbotProps {
   setIsOpen: (open: boolean) => void;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
 const quickActions = [
@@ -40,7 +41,7 @@ const smartSuggestions = [
   { icon: '📋', text: 'Buat kegiatan inti lebih detail' },
 ];
 
-export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, isOpen, setIsOpen, customApiKey, aiProvider = 'gemini' }: RevisionChatbotProps) {
+export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, isOpen, setIsOpen, customApiKey, aiProvider = 'gemini', aiModel = '' }: RevisionChatbotProps) {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -191,6 +192,7 @@ export function RevisionChatbot({ currentHtml, onApplyRevision, onStreamUpdate, 
            sectionOnly: sectionId !== 'full',
            customApiKey,
            aiProvider,
+           aiModel,
          }),
       });
 

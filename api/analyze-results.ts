@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 const SOLO_LEVELS = ['prestructural', 'unistructural', 'multistructural', 'relational', 'extended'];
 const SOLO_LABELS: Record<string, string> = {
@@ -18,18 +18,18 @@ function pgLetter(v: string): string {
   return '';
 }
 
-async function callAI(provider: string, key: string, ai: any, prompt: string): Promise<string> {
+async function callAI(provider: string, key: string, ai: any, prompt: string, aiModel?: string): Promise<string> {
   for (let i = 0; i < 3; i++) {
     try {
       if (isOpenRouterProvider(provider)) {
         const r = await createOpenRouterClient(key).chat.completions.create({
-          model: getOpenRouterModel(provider),
+          model: getOpenRouterModel(provider, aiModel),
           messages: [{ role: 'user', content: prompt }],
 
         });
         return (r.choices[0]?.message?.content || '').trim();
       }
-      const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: prompt });
+      const r = await ai.models.generateContent({ model: getGeminiModel(aiModel), contents: prompt });
       return (r.text || '').trim();
     } catch (e: any) {
       if ((e.message?.includes('503') || e.status === 503) && i < 2) {
@@ -195,7 +195,7 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { questions, students, kkm, meta, customApiKey, aiProvider } = body;
+    const { questions, students, kkm, meta, customApiKey, aiProvider, aiModel } = body;
     const provider = normalizeProvider(aiProvider);
     const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
     if (!Array.isArray(questions) || questions.length === 0 || !Array.isArray(students) || students.length === 0) {
@@ -259,7 +259,7 @@ Balas HANYA JSON valid tanpa markdown:
 {"students":[{"name":"...","essays":{"11":{"score":80,"feedback":"..."}},"solo":"relational","soloReason":"..."}]}`;
 
         try {
-          const raw = await callAI(provider, key, ai, prompt);
+          const raw = await callAI(provider, key, ai, prompt, aiModel);
           const m = raw.match(/\{[\s\S]*\}/);
           if (!m) return;
           const parsed = JSON.parse(m[0]);

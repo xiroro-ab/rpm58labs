@@ -21,6 +21,7 @@ export interface ApiPayload {
   data: RPMFormData;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
 export interface HistoryItem {

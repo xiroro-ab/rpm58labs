@@ -20,9 +20,10 @@ interface LembarSoalProps {
   formData: RPMFormData | null;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
-export default function LembarSoal({ isOpen, onClose, rpmHtml, formData, customApiKey, aiProvider }: LembarSoalProps) {
+export default function LembarSoal({ isOpen, onClose, rpmHtml, formData, customApiKey, aiProvider, aiModel }: LembarSoalProps) {
   const [soalHtml, setSoalHtml] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -102,8 +103,9 @@ export default function LembarSoal({ isOpen, onClose, rpmHtml, formData, customA
         body: JSON.stringify({
           rpmHtml,
           formData,
-          customApiKey,
-          aiProvider
+           customApiKey,
+           aiProvider,
+           aiModel
         }),
       });
 

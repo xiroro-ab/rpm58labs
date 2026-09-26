@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,19 +12,22 @@ export default async function handler(req, res) {
     let data;
     let customApiKey;
     let aiProvider;
+    let aiModel;
     if (typeof req.body === 'string') {
       try {
         const parsed = JSON.parse(req.body);
         data = parsed.data;
-        customApiKey = parsed.customApiKey;
-        aiProvider = parsed.aiProvider;
+         customApiKey = parsed.customApiKey;
+         aiProvider = parsed.aiProvider;
+         aiModel = parsed.aiModel;
       } catch (e) {
         return res.status(400).json({ error: 'Format request tidak valid.' });
       }
     } else {
       data = req.body?.data;
-      customApiKey = req.body?.customApiKey;
-      aiProvider = req.body?.aiProvider;
+       customApiKey = req.body?.customApiKey;
+       aiProvider = req.body?.aiProvider;
+       aiModel = req.body?.aiModel;
     }
 
     if (!data) {
@@ -415,7 +418,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
       if (provider === 'gemini') {
         const ai = new GoogleGenAI({ apiKey: keyToUse });
         const responseStream = await ai.models.generateContentStream({
-          model: 'gemini-3.6-flash',
+          model: getGeminiModel(aiModel),
           contents: prompt,
         });
         for await (const chunk of responseStream) {
@@ -474,7 +477,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
         
         if (isOpenRouterProvider(provider)) {
           baseURL = OPENROUTER_BASE_URL;
-          modelName = getOpenRouterModel(provider);
+          modelName = getOpenRouterModel(provider, aiModel);
         } else if (provider === 'openai') {
           modelName = 'gpt-4o-mini';
         } else if (provider === 'deepseek') {

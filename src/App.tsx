@@ -21,6 +21,9 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('rpm_customApiKey') || '');
   const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('rpm_aiProvider') || 'gemini');
+  const [geminiModel, setGeminiModel] = useState(() => localStorage.getItem('rpm_geminiModel') || '');
+  const [openRouterModel, setOpenRouterModel] = useState(() => localStorage.getItem('rpm_openRouterModel') || '');
+  const activeModel = aiProvider === 'gemini' ? geminiModel : (aiProvider === 'openrouter' || aiProvider === 'openrouter-free') ? openRouterModel : '';
   const [isGeneratingContinue, setIsGeneratingContinue] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -110,7 +113,7 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data, customApiKey, aiProvider }),
+        body: JSON.stringify({ data, customApiKey, aiProvider, aiModel: activeModel }),
       });
 
       if (!response.ok) {
@@ -200,7 +203,7 @@ export default function App() {
           const er = await fetch('/api/enhance-rpm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ html: finalResultText, customApiKey, aiProvider }),
+             body: JSON.stringify({ html: finalResultText, customApiKey, aiProvider, aiModel: activeModel }),
           });
           const ed = await er.json();
           if (ed.html && ed.enhanced > 0) {
@@ -246,7 +249,7 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data: formData, customApiKey, aiProvider, previousOutput: result }),
+        body: JSON.stringify({ data: formData, customApiKey, aiProvider, aiModel: activeModel, previousOutput: result }),
       });
 
       if (!response.ok) {
@@ -529,7 +532,7 @@ export default function App() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Pilih AI Provider
@@ -567,13 +570,49 @@ export default function App() {
                   Jika limit API default habis, gunakan API key dari provider yang dipilih. API key tidak akan disimpan di server.
                 </p>
               </div>
+
+              <div>
+                <label htmlFor="gemini-model" className="block text-sm font-medium text-slate-700 mb-1">
+                  Model Gemini (Opsional)
+                </label>
+                <input
+                  id="gemini-model"
+                  type="text"
+                  value={geminiModel}
+                  onChange={(e) => setGeminiModel(e.target.value)}
+                  placeholder="gemini-3.8-flash"
+                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Kosongkan untuk memakai model default atau setting Vercel.
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="openrouter-model" className="block text-sm font-medium text-slate-700 mb-1">
+                  Model OpenRouter (Opsional)
+                </label>
+                <input
+                  id="openrouter-model"
+                  type="text"
+                  value={openRouterModel}
+                  onChange={(e) => setOpenRouterModel(e.target.value)}
+                  placeholder="google/gemini-3.8-flash"
+                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Gunakan format model OpenRouter, misalnya google/model atau provider/model:free.
+                </p>
+              </div>
             </div>
             <div className="p-4 border-t border-slate-200 flex justify-end">
               <button 
                 onClick={() => { 
-                  localStorage.setItem('rpm_customApiKey', customApiKey);
-                  localStorage.setItem('rpm_aiProvider', aiProvider);
-                  setIsSettingsOpen(false); 
+                   localStorage.setItem('rpm_customApiKey', customApiKey);
+                   localStorage.setItem('rpm_aiProvider', aiProvider);
+                   localStorage.setItem('rpm_geminiModel', geminiModel);
+                   localStorage.setItem('rpm_openRouterModel', openRouterModel);
+                   setIsSettingsOpen(false);
                   toast.success('Pengaturan disimpan!'); 
                 }}
                 className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md hover:bg-primary-light shadow-button transition-all"
@@ -694,17 +733,19 @@ export default function App() {
           isOpen={isAnalyzerOpen}
           onClose={() => setIsAnalyzerOpen(false)}
           history={history}
-          customApiKey={customApiKey}
-          aiProvider={aiProvider}
-        />
+           customApiKey={customApiKey}
+           aiProvider={aiProvider}
+           aiModel={activeModel}
+         />
 
         <ManualSoalModal
           isOpen={isManualSoalOpen}
           onClose={() => setIsManualSoalOpen(false)}
           formData={formData}
-          customApiKey={customApiKey}
-          aiProvider={aiProvider}
-        />
+           customApiKey={customApiKey}
+           aiProvider={aiProvider}
+           aiModel={activeModel}
+         />
 
         {/* Mobile Overlay */}
         {isSidebarOpen && (
@@ -756,7 +797,8 @@ export default function App() {
             formData={formData} 
             isGeneratingContinue={isGeneratingContinue}
             customApiKey={customApiKey}
-            aiProvider={aiProvider} />
+            aiProvider={aiProvider}
+            aiModel={activeModel} />
           )}
         </section>
         <PWAPrompt isOpen={isPWAPromptOpen} onClose={() => setIsPWAPromptOpen(false)} />

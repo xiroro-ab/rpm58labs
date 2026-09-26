@@ -7,7 +7,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './api/_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './api/_ai-provider.js';
 import generateTableHandler from './api/generate-table';
 import generateSoalHandler from './api/generate-soal';
 import enhanceRpmHandler from './api/enhance-rpm';
@@ -27,7 +27,7 @@ async function startServer() {
   // API route for generation
   app.post('/api/generate', async (req, res) => {
     try {
-      const { data, customApiKey, aiProvider, previousOutput } = req.body;
+      const { data, customApiKey, aiProvider, aiModel, previousOutput } = req.body;
       const provider = normalizeProvider(aiProvider);
       const keyToUse = getApiKey(customApiKey, provider);
 
@@ -259,7 +259,7 @@ LEWATI aktivitas rutin (salam, doa, absensi).
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
       
-      let modelName = 'gemini-3.6-flash';
+      let modelName = getGeminiModel(aiModel);
       let baseURL = '';
       
       if (provider === 'gemini') {
@@ -315,7 +315,7 @@ LEWATI aktivitas rutin (salam, doa, absensi).
       } else {
         if (isOpenRouterProvider(provider)) {
           baseURL = OPENROUTER_BASE_URL;
-          modelName = getOpenRouterModel(provider);
+          modelName = getOpenRouterModel(provider, aiModel);
         } else if (provider === 'openai') {
           modelName = 'gpt-4o-mini';
         } else if (provider === 'deepseek') {
@@ -513,7 +513,7 @@ try {
 
   app.post("/api/revise", async (req, res) => {
     try {
-      const { html, instruction, customApiKey, aiProvider } = req.body;
+      const { html, instruction, customApiKey, aiProvider, aiModel } = req.body;
       if (!html || !instruction) {
         return res.status(400).json({ error: 'HTML and instruction are required' });
       }
@@ -541,13 +541,13 @@ ${html}
       let revisedHtml = '';
       if (isOpenRouterProvider(provider)) {
         const response = await createOpenRouterClient(key).chat.completions.create({
-          model: getOpenRouterModel(provider),
+          model: getOpenRouterModel(provider, aiModel),
            messages: [{ role: 'user', content: prompt }],
          });
         revisedHtml = response.choices[0]?.message?.content || html;
       } else {
         const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: getGeminiModel(aiModel),
           contents: prompt,
         });
         revisedHtml = response.text || html;
@@ -564,7 +564,7 @@ ${html}
 
   app.post("/api/revise-chat", async (req, res) => {
     try {
-      const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider } = req.body;
+      const { html, instruction, chatHistory, sectionOnly, customApiKey, aiProvider, aiModel } = req.body;
       if (!html || !instruction) {
         return res.status(400).json({ error: 'HTML and instruction are required' });
       }
@@ -609,7 +609,7 @@ ${html}`;
 
       if (isOpenRouterProvider(provider)) {
         const responseStream = await createOpenRouterClient(key).chat.completions.create({
-          model: getOpenRouterModel(provider),
+          model: getOpenRouterModel(provider, aiModel),
            messages: [{ role: 'user', content: prompt }],
            stream: true,
 
@@ -620,7 +620,7 @@ ${html}`;
         }
       } else {
         const responseStream = await ai.models.generateContentStream({
-          model: 'gemini-3.6-flash',
+          model: getGeminiModel(aiModel),
           contents: prompt,
         });
 
@@ -638,7 +638,7 @@ ${html}`;
 
   app.post("/api/teaching-aids", async (req, res) => {
     try {
-      const { html, topic, customApiKey, aiProvider } = req.body;
+      const { html, topic, customApiKey, aiProvider, aiModel } = req.body;
       if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
 
       const provider = normalizeProvider(aiProvider);
@@ -687,7 +687,7 @@ ${html}`;
 
       if (isOpenRouterProvider(provider)) {
         const responseStream = await createOpenRouterClient(key).chat.completions.create({
-          model: getOpenRouterModel(provider),
+          model: getOpenRouterModel(provider, aiModel),
            messages: [{ role: 'user', content: prompt }],
            stream: true,
 
@@ -698,7 +698,7 @@ ${html}`;
         }
       } else {
         const responseStream = await ai.models.generateContentStream({
-          model: 'gemini-3.6-flash',
+          model: getGeminiModel(aiModel),
           contents: prompt,
         });
 

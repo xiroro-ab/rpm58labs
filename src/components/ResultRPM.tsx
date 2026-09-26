@@ -18,9 +18,10 @@ interface ResultRPMProps {
   isGeneratingContinue: boolean;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
-export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit, customApiKey, aiProvider }: ResultRPMProps) {
+export default function ResultRPM({ markdown, onReset, onContinue, formData, isGeneratingContinue, onSaveEdit, customApiKey, aiProvider, aiModel }: ResultRPMProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [currentHtml, setCurrentHtml] = useState(markdown);
@@ -171,7 +172,7 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <span className="hidden sm:inline">Cek</span>
           </button>
 
-           <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} aiProvider={aiProvider} />
+           <WebsiteGenerator rpmHtml={currentHtml} topic={formData?.topic || ''} customApiKey={customApiKey || ''} aiProvider={aiProvider} aiModel={aiModel} />
 
           <button
             onClick={() => setIsTableKisiKisiOpen(true)}
@@ -262,9 +263,10 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
              if (onSaveEdit) onSaveEdit(newHtml);
           }}
           onStreamUpdate={handleStreamUpdate}
-          customApiKey={customApiKey}
-          aiProvider={aiProvider}
-        />
+           customApiKey={customApiKey}
+           aiProvider={aiProvider}
+           aiModel={aiModel}
+         />
 
         <ComplianceCheckerModal
           isOpen={isComplianceCheckerOpen}
@@ -278,18 +280,20 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
           onClose={() => setIsTableKisiKisiOpen(false)}
           rpmHtml={currentHtml}
           formData={formData}
-          customApiKey={customApiKey}
-          aiProvider={aiProvider}
-        />
+           customApiKey={customApiKey}
+           aiProvider={aiProvider}
+           aiModel={aiModel}
+         />
 
         <LembarSoal
           isOpen={isLembarSoalOpen}
           onClose={() => setIsLembarSoalOpen(false)}
           rpmHtml={currentHtml}
           formData={formData}
-          customApiKey={customApiKey}
-          aiProvider={aiProvider}
-        />
+           customApiKey={customApiKey}
+           aiProvider={aiProvider}
+           aiModel={aiModel}
+         />
       </div>
     </div>
       </>

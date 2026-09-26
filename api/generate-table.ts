@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 // ============================================================
 // KISI-KISI & KARTU SOAL - streaming hasil AI langsung seperti RPM.
@@ -76,7 +76,7 @@ export default async function handler(req: any, res: any) {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const { rpmHtml, formData, customApiKey, aiProvider } = body || {};
+    const { rpmHtml, formData, customApiKey, aiProvider, aiModel } = body || {};
     if (!rpmHtml) return res.status(400).json({ error: 'RPM HTML diperlukan.' });
 
     const provider = normalizeProvider(aiProvider);
@@ -220,7 +220,7 @@ ${rpmHtml}
           { role: 'user', parts: [{ text: 'Lanjutkan tepat dari posisi teks yang terpotong. JANGAN mengulang dari awal. Akhiri dengan komentar <!--AKHIR--> di baris terakhir.' }] },
         ];
         const stream = await ai.models.generateContentStream({
-          model: 'gemini-3.6-flash',
+          model: getGeminiModel(aiModel),
           contents,
           config: { maxOutputTokens: 32768 },
         });
@@ -234,7 +234,7 @@ ${rpmHtml}
       } else {
         let baseURL = undefined;
         let modelName = '';
-        if (isOpenRouterProvider(provider)) { baseURL = OPENROUTER_BASE_URL; modelName = getOpenRouterModel(provider); }
+        if (isOpenRouterProvider(provider)) { baseURL = OPENROUTER_BASE_URL; modelName = getOpenRouterModel(provider, aiModel); }
         else if (provider === 'openai') { modelName = 'gpt-4o-mini'; }
         else if (provider === 'groq') { baseURL = 'https://api.groq.com/openai/v1'; modelName = 'llama-3.3-70b-versatile'; }
         else if (provider === 'deepseek') { baseURL = 'https://api.deepseek.com/v1'; modelName = 'deepseek-chat'; }

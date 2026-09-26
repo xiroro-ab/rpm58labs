@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { createOpenRouterClient, getApiKey, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider } from './_ai-provider.js';
 
 export const config = {
   api: {
@@ -7,7 +7,7 @@ export const config = {
   },
 };
 
-async function callAI(provider: string, key: string, ai: any, parts: any[]): Promise<string> {
+async function callAI(provider: string, key: string, ai: any, parts: any[], aiModel?: string): Promise<string> {
   for (let i = 0; i < 3; i++) {
     try {
       if (isOpenRouterProvider(provider)) {
@@ -15,13 +15,13 @@ async function callAI(provider: string, key: string, ai: any, parts: any[]): Pro
           ? { type: 'image_url', image_url: { url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` } }
           : { type: 'text', text: part.text || '' });
         const r = await createOpenRouterClient(key).chat.completions.create({
-          model: getOpenRouterModel(provider),
+          model: getOpenRouterModel(provider, aiModel),
           messages: [{ role: 'user', content: content as any }],
 
         });
         return (r.choices[0]?.message?.content || '').trim();
       }
-      const r = await ai.models.generateContent({ model: 'gemini-3.6-flash', contents: [{ role: 'user', parts }] });
+      const r = await ai.models.generateContent({ model: getGeminiModel(aiModel), contents: [{ role: 'user', parts }] });
       return (r.text || '').trim();
     } catch (e: any) {
       if ((e.message?.includes('503') || e.status === 503) && i < 2) {
@@ -41,7 +41,7 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { sourceHtml, text, imageBase64, imageMime, customApiKey, aiProvider } = body;
+    const { sourceHtml, text, imageBase64, imageMime, customApiKey, aiProvider, aiModel } = body;
     if (!sourceHtml && !text && !imageBase64) {
       return res.status(400).json({ error: 'Sumber soal diperlukan (dokumen RPM, teks, atau foto).' });
     }
@@ -81,7 +81,7 @@ Balas HANYA JSON valid tanpa teks lain tanpa markdown, dengan format persis:
 
 type hanya boleh "pg" atau "essay".` });
 
-    const raw = await callAI(provider, key, ai, parts);
+    const raw = await callAI(provider, key, ai, parts, aiModel);
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error('Format respons AI tidak valid');
     const parsed = JSON.parse(m[0]);

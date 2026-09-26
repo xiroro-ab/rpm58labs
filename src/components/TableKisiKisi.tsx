@@ -20,9 +20,10 @@ interface TableKisiKisiProps {
   formData: RPMFormData | null;
   customApiKey?: string;
   aiProvider?: string;
+  aiModel?: string;
 }
 
-export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, customApiKey, aiProvider }: TableKisiKisiProps) {
+export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, customApiKey, aiProvider, aiModel }: TableKisiKisiProps) {
   const [tableHtml, setTableHtml] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -102,8 +103,9 @@ export default function TableKisiKisi({ isOpen, onClose, rpmHtml, formData, cust
         body: JSON.stringify({
           rpmHtml,
           formData,
-          customApiKey,
-          aiProvider
+           customApiKey,
+           aiProvider,
+           aiModel
         }),
       });
 
