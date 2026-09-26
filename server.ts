@@ -43,11 +43,15 @@ async function startServer() {
              messages: [{ role: 'user', content: 'Balas hanya: OK' }],
              max_tokens: 8,
            });
-           return res.json({ ok: true, provider, model, output: response.choices[0]?.message?.content || '' });
+           const output = response.choices[0]?.message?.content || '';
+           if (!output.trim()) return res.status(502).json({ error: 'Model tidak mengembalikan teks. Coba model lain.' });
+           return res.json({ ok: true, provider, model, output });
          }
          const ai = new GoogleGenAI({ apiKey: keyToUse });
          const response = await ai.models.generateContent({ model, contents: 'Balas hanya: OK' });
-         return res.json({ ok: true, provider, model, output: response.text || '' });
+         const output = response.text || '';
+         if (!output.trim()) return res.status(502).json({ error: 'Model tidak mengembalikan teks. Coba model lain.' });
+         return res.json({ ok: true, provider, model, output });
        }
 
        const isDaring = data.learningMode?.includes('Daring');
