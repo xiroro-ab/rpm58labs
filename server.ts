@@ -27,15 +27,30 @@ async function startServer() {
   // API route for generation
   app.post('/api/generate', async (req, res) => {
     try {
-      const { data, customApiKey, aiProvider, aiModel, previousOutput } = req.body;
+       const { data, customApiKey, aiProvider, aiModel, previousOutput, testModel } = req.body;
       const provider = normalizeProvider(aiProvider);
       const keyToUse = getApiKey(customApiKey, provider);
 
-      if (!keyToUse) {
-        return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
-      }
+       if (!keyToUse) {
+         return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
+       }
 
-      const isDaring = data.learningMode?.includes('Daring');
+       if (testModel) {
+         const model = isOpenRouterProvider(provider) ? getOpenRouterModel(provider, aiModel) : getGeminiModel(aiModel);
+         if (isOpenRouterProvider(provider)) {
+           const response = await createOpenRouterClient(keyToUse).chat.completions.create({
+             model,
+             messages: [{ role: 'user', content: 'Balas hanya: OK' }],
+             max_tokens: 8,
+           });
+           return res.json({ ok: true, provider, model, output: response.choices[0]?.message?.content || '' });
+         }
+         const ai = new GoogleGenAI({ apiKey: keyToUse });
+         const response = await ai.models.generateContent({ model, contents: 'Balas hanya: OK' });
+         return res.json({ ok: true, provider, model, output: response.text || '' });
+       }
+
+       const isDaring = data.learningMode?.includes('Daring');
       const isBlended = data.learningMode?.includes('Blended');
       const meetingCount = parseInt(data.meetingCount?.replace('x', '')) || 1; 
 

@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
+import { createOpenRouterClient, getApiKey, getGeminiModel, getOpenRouterModel, isOpenRouterProvider, normalizeProvider, OPENROUTER_BASE_URL } from './_ai-provider.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,14 +12,16 @@ export default async function handler(req, res) {
     let data;
     let customApiKey;
     let aiProvider;
-    let aiModel;
-    if (typeof req.body === 'string') {
+     let aiModel;
+     let testModel;
+     if (typeof req.body === 'string') {
       try {
         const parsed = JSON.parse(req.body);
         data = parsed.data;
          customApiKey = parsed.customApiKey;
          aiProvider = parsed.aiProvider;
          aiModel = parsed.aiModel;
+         testModel = parsed.testModel;
       } catch (e) {
         return res.status(400).json({ error: 'Format request tidak valid.' });
       }
@@ -28,18 +30,34 @@ export default async function handler(req, res) {
        customApiKey = req.body?.customApiKey;
        aiProvider = req.body?.aiProvider;
        aiModel = req.body?.aiModel;
+       testModel = req.body?.testModel;
     }
 
-    if (!data) {
-      return res.status(400).json({ error: 'Data form tidak ditemukan.' });
-    }
+     if (!data && !testModel) {
+       return res.status(400).json({ error: 'Data form tidak ditemukan.' });
+     }
 
-    const provider = normalizeProvider(aiProvider);
-    const keyToUse = getApiKey(customApiKey, provider);
+     const provider = normalizeProvider(aiProvider);
+     const keyToUse = getApiKey(customApiKey, provider);
 
-    if (!keyToUse) {
-      return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
-    }
+     if (!keyToUse) {
+       return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
+     }
+
+     if (testModel) {
+       const model = isOpenRouterProvider(provider) ? getOpenRouterModel(provider, aiModel) : getGeminiModel(aiModel);
+       if (isOpenRouterProvider(provider)) {
+         const response = await createOpenRouterClient(keyToUse).chat.completions.create({
+           model,
+           messages: [{ role: 'user', content: 'Balas hanya: OK' }],
+           max_tokens: 8,
+         });
+         return res.json({ ok: true, provider, model, output: response.choices[0]?.message?.content || '' });
+       }
+       const ai = new GoogleGenAI({ apiKey: keyToUse });
+       const response = await ai.models.generateContent({ model, contents: 'Balas hanya: OK' });
+       return res.json({ ok: true, provider, model, output: response.text || '' });
+     }
 
     
     

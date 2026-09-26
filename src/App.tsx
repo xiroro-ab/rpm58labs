@@ -19,11 +19,43 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<RPMFormData | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTestingModel, setIsTestingModel] = useState(false);
   const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('rpm_customApiKey') || '');
   const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('rpm_aiProvider') || 'gemini');
   const [geminiModel, setGeminiModel] = useState(() => localStorage.getItem('rpm_geminiModel') || '');
   const [openRouterModel, setOpenRouterModel] = useState(() => localStorage.getItem('rpm_openRouterModel') || '');
   const activeModel = aiProvider === 'gemini' ? geminiModel : (aiProvider === 'openrouter' || aiProvider === 'openrouter-free') ? openRouterModel : '';
+  const handleTestModel = async () => {
+    if (aiProvider !== 'gemini' && aiProvider !== 'openrouter' && aiProvider !== 'openrouter-free') {
+      toast.error('Pengujian model tersedia untuk Gemini dan OpenRouter.');
+      return;
+    }
+    setIsTestingModel(true);
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customApiKey, aiProvider, aiModel: activeModel, testModel: true }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Model tidak dapat diuji.');
+      toast.success(`Model ${data.model} siap digunakan.`);
+    } catch (error: any) {
+      toast.error(error.message || 'Model tidak dapat diuji.', { duration: 6000 });
+    } finally {
+      setIsTestingModel(false);
+    }
+  };
+  const testModelButton = (
+    <button
+      type="button"
+      onClick={handleTestModel}
+      disabled={isTestingModel}
+      className="mt-2 px-3 py-2 text-sm font-semibold text-primary bg-white border border-primary/30 rounded-md hover:bg-primary/5 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+    >
+      {isTestingModel ? 'Menguji model...' : 'Test Model'}
+    </button>
+  );
   const [isGeneratingContinue, setIsGeneratingContinue] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -590,6 +622,7 @@ export default function App() {
                     <p className="mt-1 text-xs text-slate-500">
                       Kosongkan untuk memakai model default atau GEMINI_MODEL di Vercel.
                     </p>
+                    {testModelButton}
                   </div>
                 ) : aiProvider === 'openrouter' || aiProvider === 'openrouter-free' ? (
                   <div>
@@ -609,6 +642,7 @@ export default function App() {
                         ? 'Kosongkan untuk memakai OpenRouter Free Auto. Format: provider/model atau provider/model:free.'
                         : 'Kosongkan untuk memakai model default atau OPENROUTER_MODEL di Vercel.'}
                     </p>
+                    {testModelButton}
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500">Model diatur otomatis oleh provider yang dipilih.</p>
