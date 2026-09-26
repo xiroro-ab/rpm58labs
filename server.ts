@@ -41,7 +41,7 @@ async function startServer() {
            const response = await createOpenRouterClient(keyToUse).chat.completions.create({
              model,
              messages: [{ role: 'user', content: 'Balas hanya: OK' }],
-             max_tokens: 8,
+             max_tokens: 256,
            });
            const output = response.choices[0]?.message?.content || '';
            if (!output.trim()) return res.status(502).json({ error: 'Model tidak mengembalikan teks. Coba model lain.' });
