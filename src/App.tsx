@@ -533,6 +533,7 @@ export default function App() {
               </button>
             </div>
             <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Koneksi AI</p>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Pilih AI Provider
@@ -571,38 +572,47 @@ export default function App() {
                 </p>
               </div>
 
-              <div>
-                <label htmlFor="gemini-model" className="block text-sm font-medium text-slate-700 mb-1">
-                  Model Gemini (Opsional)
-                </label>
-                <input
-                  id="gemini-model"
-                  type="text"
-                  value={geminiModel}
-                  onChange={(e) => setGeminiModel(e.target.value)}
-                  placeholder="gemini-3.8-flash"
-                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  Kosongkan untuk memakai model default atau setting Vercel.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="openrouter-model" className="block text-sm font-medium text-slate-700 mb-1">
-                  Model OpenRouter (Opsional)
-                </label>
-                <input
-                  id="openrouter-model"
-                  type="text"
-                  value={openRouterModel}
-                  onChange={(e) => setOpenRouterModel(e.target.value)}
-                  placeholder="google/gemini-3.8-flash"
-                  className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  Gunakan format model OpenRouter, misalnya google/model atau provider/model:free.
-                </p>
+              <div className="border-t border-warm-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Model (opsional)</p>
+                {aiProvider === 'gemini' ? (
+                  <div>
+                    <label htmlFor="gemini-model" className="block text-sm font-medium text-slate-700 mb-1">
+                      Model Gemini
+                    </label>
+                    <input
+                      id="gemini-model"
+                      type="text"
+                      value={geminiModel}
+                      onChange={(e) => setGeminiModel(e.target.value)}
+                      placeholder="gemini-3.8-flash"
+                      className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Kosongkan untuk memakai model default atau GEMINI_MODEL di Vercel.
+                    </p>
+                  </div>
+                ) : aiProvider === 'openrouter' || aiProvider === 'openrouter-free' ? (
+                  <div>
+                    <label htmlFor="openrouter-model" className="block text-sm font-medium text-slate-700 mb-1">
+                      Model OpenRouter
+                    </label>
+                    <input
+                      id="openrouter-model"
+                      type="text"
+                      value={openRouterModel}
+                      onChange={(e) => setOpenRouterModel(e.target.value)}
+                      placeholder="google/gemini-3.8-flash"
+                      className="w-full px-3 py-2 border border-warm-border rounded-md shadow-sm focus:ring-primary/30 focus:border-primary bg-input"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      {aiProvider === 'openrouter-free'
+                        ? 'Kosongkan untuk memakai OpenRouter Free Auto. Format: provider/model atau provider/model:free.'
+                        : 'Kosongkan untuk memakai model default atau OPENROUTER_MODEL di Vercel.'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">Model diatur otomatis oleh provider yang dipilih.</p>
+                )}
               </div>
             </div>
             <div className="p-4 border-t border-slate-200 flex justify-end">
