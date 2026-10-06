@@ -20,18 +20,26 @@ const safeSaveHistory = (historyList: HistoryItem[]): HistoryItem[] => {
     return historyList;
   } catch (e: any) {
     if (e.name === 'QuotaExceededError' || (e.message && e.message.toLowerCase().includes('quota'))) {
-      let shrunkList = [...historyList];
-      while (shrunkList.length > 1) {
-        shrunkList.pop(); // Remove the oldest item (at the end of the array)
-        try {
-          localStorage.setItem('rpmHistory', JSON.stringify(shrunkList));
-          toast('Penyimpanan penuh! Riwayat paling lama dihapus otomatis untuk menghemat ruang.', { icon: 'ℹ️', duration: 5000 });
-          return shrunkList;
-        } catch (e2) {
-          // Keep shrinking if still too large
+      const isConfirmed = window.confirm('Penyimpanan riwayat penuh (Maksimal 5 MB browser). Apakah Anda ingin menghapus riwayat paling lama secara otomatis agar hasil ini bisa tersimpan?\n\nKlik OK untuk menghapus riwayat terlama.\nKlik Batal jika tidak ingin menyimpan hasil ini.');
+      
+      if (isConfirmed) {
+        let shrunkList = [...historyList];
+        while (shrunkList.length > 1) {
+          shrunkList.pop(); // Remove the oldest item (at the end of the array)
+          try {
+            localStorage.setItem('rpmHistory', JSON.stringify(shrunkList));
+            toast('Riwayat lama berhasil dihapus dan hasil baru tersimpan.', { icon: '✅', duration: 4000 });
+            return shrunkList;
+          } catch (e2) {
+            // Keep shrinking if still too large
+          }
         }
+        return shrunkList; // Even if 1 item fails, return it
+      } else {
+        toast('Hasil baru tidak disimpan ke penyimpanan browser.', { icon: 'ℹ️' });
+        // Return original list (it will be kept in memory/session but not in LocalStorage)
+        return historyList;
       }
-      return shrunkList; // Even if 1 item fails, return it
     }
     console.error('Error saving history:', e);
     return historyList;
