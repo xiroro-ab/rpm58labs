@@ -584,8 +584,14 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
     if (!res.headersSent) {
       res.status(statusCode).json({ error: 'Gagal membuat RPM. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });
     } else {
-      res.write('\n\n[SISTEM TERHENTI: ' + (error.message || 'Unknown error') + ']');
-      res.end();
+      try {
+        if (!res.writableEnded) {
+          res.write('\n\n[SISTEM TERHENTI: ' + (error.message || 'Unknown error') + ']');
+          res.end();
+        }
+      } catch (writeError) {
+        console.error('Error writing to response stream:', writeError);
+      }
     }
   }
 }
