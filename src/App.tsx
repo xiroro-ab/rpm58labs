@@ -244,9 +244,17 @@ export default function App() {
         }
         
         finalResultText = displayResult || resultText;
-        if (finalResultText.includes('<!-- SELESAI -->')) {
+        if (finalResultText.includes('<!-- SELESAI -->') || finalResultText.includes('<div id="SELESAI"')) {
           isFinished = true;
-          finalResultText = finalResultText.replace('<!-- SELESAI -->', '');
+          finalResultText = finalResultText.replace('<!-- SELESAI -->', '').replace('<div id="SELESAI" style="display:none;"></div>', '');
+          setResult(finalResultText);
+          break;
+        }
+        
+        // Fallback: If AI omitted the marker but perfectly closed the final container
+        if (finalResultText.trim().endsWith('</div>')) {
+          // It's very likely finished naturally.
+          isFinished = true;
           setResult(finalResultText);
           break;
         }
@@ -390,9 +398,16 @@ export default function App() {
         }
         
         finalResultText = displayResult || resultText;
-        if (finalResultText.includes('<!-- SELESAI -->')) {
+        if (finalResultText.includes('<!-- SELESAI -->') || finalResultText.includes('<div id="SELESAI"')) {
           isFinished = true;
-          finalResultText = finalResultText.replace('<!-- SELESAI -->', '');
+          finalResultText = finalResultText.replace('<!-- SELESAI -->', '').replace('<div id="SELESAI" style="display:none;"></div>', '');
+          setResult(finalResultText);
+          break;
+        }
+        
+        // Fallback: If AI omitted the marker but perfectly closed the final container
+        if (finalResultText.trim().endsWith('</div>')) {
+          isFinished = true;
           setResult(finalResultText);
           break;
         }

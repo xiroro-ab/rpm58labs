@@ -437,7 +437,7 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
   </tr>
 </table>
 </div>
-<!-- SELESAI -->`;
+<div id="SELESAI" style="display:none;"></div>`;
 
     if (previousOutput) {
       prompt += `
