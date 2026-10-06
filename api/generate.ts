@@ -561,7 +561,15 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
       res.end();
   } catch (error: any) {
     console.error('Error generating RPM:', error);
-    res.status(500).json({ error: 'Gagal membuat RPM. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });
+    const errMsg = (error.message || String(error)).toLowerCase();
+    const statusCode = (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('too many requests')) ? 429 : 500;
+    
+    if (!res.headersSent) {
+      res.status(statusCode).json({ error: 'Gagal membuat RPM. Silakan coba lagi. Detail: ' + (error.message || 'Unknown error') });
+    } else {
+      res.write('\n\n[SISTEM TERHENTI: ' + (error.message || 'Unknown error') + ']');
+      res.end();
+    }
   }
 }
 
