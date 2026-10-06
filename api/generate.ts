@@ -86,19 +86,7 @@ export default async function handler(req, res) {
         : `Kamu menggunakan model ${data.learningModel}. Tuliskan SEMUA fasenya secara utuh sesuai dengan standar baku model tersebut. Jangan dikurangi.`;
 
     let prompt = '';
-    
-    if (previousOutput) {
-      prompt = `Lanjutkan (continue) pembuatan kode HTML untuk Rencana Pembelajaran Mendalam (RPM) berikut ini TEPAT dari titik ia terputus. 
-JANGAN ulangi kode atau teks yang sudah ada, JANGAN tambahkan kata pembukaan/penutup apa pun (seperti "Berikut lanjutannya" atau "Tentu"), langsung sambung kode HTML-nya agar menjadi satu kesatuan dokumen yang valid saat digabungkan.
-
-Teks HTML sebelumnya yang terpotong (sebagai konteks, JANGAN diulangi):
-=== BATAS AWAL KODE SEBELUMNYA ===
-${previousOutput}
-=== BATAS AKHIR KODE SEBELUMNYA ===
-
-Silakan langsung tulis sambungannya dari batas akhir di atas:`;
-    } else {
-      let pengalamanBelajarHTML = '';
+    let pengalamanBelajarHTML = '';
       for(let i = 1; i <= meetingCount; i++) {
         const borderColor = i % 3 === 1 ? '#8b5cf6' : (i % 3 === 2 ? '#3b82f6' : '#10b981'); // Purple, Blue, Green
         pengalamanBelajarHTML += `
@@ -449,6 +437,21 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
   </tr>
 </table>
 </div>`;
+
+    if (previousOutput) {
+      prompt += `
+
+[PERHATIAN SANGAT PENTING: PENGGUNA MEMINTA KAMU UNTUK MELANJUTKAN KODE HTML KARENA TERPOTONG!]
+
+Kode HTML sebelumnya yang sudah kamu hasilkan (namun terpotong di tengah jalan) adalah:
+=== BATAS AWAL KODE SEBELUMNYA ===
+${previousOutput}
+=== BATAS AKHIR KODE SEBELUMNYA ===
+
+TUGAS KAMU SEKARANG:
+Lanjutkan pembuatan kode HTML tersebut TEPAT dari titik ia terputus pada "BATAS AKHIR KODE SEBELUMNYA".
+JANGAN MENGULANGI KODE ATAU TEKS YANG SUDAH ADA DI ATAS!
+JANGAN tambahkan kata pembukaan/penutup apa pun, LANGSUNG TULIS SAMBUNGAN KODE HTML-NYA agar menjadi satu kesatuan dokumen yang valid saat digabungkan dengan kode sebelumnya. Gunakan panduan kerangka HTML di atas sebagai panduan arahmu.`;
     }
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
