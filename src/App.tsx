@@ -175,10 +175,8 @@ export default function App() {
         } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
           errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
         } else {
-          // If the error message is a raw JSON string or unreadable API error, replace it
-          if (errorMessage.includes('{') || errorMessage.includes('[')) {
-             errorMessage = 'Terjadi kesalahan saat memproses respons dari AI. Silakan coba lagi.';
-          }
+          // If the error message is a raw JSON string or unreadable API error, let it pass through
+          // so we can see the actual error from the backend.
         }
         throw new Error(errorMessage);
       }
@@ -319,9 +317,7 @@ export default function App() {
         } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
           errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
         } else {
-          if (errorMessage.includes('{') || errorMessage.includes('[')) {
-             errorMessage = 'Terjadi kesalahan saat memproses respons dari AI. Silakan coba lagi.';
-          }
+          // Pass through the original backend error message
         }
         throw new Error(errorMessage);
       }
