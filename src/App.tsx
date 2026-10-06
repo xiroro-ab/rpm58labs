@@ -152,11 +152,15 @@ export default function App() {
         setIsWaitingForFirstChunk(false);
         let errorMessage = 'Gagal menghubungi server.';
         try {
-          const json = await response.json();
-          errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
-        } catch (e) {
           const text = await response.text();
-          errorMessage = text || errorMessage;
+          try {
+            const json = JSON.parse(text);
+            errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
+          } catch (e) {
+            errorMessage = text || errorMessage;
+          }
+        } catch (e) {
+          // Ignore text read error
         }
         
         if (typeof errorMessage !== 'string') {
@@ -292,11 +296,15 @@ export default function App() {
       if (!response.ok) {
         let errorMessage = 'Gagal menghubungi server.';
         try {
-          const json = await response.json();
-          errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
-        } catch (e) {
           const text = await response.text();
-          errorMessage = text || errorMessage;
+          try {
+            const json = JSON.parse(text);
+            errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
+          } catch (e) {
+            errorMessage = text || errorMessage;
+          }
+        } catch (e) {
+          // Ignore text read error
         }
         
         if (typeof errorMessage !== 'string') {
