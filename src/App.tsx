@@ -172,7 +172,7 @@ export default function App() {
           errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
         } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
           errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
-        } else if (lowerErr.includes('404') || lowerErr.includes('not found') || lowerErr.includes('model')) {
+        } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
           errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
         } else {
           // If the error message is a raw JSON string or unreadable API error, replace it
@@ -316,7 +316,7 @@ export default function App() {
           errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
         } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
           errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
-        } else if (lowerErr.includes('404') || lowerErr.includes('not found') || lowerErr.includes('model')) {
+        } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
           errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
         } else {
           if (errorMessage.includes('{') || errorMessage.includes('[')) {
