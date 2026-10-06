@@ -156,14 +156,16 @@ export default function ResultRPM({ markdown, onReset, onContinue, formData, isG
             <span className="hidden sm:inline">Simpan</span>
           </button>
           
-          <button
-            onClick={onContinue}
-            disabled={isGeneratingContinue}
-            className={`flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all border shadow-card hover:shadow-card-hover ${isGeneratingContinue ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-orange-700 bg-white hover:bg-orange-50 border-orange-200'}`}
-          >
-            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">{isGeneratingContinue ? 'Melanjutkan...' : 'Lanjutkan'}</span>
-          </button>
+          {(!markdown.trim().endsWith('</div>') || isGeneratingContinue) && (
+            <button
+              onClick={onContinue}
+              disabled={isGeneratingContinue}
+              className={`flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all border shadow-card hover:shadow-card-hover ${isGeneratingContinue ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-orange-700 bg-white hover:bg-orange-50 border-orange-200'}`}
+            >
+              <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{isGeneratingContinue ? 'Melanjutkan...' : 'Lanjutkan'}</span>
+            </button>
+          )}
           
           <button
             onClick={() => setIsChatbotOpen(!isChatbotOpen)}
