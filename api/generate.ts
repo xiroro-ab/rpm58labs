@@ -591,7 +591,8 @@ JANGAN tambahkan kata pembukaan/penutup apa pun, LANGSUNG TULIS SAMBUNGAN KODE H
     } else {
       try {
         if (!res.writableEnded) {
-          res.write('\n\n[SISTEM TERHENTI: ' + (error.message || 'Unknown error') + ']');
+          // If we already started streaming, appending an error message will corrupt the HTML and break 'Lanjutkan'.
+          // Just end the stream silently so the frontend detects truncation and can resume cleanly.
           res.end();
         }
       } catch (writeError) {
