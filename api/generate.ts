@@ -171,7 +171,7 @@ Silakan langsung tulis sambungannya dari batas akhir di atas:`;
 - Karakteristik Siswa: ${data.studentCharacteristics}
 - Moda Pembelajaran: ${data.learningMode}
 - Jumlah Pertemuan: ${data.meetingCount}
-- Model Pembelajaran: ${data.learningModel}${data.additionalContext ? \`\\n- Konteks Tambahan: \${data.additionalContext}\` : ''}
+- Model Pembelajaran: ${data.learningModel}${data.additionalContext ? `\n- Konteks Tambahan: ${data.additionalContext}` : ''}
 
 Kamu WAJIB menyusun dokumen menggunakan HTML murni yang rapi dengan struktur dan styling seperti di bawah ini.
 PERHATIAN KETAT: 
@@ -206,7 +206,7 @@ PERHATIAN KETAT:
 9. DEEP LEARNING LABELS: Kamu WAJIB menyematkan label span warna-warni (Joyful / Meaningful / Mindful) SECARA SELEKTIF di sebelah kanan teks menit <b>(... Menit)</b> pada aktivitas yang relevan di Kegiatan Awal, Inti, dan Penutup. Jangan taruh di semua aktivitas, pilih aktivitas yang benar-benar menggambarkan salah satu elemen tersebut.
 10. FORMAT KELUARAN: KELUARKAN LANGSUNG KODE HTML-NYA TANPA BUNGKUSAN MARKDOWN (JANGAN GUNAKAN \`\`\`html ATAU \`\`\`). KELUARKAN RAW HTML SECARA LANGSUNG.
 11. STYLE & FONT: Pastikan setiap elemen HTML mengikuti style yang diberikan. Jangan menggunakan HURUF KAPITAL SEMUA pada isi materi (gunakan huruf kapital hanya pada awal kalimat, nama diri, atau judul utama). Cukup bungkus awal jawabanmu dengan div font Arial 10.5pt dan berikan border solid hitam 1px pada tabel dengan border-collapse.
-12. FORMAT LIST: WAJIB gunakan tag HTML <ul> dan <li> atau <ol> dan <li> untuk membuat daftar/list (bullet/number) dengan rapi, berikan spasi margin-left secukupnya jika bersarang. JANGAN menggunakan tanda bintang (*) atau strip (-) sebagai bullet point manual.${data.additionalContext ? \`\\n13. KONTEKS TAMBAHAN (SANGAT PENTING): \${data.additionalContext}. Seluruh hasil generate Rencana Pembelajaran Mendalam (RPM) ini HARUS mengintegrasikan konteks tambahan tersebut. Ini TIDAK HANYA mencakup pertanyaan pemantik, TETAPI JUGA seluruh materi pembelajaran, studi kasus, skenario, contoh-contoh kehidupan sehari-hari yang diberikan, aktivitas pada kegiatan inti, hingga butir soal asesmen formatif dan sumatif. Pastikan keseluruhan RPM terasa sangat kontekstual dengan kejadian di sekitar siswa.\` : ''}
+12. FORMAT LIST: WAJIB gunakan tag HTML <ul> dan <li> atau <ol> dan <li> untuk membuat daftar/list (bullet/number) dengan rapi, berikan spasi margin-left secukupnya jika bersarang. JANGAN menggunakan tanda bintang (*) atau strip (-) sebagai bullet point manual.${data.additionalContext ? `\n13. KONTEKS TAMBAHAN (SANGAT PENTING): ${data.additionalContext}. Seluruh hasil generate Rencana Pembelajaran Mendalam (RPM) ini HARUS mengintegrasikan konteks tambahan tersebut. Ini TIDAK HANYA mencakup pertanyaan pemantik, TETAPI JUGA seluruh materi pembelajaran, studi kasus, skenario, contoh-contoh kehidupan sehari-hari yang diberikan, aktivitas pada kegiatan inti, hingga butir soal asesmen formatif dan sumatif. Pastikan keseluruhan RPM terasa sangat kontekstual dengan kejadian di sekitar siswa.` : ''}
 
 Gunakan persis kerangka HTML ini, dan JANGAN tambahkan markdown code block (\`\`\`html) di awal atau akhir jawaban:
 
