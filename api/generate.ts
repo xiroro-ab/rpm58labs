@@ -12,28 +12,32 @@ export default async function handler(req, res) {
     let data;
     let customApiKey;
     let aiProvider;
-     let aiModel;
-     let testModel;
-     if (typeof req.body === 'string') {
+    let aiModel;
+    let testModel;
+    let previousOutput;
+
+    if (typeof req.body === 'string') {
       try {
         const parsed = JSON.parse(req.body);
         data = parsed.data;
-         customApiKey = parsed.customApiKey;
-         aiProvider = parsed.aiProvider;
-         aiModel = parsed.aiModel;
-         testModel = parsed.testModel;
+        customApiKey = parsed.customApiKey;
+        aiProvider = parsed.aiProvider;
+        aiModel = parsed.aiModel;
+        testModel = parsed.testModel;
+        previousOutput = parsed.previousOutput;
       } catch (e) {
         return res.status(400).json({ error: 'Format request tidak valid.' });
       }
     } else {
       data = req.body?.data;
-       customApiKey = req.body?.customApiKey;
-       aiProvider = req.body?.aiProvider;
-       aiModel = req.body?.aiModel;
-       testModel = req.body?.testModel;
+      customApiKey = req.body?.customApiKey;
+      aiProvider = req.body?.aiProvider;
+      aiModel = req.body?.aiModel;
+      testModel = req.body?.testModel;
+      previousOutput = req.body?.previousOutput;
     }
 
-     if (!data && !testModel) {
+    if (!data && !testModel) {
        return res.status(400).json({ error: 'Data form tidak ditemukan.' });
      }
 
@@ -81,8 +85,21 @@ export default async function handler(req, res) {
         ? `Kamu menggunakan model pembelajaran "${data.learningModel}". Guru TELAH MENETAPKAN fase-fase spesifiknya yaitu: ${data.learningModelPhases}. Kamu WAJIB MENGGUNAKAN fase-fase tersebut PERSIS seperti urutan yang diminta guru. JANGAN mengarang fase sendiri atau menggunakan fase standar AI.`
         : `Kamu menggunakan model ${data.learningModel}. Tuliskan SEMUA fasenya secara utuh sesuai dengan standar baku model tersebut. Jangan dikurangi.`;
 
-    let pengalamanBelajarHTML = '';
-    for(let i = 1; i <= meetingCount; i++) {
+    let prompt = '';
+    
+    if (previousOutput) {
+      prompt = `Lanjutkan (continue) pembuatan kode HTML untuk Rencana Pembelajaran Mendalam (RPM) berikut ini TEPAT dari titik ia terputus. 
+JANGAN ulangi kode atau teks yang sudah ada, JANGAN tambahkan kata pembukaan/penutup apa pun (seperti "Berikut lanjutannya" atau "Tentu"), langsung sambung kode HTML-nya agar menjadi satu kesatuan dokumen yang valid saat digabungkan.
+
+Teks HTML sebelumnya yang terpotong (sebagai konteks, JANGAN diulangi):
+=== BATAS AWAL KODE SEBELUMNYA ===
+${previousOutput}
+=== BATAS AKHIR KODE SEBELUMNYA ===
+
+Silakan langsung tulis sambungannya dari batas akhir di atas:`;
+    } else {
+      let pengalamanBelajarHTML = '';
+      for(let i = 1; i <= meetingCount; i++) {
         const borderColor = i % 3 === 1 ? '#8b5cf6' : (i % 3 === 2 ? '#3b82f6' : '#10b981'); // Purple, Blue, Green
         pengalamanBelajarHTML += `
 <div style="border: 1px solid #cbd5e1; border-left: 5px solid ${borderColor}; border-radius: 4px; margin-bottom: 8px; background-color: #fdfdfd; box-shadow: 0 1px 3px rgba(0,0,0,0.05);  padding: 12px;">
@@ -141,9 +158,9 @@ export default async function handler(req, res) {
   </div>
 </div>
 `;
-    }
+      }
 
-    const prompt = `Bertindaklah sebagai Pakar Pedagogik dan Guru Penggerak. Buatlah Rencana Pembelajaran Mendalam (RPM) berdasarkan data berikut:
+      prompt = `Bertindaklah sebagai Pakar Pedagogik dan Guru Penggerak. Buatlah Rencana Pembelajaran Mendalam (RPM) berdasarkan data berikut:
 
 - Sekolah: ${data.school}
 - Guru: ${data.teacher}
@@ -154,7 +171,7 @@ export default async function handler(req, res) {
 - Karakteristik Siswa: ${data.studentCharacteristics}
 - Moda Pembelajaran: ${data.learningMode}
 - Jumlah Pertemuan: ${data.meetingCount}
-- Model Pembelajaran: ${data.learningModel}${data.additionalContext ? `\n- Konteks Tambahan: ${data.additionalContext}` : ''}
+- Model Pembelajaran: ${data.learningModel}${data.additionalContext ? \`\\n- Konteks Tambahan: \${data.additionalContext}\` : ''}
 
 Kamu WAJIB menyusun dokumen menggunakan HTML murni yang rapi dengan struktur dan styling seperti di bawah ini.
 PERHATIAN KETAT: 
@@ -169,7 +186,7 @@ PERHATIAN KETAT:
 
    Untuk aktivitas "guru menampilkan gambar/ilustrasi/foto" atau "pertanyaan pemantik":
    <div class="rpm-embed-visual">
-     <p><strong>Pertemuan [N] � [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
+     <p><strong>Pertemuan [N] - [Kegiatan Awal/Inti]: [Nama Aktivitas]</strong></p>
      <p>🔍 <a href="https://www.google.com/search?tbm=isch&q=KEYWORD" target="_blank">Google Images</a></p>
      <p>🎨 <a href="https://www.bing.com/images/create?q=PROMPT" target="_blank">Bing Image Creator</a></p>
      <p><em>Prompt: "PROMPT"</em></p>
@@ -189,7 +206,7 @@ PERHATIAN KETAT:
 9. DEEP LEARNING LABELS: Kamu WAJIB menyematkan label span warna-warni (Joyful / Meaningful / Mindful) SECARA SELEKTIF di sebelah kanan teks menit <b>(... Menit)</b> pada aktivitas yang relevan di Kegiatan Awal, Inti, dan Penutup. Jangan taruh di semua aktivitas, pilih aktivitas yang benar-benar menggambarkan salah satu elemen tersebut.
 10. FORMAT KELUARAN: KELUARKAN LANGSUNG KODE HTML-NYA TANPA BUNGKUSAN MARKDOWN (JANGAN GUNAKAN \`\`\`html ATAU \`\`\`). KELUARKAN RAW HTML SECARA LANGSUNG.
 11. STYLE & FONT: Pastikan setiap elemen HTML mengikuti style yang diberikan. Jangan menggunakan HURUF KAPITAL SEMUA pada isi materi (gunakan huruf kapital hanya pada awal kalimat, nama diri, atau judul utama). Cukup bungkus awal jawabanmu dengan div font Arial 10.5pt dan berikan border solid hitam 1px pada tabel dengan border-collapse.
-12. FORMAT LIST: WAJIB gunakan tag HTML <ul> dan <li> atau <ol> dan <li> untuk membuat daftar/list (bullet/number) dengan rapi, berikan spasi margin-left secukupnya jika bersarang. JANGAN menggunakan tanda bintang (*) atau strip (-) sebagai bullet point manual.${data.additionalContext ? `\n13. KONTEKS TAMBAHAN (SANGAT PENTING): ${data.additionalContext}. Seluruh hasil generate Rencana Pembelajaran Mendalam (RPM) ini HARUS mengintegrasikan konteks tambahan tersebut. Ini TIDAK HANYA mencakup pertanyaan pemantik, TETAPI JUGA seluruh materi pembelajaran, studi kasus, skenario, contoh-contoh kehidupan sehari-hari yang diberikan, aktivitas pada kegiatan inti, hingga butir soal asesmen formatif dan sumatif. Pastikan keseluruhan RPM terasa sangat kontekstual dengan kejadian di sekitar siswa.` : ''}
+12. FORMAT LIST: WAJIB gunakan tag HTML <ul> dan <li> atau <ol> dan <li> untuk membuat daftar/list (bullet/number) dengan rapi, berikan spasi margin-left secukupnya jika bersarang. JANGAN menggunakan tanda bintang (*) atau strip (-) sebagai bullet point manual.${data.additionalContext ? \`\\n13. KONTEKS TAMBAHAN (SANGAT PENTING): \${data.additionalContext}. Seluruh hasil generate Rencana Pembelajaran Mendalam (RPM) ini HARUS mengintegrasikan konteks tambahan tersebut. Ini TIDAK HANYA mencakup pertanyaan pemantik, TETAPI JUGA seluruh materi pembelajaran, studi kasus, skenario, contoh-contoh kehidupan sehari-hari yang diberikan, aktivitas pada kegiatan inti, hingga butir soal asesmen formatif dan sumatif. Pastikan keseluruhan RPM terasa sangat kontekstual dengan kejadian di sekitar siswa.\` : ''}
 
 Gunakan persis kerangka HTML ini, dan JANGAN tambahkan markdown code block (\`\`\`html) di awal atau akhir jawaban:
 
