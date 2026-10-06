@@ -439,13 +439,31 @@ Gunakan tag HTML seperti <b>, <p>, <ul>, <ol>, <table> untuk menatanya agar rapi
 
       if (provider === 'gemini') {
         const ai = new GoogleGenAI({ apiKey: keyToUse });
-        const responseStream = await ai.models.generateContentStream({
-          model: getGeminiModel(aiModel),
-          contents: prompt,
-        });
-        for await (const chunk of responseStream) {
-          if (chunk.text) {
-            res.write(chunk.text);
+        let retries = 3;
+        let delay = 1000;
+        
+        while (retries > 0) {
+          try {
+            const responseStream = await ai.models.generateContentStream({
+              model: getGeminiModel(aiModel),
+              contents: prompt,
+            });
+            for await (const chunk of responseStream) {
+              if (chunk.text) {
+                res.write(chunk.text);
+              }
+            }
+            break; // Success, exit loop
+          } catch (error: any) {
+            retries--;
+            const errMsg = error.message?.toLowerCase() || String(error).toLowerCase();
+            if (retries > 0 && (errMsg.includes('500') || errMsg.includes('503') || errMsg.includes('429') || errMsg.includes('too many requests') || errMsg.includes('internal error'))) {
+              console.warn(`Gemini API error, retrying in ${delay}ms... (${retries} retries left)`);
+              await new Promise(r => setTimeout(r, delay));
+              delay *= 2;
+            } else {
+              throw error; // Out of retries or non-retryable error
+            }
           }
         }
       } else if (provider === 'anthropic') {

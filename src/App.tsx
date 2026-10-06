@@ -226,7 +226,12 @@ export default function App() {
       });
       setCurrentHistoryId(newItem.id);
       
-      toast.success('RPM berhasil dibuat!');
+      const isTruncated = !finalResultText.trim().endsWith('</div>');
+      if (isTruncated) {
+        toast('Hasil mungkin terpotong. Silakan klik tombol "Lanjutkan" di menu aksi untuk meneruskan.', { icon: '⚠️', duration: 8000 });
+      } else {
+        toast.success('RPM berhasil dibuat!');
+      }
       
       // Enhance RPM with SVG diagrams (background)
       const enhanceId = newItem.id;
@@ -349,7 +354,12 @@ export default function App() {
         });
       }
       
-      toast.success('RPM berhasil dilanjutkan!');
+      const isTruncated = !finalResultText.trim().endsWith('</div>');
+      if (isTruncated) {
+        toast('Hasil masih terpotong. Silakan klik tombol "Lanjutkan" lagi.', { icon: '⚠️', duration: 8000 });
+      } else {
+        toast.success('RPM berhasil dilanjutkan!');
+      }
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Gagal menghubungi server.', {
