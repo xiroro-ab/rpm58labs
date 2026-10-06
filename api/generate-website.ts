@@ -8,40 +8,13 @@ export default async function handler(req: any, res: any) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
 
-    const { html, topic, customApiKey, aiProvider, aiModel } = body;
-    if (!html) return res.status(400).json({ error: 'HTML RPM diperlukan' });
+    let { html, topic, customApiKey, aiProvider, aiModel, previousOutput } = body;
+    if (!html && !previousOutput) return res.status(400).json({ error: 'HTML RPM diperlukan' });
     const provider = normalizeProvider(aiProvider);
     const key = getApiKey(customApiKey, isOpenRouterProvider(provider) ? provider : 'gemini');
     if (!key) return res.status(400).json({ error: 'API key untuk provider ' + provider + ' diperlukan.' });
 
-    const ai = new GoogleGenAI({ apiKey: key });
-    const openRouter = isOpenRouterProvider(provider) ? createOpenRouterClient(key) : null;
-
-    async function callAI(prompt: string): Promise<string> {
-      for (let i = 0; i < 3; i++) {
-        try {
-          if (openRouter) {
-            const r = await openRouter.chat.completions.create({
-              model: getOpenRouterModel(provider, aiModel),
-               messages: [{ role: 'user', content: prompt }],
-             });
-            return (r.choices[0]?.message?.content || '').replace(/```[\s\S]*?```/g, '').trim();
-          }
-          const r = await ai.models.generateContent({ model: getGeminiModel(aiModel), contents: prompt });
-          return (r.text || '').replace(/```[\s\S]*?```/g, '').trim();
-        } catch (e: any) {
-          if ((e.message?.includes('503') || e.status === 503) && i < 2) {
-            await new Promise(r => setTimeout(r, (i + 1) * 2000));
-            continue;
-          }
-          throw e;
-        }
-      }
-      return '';
-    }
-
-    // Prompt LENGKAP seperti dulu (sebelum fase2) — isi: puzzle, animasi, game, teka-teki, dll
-    const prompt = [
+    let prompt = [
       'Buat SATU file HTML website pembelajaran INTERAKTIF untuk SISWA berdasarkan RPM.',
       'Website ini untuk siswa belajar mandiri, BUKAN dokumen guru.',
       '',
@@ -101,16 +74,90 @@ export default async function handler(req: any, res: any) {
       '',
       'RPM:',
       html,
+      '',
+      'PENTING: Di baris paling akhir kodemu, tambahkan elemen ini persis setelah penutup </html>:',
+      '<div id="SELESAI" style="display:none;"></div>'
     ].join('\n');
 
-    let websiteHtml = await callAI(prompt);
+    if (previousOutput) {
+      prompt += `
 
-    const m1 = websiteHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
-    if (m1) websiteHtml = m1[1];
+[PERHATIAN SANGAT PENTING: PENGGUNA MEMINTA KAMU UNTUK MELANJUTKAN KODE HTML KARENA TERPOTONG!]
 
-    res.json({ html: websiteHtml || '<html><body><p>Coba generate ulang.</p></body></html>' });
+Kode HTML sebelumnya yang sudah kamu hasilkan (namun terpotong di tengah jalan) adalah:
+=== BATAS AWAL KODE SEBELUMNYA ===
+${previousOutput}
+=== BATAS AKHIR KODE SEBELUMNYA ===
+
+TUGAS KAMU SEKARANG:
+Lanjutkan pembuatan kode HTML tersebut TEPAT dari titik ia terputus pada "BATAS AKHIR KODE SEBELUMNYA".
+JANGAN MENGULANGI KODE ATAU TEKS YANG SUDAH ADA DI ATAS!
+JANGAN tambahkan kata pembukaan/penutup apa pun, LANGSUNG TULIS SAMBUNGAN KODE HTML-NYA agar menjadi satu kesatuan dokumen yang valid saat digabungkan dengan kode sebelumnya. Gunakan panduan kerangka HTML di atas sebagai panduan arahmu.`;
+    }
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+
+    if (provider === 'gemini') {
+      const ai = new GoogleGenAI({ apiKey: key });
+      let retries = 3;
+      let delay = 1000;
+      let hasStartedStreaming = false;
+
+      while (retries > 0) {
+        try {
+          const responseStream = await ai.models.generateContentStream({
+            model: getGeminiModel(aiModel),
+            contents: prompt,
+          });
+          for await (const chunk of responseStream) {
+            if (chunk.text) {
+              hasStartedStreaming = true;
+              res.write(chunk.text);
+            }
+          }
+          break;
+        } catch (error: any) {
+          if (hasStartedStreaming) {
+            throw error;
+          }
+          retries--;
+          if (retries > 0) {
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+          } else {
+            throw error;
+          }
+        }
+      }
+    } else if (provider === 'openrouter' || provider === 'openrouter-free') {
+      const openRouter = createOpenRouterClient(key);
+      const responseStream = await openRouter.chat.completions.create({
+        model: getOpenRouterModel(provider, aiModel),
+        messages: [{ role: 'user', content: prompt }],
+        stream: true,
+      });
+
+      for await (const chunk of responseStream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          res.write(content);
+        }
+      }
+    }
+
+    res.end();
   } catch (error: any) {
     console.error('Generate Website Error:', error);
-    if (!res.headersSent) res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Gagal: ' + (error.message || '') });
+    } else {
+      try {
+        if (!res.writableEnded) {
+          res.end();
+        }
+      } catch (e) {}
+    }
   }
 }

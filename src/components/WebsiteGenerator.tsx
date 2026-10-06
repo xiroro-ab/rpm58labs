@@ -46,25 +46,87 @@ export default function WebsiteGenerator({ rpmHtml, topic, customApiKey, aiProvi
   const generate = async () => {
     setIsLoading(true);
     setError('');
+    let resultText = '';
+    let loopCount = 0;
+    let isFinished = false;
+
     try {
-      const res = await fetch('/api/generate-website', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: rpmHtml, topic, customApiKey, aiProvider, aiModel }),
-      });
-      const data = await res.json();
-      if (data.error) { setError(data.error); return; }
+      while (loopCount <= 3 && !isFinished) {
+        const res = await fetch('/api/generate-website', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html: rpmHtml, topic, customApiKey, aiProvider, aiModel, previousOutput: resultText || undefined }),
+        });
+
+        if (!res.ok) {
+          let errorMessage = 'Gagal menghubungi server.';
+          try {
+            const text = await res.text();
+            try {
+              const json = JSON.parse(text);
+              errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
+            } catch (e) {
+              errorMessage = text || errorMessage;
+            }
+          } catch (e) {}
+          throw new Error(errorMessage);
+        }
+
+        const reader = res.body?.getReader();
+        if (!reader) throw new Error('Response body is null');
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          resultText += decoder.decode(value, { stream: true });
+          
+          let displayResult = resultText;
+          if (displayResult.trim().startsWith('```html')) {
+             displayResult = displayResult.replace(/^```html\n?/, '');
+          } else if (displayResult.trim().startsWith('```')) {
+             displayResult = displayResult.replace(/^```\n?/, '');
+          }
+          if (displayResult.trim().endsWith('```')) {
+             displayResult = displayResult.replace(/\n?```$/, '');
+          }
+          
+          setWebsiteHtml(displayResult);
+        }
+
+        let finalResultText = websiteHtml || resultText;
+        if (finalResultText.includes('<div id="SELESAI"')) {
+          isFinished = true;
+          finalResultText = finalResultText.replace('<div id="SELESAI" style="display:none;"></div>', '');
+          setWebsiteHtml(finalResultText);
+          break;
+        }
+
+        if (finalResultText.trim().endsWith('</html>')) {
+          isFinished = true;
+          setWebsiteHtml(finalResultText);
+          break;
+        }
+
+        loopCount++;
+      }
+
+      // Extract the actual HTML if there's any markdown wrapper left
+      let cleanHtml = websiteHtml || resultText;
+      const m1 = cleanHtml.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i);
+      if (m1) cleanHtml = m1[1];
+      setWebsiteHtml(cleanHtml);
 
       const newItem: WebHistoryItem = {
         id: Date.now().toString(),
         topic,
         date: new Date().toISOString(),
-        html: data.html,
+        html: cleanHtml,
       };
       const updated = [newItem, ...history.filter(h => h.topic !== topic)].slice(0, 20);
       setHistory(updated);
       saveHistory(updated);
-      setWebsiteHtml(data.html);
     } catch (e: any) {
       setError(e.message);
     } finally {
