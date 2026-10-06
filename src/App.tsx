@@ -14,6 +14,30 @@ import { AboutCreatorModal } from './components/AboutCreatorModal';
 import AnswerAnalyzer from './components/AnswerAnalyzer';
 import ManualSoalModal from './components/ManualSoalModal';
 
+const safeSaveHistory = (historyList: HistoryItem[]): HistoryItem[] => {
+  try {
+    localStorage.setItem('rpmHistory', JSON.stringify(historyList));
+    return historyList;
+  } catch (e: any) {
+    if (e.name === 'QuotaExceededError' || (e.message && e.message.toLowerCase().includes('quota'))) {
+      let shrunkList = [...historyList];
+      while (shrunkList.length > 1) {
+        shrunkList.pop(); // Remove the oldest item (at the end of the array)
+        try {
+          localStorage.setItem('rpmHistory', JSON.stringify(shrunkList));
+          toast('Penyimpanan penuh! Riwayat paling lama dihapus otomatis untuk menghemat ruang.', { icon: 'ℹ️', duration: 5000 });
+          return shrunkList;
+        } catch (e2) {
+          // Keep shrinking if still too large
+        }
+      }
+      return shrunkList; // Even if 1 item fails, return it
+    }
+    console.error('Error saving history:', e);
+    return historyList;
+  }
+};
+
 export default function App() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -235,8 +259,7 @@ export default function App() {
       
       setHistory(prev => {
         const next = [newItem, ...prev].slice(0, 50); // Keep max 50 items
-        localStorage.setItem('rpmHistory', JSON.stringify(next));
-        return next;
+        return safeSaveHistory(next);
       });
       setCurrentHistoryId(newItem.id);
       
@@ -262,7 +285,7 @@ export default function App() {
             setHistory(prev => {
               const n = [...prev];
               const i = n.findIndex(item => item.id === enhanceId);
-              if (i !== -1) { n[i].markdown = ed.html; localStorage.setItem('rpmHistory', JSON.stringify(n)); }
+              if (i !== -1) { n[i].markdown = ed.html; safeSaveHistory(n); }
               return n;
             });
           }
@@ -378,7 +401,7 @@ export default function App() {
           const idx = next.findIndex(item => item.id === currentHistoryId);
           if (idx !== -1) {
              next[idx].markdown = finalResultText;
-             localStorage.setItem('rpmHistory', JSON.stringify(next));
+             safeSaveHistory(next);
           }
           return next;
         });
@@ -415,7 +438,7 @@ export default function App() {
         const idx = next.findIndex(item => item.id === currentHistoryId);
         if (idx !== -1) {
           next[idx].markdown = editedHtml;
-          localStorage.setItem('rpmHistory', JSON.stringify(next));
+          safeSaveHistory(next);
         }
         return next;
       });
@@ -444,7 +467,7 @@ export default function App() {
     if (ok) {
       setHistory(prev => {
         const next = prev.filter(item => item.id !== id);
-        localStorage.setItem('rpmHistory', JSON.stringify(next));
+        return safeSaveHistory(next);
         return next;
       });
       if (currentHistoryId === id) {
@@ -802,7 +825,7 @@ export default function App() {
           history={history}
           onHistoryUpdate={(newHistory) => {
             setHistory(newHistory);
-            localStorage.setItem('rpmHistory', JSON.stringify(newHistory));
+            safeSaveHistory(newHistory);
           }}
         />
 
