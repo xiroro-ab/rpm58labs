@@ -140,79 +140,91 @@ export default function App() {
     setCurrentTrackingId(trackingId);
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data, customApiKey, aiProvider, aiModel: activeModel }),
-      });
-
-      if (!response.ok) {
-        setIsWaitingForFirstChunk(false);
-        let errorMessage = 'Gagal menghubungi server.';
-        try {
-          const text = await response.text();
-          try {
-            const json = JSON.parse(text);
-            errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
-          } catch (e) {
-            errorMessage = text || errorMessage;
-          }
-        } catch (e) {
-          // Ignore text read error
-        }
-        
-        if (typeof errorMessage !== 'string') {
-           errorMessage = String(errorMessage);
-        }
-        
-        const lowerErr = errorMessage.toLowerCase();
-        if (lowerErr.includes('429') || lowerErr.includes('quota') || lowerErr.includes('limit') || lowerErr.includes('exhausted') || lowerErr.includes('insufficient_quota')) {
-          errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
-        } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
-          errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
-        } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
-          errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
-        } else {
-          // If the error message is a raw JSON string or unreadable API error, let it pass through
-          // so we can see the actual error from the backend.
-        }
-        throw new Error(errorMessage);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Response body is null');
-      const decoder = new TextDecoder();
       let resultText = '';
-      
       let isFirstChunk = true;
+      let loopCount = 0;
+      let isFinished = false;
+      let finalResultText = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        if (isFirstChunk) {
+      while (loopCount <= 3 && !isFinished) {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ data, customApiKey, aiProvider, aiModel: activeModel, previousOutput: resultText || undefined }),
+        });
+
+        if (!response.ok) {
           setIsWaitingForFirstChunk(false);
-          isFirstChunk = false;
+          let errorMessage = 'Gagal menghubungi server.';
+          try {
+            const text = await response.text();
+            try {
+              const json = JSON.parse(text);
+              errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
+            } catch (e) {
+              errorMessage = text || errorMessage;
+            }
+          } catch (e) {}
+          
+          if (typeof errorMessage !== 'string') {
+             errorMessage = String(errorMessage);
+          }
+          
+          const lowerErr = errorMessage.toLowerCase();
+          if (lowerErr.includes('429') || lowerErr.includes('quota') || lowerErr.includes('limit') || lowerErr.includes('exhausted') || lowerErr.includes('insufficient_quota')) {
+            errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
+          } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
+            errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
+          } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
+            errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
+          }
+          throw new Error(errorMessage);
         }
 
-        resultText += decoder.decode(value, { stream: true });
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('Response body is null');
+        const decoder = new TextDecoder();
         
-        var displayResult = resultText;
-        if (displayResult.trim().startsWith('```html')) {
-           displayResult = displayResult.replace(/^```html\n?/, '');
-        } else if (displayResult.trim().startsWith('```')) {
-           displayResult = displayResult.replace(/^```\n?/, '');
-        }
-        if (displayResult.trim().endsWith('```')) {
-           displayResult = displayResult.replace(/\n?```$/, '');
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          if (isFirstChunk) {
+            setIsWaitingForFirstChunk(false);
+            isFirstChunk = false;
+          }
+
+          resultText += decoder.decode(value, { stream: true });
+          
+          var displayResult = resultText;
+          if (displayResult.trim().startsWith('```html')) {
+             displayResult = displayResult.replace(/^```html\n?/, '');
+          } else if (displayResult.trim().startsWith('```')) {
+             displayResult = displayResult.replace(/^```\n?/, '');
+          }
+          if (displayResult.trim().endsWith('```')) {
+             displayResult = displayResult.replace(/\n?```$/, '');
+          }
+          
+          setResult(displayResult);
         }
         
-                setResult(displayResult);
+        finalResultText = displayResult || resultText;
+        if (finalResultText.includes('<!-- SELESAI -->')) {
+          isFinished = true;
+          finalResultText = finalResultText.replace('<!-- SELESAI -->', '');
+          setResult(finalResultText);
+          break;
+        }
+
+        loopCount++;
+        if (loopCount <= 3) {
+          toast(`Menyambung kode terpotong secara otomatis (${loopCount}/3)...`, { icon: '⏳', duration: 4000 });
+        }
       }
-      
-      const finalResultText = displayResult || resultText;
+
       const newItem: HistoryItem = {
         id: Date.now().toString(),
         title: `RPM ${data.subject} ${data.phase}`,
@@ -229,10 +241,10 @@ export default function App() {
       setCurrentHistoryId(newItem.id);
       
       const isTruncated = !finalResultText.trim().endsWith('</div>');
-      if (isTruncated) {
-        toast('Hasil mungkin terpotong. Silakan klik tombol "Lanjutkan" di menu aksi untuk meneruskan.', { icon: '⚠️', duration: 8000 });
+      if (isTruncated && !isFinished) {
+        toast('Hasil mungkin masih terpotong setelah 3x auto-lanjut. Silakan klik tombol "Lanjutkan" manual di menu.', { icon: '⚠️', duration: 8000 });
       } else {
-        toast.success('RPM berhasil dibuat!');
+        toast.success('RPM berhasil dibuat sepenuhnya!');
       }
       
       // Enhance RPM with SVG diagrams (background)
@@ -283,69 +295,83 @@ export default function App() {
     setIsGeneratingContinue(true);
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: formData, customApiKey, aiProvider, aiModel: activeModel, previousOutput: result }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Gagal menghubungi server.';
-        try {
-          const text = await response.text();
-          try {
-            const json = JSON.parse(text);
-            errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
-          } catch (e) {
-            errorMessage = text || errorMessage;
-          }
-        } catch (e) {
-          // Ignore text read error
-        }
-        
-        if (typeof errorMessage !== 'string') {
-           errorMessage = String(errorMessage);
-        }
-        
-        const lowerErr = errorMessage.toLowerCase();
-        if (lowerErr.includes('429') || lowerErr.includes('quota') || lowerErr.includes('limit') || lowerErr.includes('exhausted') || lowerErr.includes('insufficient_quota')) {
-          errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
-        } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
-          errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
-        } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
-          errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
-        } else {
-          // Pass through the original backend error message
-        }
-        throw new Error(errorMessage);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Response body is null');
-      const decoder = new TextDecoder();
       let resultText = result; // Start with previous result
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        resultText += decoder.decode(value, { stream: true });
-        
-        var displayResult = resultText;
-        if (displayResult.trim().startsWith('```html')) {
-           displayResult = displayResult.replace(/^```html\n?/, '');
-        } else if (displayResult.trim().startsWith('```')) {
-           displayResult = displayResult.replace(/^```\n?/, '');
+      let loopCount = 0;
+      let isFinished = false;
+      let finalResultText = '';
+
+      while (loopCount <= 3 && !isFinished) {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ data: formData, customApiKey, aiProvider, aiModel: activeModel, previousOutput: resultText }),
+        });
+
+        if (!response.ok) {
+          let errorMessage = 'Gagal menghubungi server.';
+          try {
+            const text = await response.text();
+            try {
+              const json = JSON.parse(text);
+              errorMessage = typeof json.error === 'string' ? json.error : (json.error?.message || json.message || JSON.stringify(json));
+            } catch (e) {
+              errorMessage = text || errorMessage;
+            }
+          } catch (e) {}
+          
+          if (typeof errorMessage !== 'string') {
+             errorMessage = String(errorMessage);
+          }
+          
+          const lowerErr = errorMessage.toLowerCase();
+          if (lowerErr.includes('429') || lowerErr.includes('quota') || lowerErr.includes('limit') || lowerErr.includes('exhausted') || lowerErr.includes('insufficient_quota')) {
+            errorMessage = 'Kuota API Key telah habis atau limit penggunaan tercapai. Silakan masukkan API Key Anda sendiri di menu Pengaturan.';
+          } else if (lowerErr.includes('401') || lowerErr.includes('unauthorized') || lowerErr.includes('invalid api key')) {
+            errorMessage = 'API Key yang digunakan tidak valid atau salah. Silakan periksa kembali API Key di menu Pengaturan.';
+          } else if (lowerErr.includes('404') || lowerErr.includes('not found')) {
+            errorMessage = 'Model AI tidak ditemukan atau belum tersedia untuk API Key ini.';
+          }
+          throw new Error(errorMessage);
         }
-        if (displayResult.trim().endsWith('```')) {
-           displayResult = displayResult.replace(/\n?```$/, '');
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('Response body is null');
+        const decoder = new TextDecoder();
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          resultText += decoder.decode(value, { stream: true });
+          
+          var displayResult = resultText;
+          if (displayResult.trim().startsWith('```html')) {
+             displayResult = displayResult.replace(/^```html\n?/, '');
+          } else if (displayResult.trim().startsWith('```')) {
+             displayResult = displayResult.replace(/^```\n?/, '');
+          }
+          if (displayResult.trim().endsWith('```')) {
+             displayResult = displayResult.replace(/\n?```$/, '');
+          }
+          
+          setResult(displayResult);
         }
         
-                setResult(displayResult);
+        finalResultText = displayResult || resultText;
+        if (finalResultText.includes('<!-- SELESAI -->')) {
+          isFinished = true;
+          finalResultText = finalResultText.replace('<!-- SELESAI -->', '');
+          setResult(finalResultText);
+          break;
+        }
+
+        loopCount++;
+        if (loopCount <= 3) {
+          toast(`Menyambung kode terpotong secara otomatis (${loopCount}/3)...`, { icon: '⏳', duration: 4000 });
+        }
       }
       
-      const finalResultText = displayResult || resultText;
       if (currentHistoryId) {
         setHistory(prev => {
           const next = [...prev];
@@ -359,10 +385,10 @@ export default function App() {
       }
       
       const isTruncated = !finalResultText.trim().endsWith('</div>');
-      if (isTruncated) {
-        toast('Hasil masih terpotong. Silakan klik tombol "Lanjutkan" lagi.', { icon: '⚠️', duration: 8000 });
+      if (isTruncated && !isFinished) {
+        toast('Hasil mungkin masih terpotong. Silakan klik tombol "Lanjutkan" manual lagi.', { icon: '⚠️', duration: 8000 });
       } else {
-        toast.success('RPM berhasil dilanjutkan!');
+        toast.success('RPM berhasil dilanjutkan sepenuhnya!');
       }
     } catch (err: any) {
       console.error(err);
